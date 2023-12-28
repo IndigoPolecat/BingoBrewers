@@ -1,22 +1,15 @@
 package com.github.indigopolecat.bingobrewers;
 
-import net.minecraft.block.BlockChest;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityChest;
+
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerChest;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraft.client.gui.inventory.GuiChest;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
-
-
 import java.util.List;
 
 public class bingoShop {
@@ -57,6 +50,8 @@ public class bingoShop {
                                             } catch (NumberFormatException e) {
                                                 System.out.println("Cost is not a number!");
                                             }
+                                            String displayName = item.getDisplayName();
+                                            int lbin = auctionAPI.auctionAPISearch(displayName);
                                             break;
                                         } else {
                                             // if lore line is "§5§o§7Cost"
