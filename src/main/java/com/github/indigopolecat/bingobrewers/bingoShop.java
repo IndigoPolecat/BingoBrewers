@@ -79,12 +79,12 @@ public class bingoShop {
                             }
 
                             System.out.println(itemNamesFormatless);
-                            ArrayList<Long> coinCosts = auctionAPI.neulbinSearch(itemNamesFormatless);
+                            ArrayList<Double> coinCosts = auctionAPI.neulbinSearch(itemNamesFormatless);
                             System.out.println(coinCosts);
 
                             if (itemCosts.size() == coinCosts.size() && itemCosts.size() == itemNames.size()) {
                                 for (int i = 0; i < itemCosts.size(); i++) {
-                                    long coinCost = coinCosts.get(i);
+                                    double coinCost = coinCosts.get(i);
                                     int bingoCost = itemCosts.get(i);
                                     String itemName = itemNames.get(i);
                                     if (coinCost == 0) {
@@ -92,7 +92,8 @@ public class bingoShop {
                                     } else if (bingoCost == 0) {
                                         System.out.println("Failed to get Bingo Point cost of item: " + itemName);
                                     } else {
-                                        long coinsPerPoint = coinCost / bingoCost;
+                                        double coinsPerPointd = coinCost / bingoCost;
+                                        long coinsPerPoint = Math.round(coinsPerPointd);
                                         System.out.println("Coins per Bingo Point: " + coinsPerPoint);
 
                                         for (ItemStack item : chestInventory) {

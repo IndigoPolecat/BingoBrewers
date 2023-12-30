@@ -1,7 +1,6 @@
 package com.github.indigopolecat.bingobrewers;
 
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -11,73 +10,86 @@ import com.google.gson.JsonArray;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.GZIPInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
+import java.util.concurrent.CompletableFuture;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
+import java.util.HashMap;
 
 
 public class auctionAPI {
 
-    public static ArrayList<Long> neulbinSearch(ArrayList<String> items) {
-
+    public static ArrayList<Double> neulbinSearch(ArrayList<String> items) {
+        CompletableFuture<HashMap<String, Double>> lbinMap = new CompletableFuture<>();
         try {
-            URL apiURL = new URL("https://moulberry.codes/lowestbin.json.gz");
+            Thread apiRequest = new Thread(() -> {
+               try {
+                   URL apiURL = new URL("https://moulberry.codes/lowestbin.json.gz");
 
-            HttpURLConnection connection = (HttpURLConnection) apiURL.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Accept-Encoding", "gzip");
-            connection.connect();
+                   HttpURLConnection connection = (HttpURLConnection) apiURL.openConnection();
+                   connection.setRequestMethod("GET");
+                   connection.setRequestProperty("Accept-Encoding", "gzip");
+                   connection.connect();
 
-            InputStream inputStream = connection.getInputStream();
-            GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                   InputStream inputStream = connection.getInputStream();
+                   GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
+                   ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = gzipInputStream.read(buffer)) > 0) {
-                byteArrayOutputStream.write(buffer, 0, len);
-            }
+                   byte[] buffer = new byte[1024];
+                   int len;
+                   while ((len = gzipInputStream.read(buffer)) > 0) {
+                       byteArrayOutputStream.write(buffer, 0, len);
+                   }
 
-            byte[] byteArray = byteArrayOutputStream.toByteArray();
-            String json = new String(byteArray, StandardCharsets.UTF_8);
+                   byte[] byteArray = byteArrayOutputStream.toByteArray();
 
-            JsonObject jsonObject = new Gson().fromJson(json, JsonObject.class);
+                   String json = new String(byteArray, StandardCharsets.UTF_8);
+                   Type type = new TypeToken<HashMap<String, Double>>() {}.getType();
+                   HashMap<String, Double> lbin = new Gson().fromJson(json, type);
+
+                   lbinMap.complete(lbin);
+
+               } catch (IOException e) {
+                   System.out.println("Error: " + e);
+               }
+            });
+
+            apiRequest.start();
 
             ArrayList<Item> itemList = new ArrayList<>();
+
             for (String s : items) {
                 Item item = new Item(s);
                 itemList.add(item);
             }
 
-            ArrayList<Long> costs = new ArrayList<>();
+            ArrayList<Double> costs = new ArrayList<>();
             for (String item : items) {
 
                 try {
-                    Item itemObject = getItemByName(itemList, item);
                     item = item.replace(" ", "_").toUpperCase();
-                    costs.add(jsonObject.get(item).getAsLong());
+                    costs.add(lbinMap.get().get(item));
                 } catch (Exception e) {
                     System.out.println("Item not found in auction house: " + item);
                 }
             }
             return costs;
-
-
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.println("Error: " + e);
             return null;
         }
-
     }
 
 
 
     // This method is unused. keeping incase we need to do it on our own server in the future. Combined with Item.java it fetches lbin of an array of display names input.
 
-    public static ArrayList<Long>  auctionAPISearch(ArrayList<String> items) {
+    public static ArrayList<Double> auctionAPISearch(ArrayList<String> items) {
         String apiURL = "https://api.hypixel.net/skyblock/auctions";
 
         // query api plus some anti error stuff
@@ -126,7 +138,7 @@ public class auctionAPI {
             }
             System.out.println("done with page " + i);
         }
-        ArrayList<Long> costs = new ArrayList<>();
+        ArrayList<Double> costs = new ArrayList<>();
         for (Item item : itemList) {
             costs.add(item.getLowestCost());
         }
@@ -172,5 +184,3 @@ public class auctionAPI {
         return null;
     }
 }
-
-

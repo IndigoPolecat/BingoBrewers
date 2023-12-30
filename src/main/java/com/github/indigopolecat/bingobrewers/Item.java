@@ -7,14 +7,14 @@ import java.util.Collections;
 // Required for auctionAPI.java
 public class Item {
     private final String name;
-    private final ArrayList<Long> cost;
+    private final ArrayList<Double> cost;
 
     public Item(String name) {
         this.name = name;
-        this.cost = new ArrayList<Long>();
+        this.cost = new ArrayList<Double>();
     }
 
-    public void addCost(long price) {
+    public void addCost(double price) {
         this.cost.add(price);
         System.out.println(price);
         System.out.println(this.cost);
@@ -24,11 +24,11 @@ public class Item {
         return this.name;
     }
 
-    public ArrayList<Long> getCost() {
+    public ArrayList<Double> getCost() {
         return cost;
     }
 
-    public long getLowestCost() {
+    public double getLowestCost() {
         if (cost.isEmpty()) {
             System.out.println("No Auction Items Found!");
             return 0;
