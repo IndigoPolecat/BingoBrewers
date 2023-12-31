@@ -6,36 +6,39 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerChest;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 
-// unused class for lbin, now using NEU api. keeping incase we need to do it on our own server in the future.
-
 public class bingoShop {
     @SubscribeEvent
     public void onShopOpen(GuiOpenEvent event) {
+        GuiChest guiChest;
         if (event.gui instanceof GuiChest) {
-            GuiChest guiChest = (GuiChest) event.gui;
+            guiChest = (GuiChest) event.gui;
             Container gui = guiChest.inventorySlots;
 
             if (gui instanceof ContainerChest) {
                 ContainerChest containerChest = (ContainerChest) gui;
                 String name = containerChest.getLowerChestInventory().getDisplayName().getUnformattedText();
+                System.out.println(containerChest);
                 if (name.equals("Bingo Shop")) {
                     System.out.println("Bingo Shop opened!");
+                    doneLoading chestLoad = new doneLoading();
+                    chestLoad.onInventoryChanged(containerChest);
                     MinecraftForge.EVENT_BUS.register(new bingoShop() {
                         @SubscribeEvent
                         // Event that occurs after items are loaded into the chest GUI
-                        public void onInitGuiPost(GuiScreenEvent.DrawScreenEvent.Post eventPost) {
+                        //public void onInitGuiPost(GuiScreenEvent.DrawScreenEvent.Post eventPost) {
+                        public void onInitGuiPost(doneLoading.InventoryLoadingDoneEvent event) {
                             // set variables in correct scope
-                            String cost = "";
+                            String cost;
                             int costInt = 0;
                             ArrayList<String> itemNames = new ArrayList<>();
                             ArrayList<Integer> itemCosts = new ArrayList<>();
@@ -51,6 +54,7 @@ public class bingoShop {
                                         if (costFound) {
                                             cost = element;
                                             String unformattedCost = removeFormatting(cost);
+                                            System.out.println(cost);
                                             try {
                                                 costInt = Integer.parseInt(unformattedCost);
                                                 System.out.println(costInt);
@@ -79,21 +83,28 @@ public class bingoShop {
                             }
 
                             System.out.println(itemNamesFormatless);
-                            ArrayList<Double> coinCosts = auctionAPI.neulbinSearch(itemNamesFormatless);
+                            CompletableFuture<ArrayList<Double>> costFuture = auctionAPI.fetchPriceMap(itemNamesFormatless).whenComplete((lbinMap, throwable) -> {
+                            });
+                            costFuture.thenAccept (coinCosts -> {
+                                System.out.println("coinCosts: " + coinCosts);
                             System.out.println(coinCosts);
 
                             if (itemCosts.size() == coinCosts.size() && itemCosts.size() == itemNames.size()) {
                                 for (int i = 0; i < itemCosts.size(); i++) {
-                                    double coinCost = coinCosts.get(i);
+                                    Double coinCost = coinCosts.get(i);
+                                    if (coinCost == (null)) {
+                                        continue;
+                                    }
                                     int bingoCost = itemCosts.get(i);
                                     String itemName = itemNames.get(i);
+                                    //if (coinCost == null)
                                     if (coinCost == 0) {
                                         System.out.println("Item not found in auction house or price is somehow 0: " + itemName);
                                     } else if (bingoCost == 0) {
                                         System.out.println("Failed to get Bingo Point cost of item: " + itemName);
                                     } else {
-                                        double coinsPerPointd = coinCost / bingoCost;
-                                        long coinsPerPoint = Math.round(coinsPerPointd);
+                                        double coinsPerPointdouble = coinCost / bingoCost;
+                                        long coinsPerPoint = Math.round(coinsPerPointdouble);
                                         System.out.println("Coins per Bingo Point: " + coinsPerPoint);
 
                                         for (ItemStack item : chestInventory) {
@@ -105,24 +116,37 @@ public class bingoShop {
                                                     NBTTagCompound nbt = item.getTagCompound();
                                                     NBTTagCompound displayTag = nbt.getCompoundTag("display");
                                                     NBTTagList loreList = displayTag.getTagList("Lore", 8);
+                                                    System.out.println(nbt);
 
                                                     // Find the position of bingo point cost in lore
                                                     int costLineIndex = -1;
                                                     for (int j = 0; j < loreList.tagCount(); j++) {
-                                                        if (removeFormatting(loreList.getStringTagAt(j)).equals(bingoCost + " Bingo Points")) {
+                                                        System.out.println(removeFormatting(loreList.getStringTagAt(j)));
+                                                        // Compare the current line without formatting to the cost in bingo points
+                                                        // removeFormatting method removes " Bingo Points" from the end of the string
+                                                        if (removeFormatting(loreList.getStringTagAt(j)).equals(Integer.toString(bingoCost))) {
                                                             costLineIndex = j;
+                                                            System.out.println("costLineIndex: " + costLineIndex);
                                                             break;
                                                         }
                                                     }
 
-                                                    //loreList.appendTag(new NBTTagString(""));
-                                                    //for (int j = loreList.tagCount() - 1; j > costLineIndex + 1; j--) {
+                                                    loreList.appendTag(new NBTTagString(""));
+                                                    for (int j = loreList.tagCount() - 1; j > costLineIndex + 1; j--) {
                                                         // Shift existing lines down to make space for the new line
-                                                        //loreList.set(j, loreList.get(j - 1));
-                                                    //}
+                                                        loreList.set(j, loreList.get(j - 1));
+                                                    }
 
-                                                   loreList.appendTag(new NBTTagString("§6§l" + coinsPerPoint + " Coins/Point"));
+                                                   //loreList.appendTag(new NBTTagString("§6§l" + coinsPerPoint + " Coins/Point"));
+                                                    loreList.set(costLineIndex + 1, new NBTTagString("§6§l" + coinsPerPoint + " Coins/Point"));
+                                                        System.out.println("loreList: " + loreList);
                                                     item.setTagCompound(nbt);
+
+                                                    NBTTagCompound nbt2 = item.getTagCompound();
+                                                    NBTTagCompound displayTag2 = nbt2.getCompoundTag("display");
+                                                    NBTTagList loreList2 = displayTag2.getTagList("Lore", 8);
+                                                    System.out.println("loreList2: " + loreList2);
+                                                    System.out.println(nbt);
 
 
                                                 }
@@ -133,6 +157,7 @@ public class bingoShop {
                             } else {
                                 System.out.println("Something went wrong: itemCosts, coinCosts, and itemNames are not the same size!");
                             }
+                            });
                             MinecraftForge.EVENT_BUS.unregister(this);
                         }
                     });

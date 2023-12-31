@@ -10,13 +10,12 @@ import com.google.gson.JsonArray;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.GZIPInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
-import com.google.gson.Gson;
+
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -24,66 +23,104 @@ import java.util.HashMap;
 
 public class auctionAPI {
 
+    // input: array of display names, output: array of lowest bin prices from neu as doubles in a matching order
+    public static CompletableFuture<ArrayList<Double>> fetchPriceMap(ArrayList<String> items) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                URL apiURL = new URL("https://moulberry.codes/lowestbin.json.gz");
+
+                HttpURLConnection connection = (HttpURLConnection) apiURL.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setRequestProperty("Accept-Encoding", "gzip");
+                connection.connect();
+
+                InputStream inputStream = connection.getInputStream();
+                GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len = gzipInputStream.read(buffer)) > 0) {
+                    byteArrayOutputStream.write(buffer, 0, len);
+                }
+
+                String json = byteArrayOutputStream.toString(String.valueOf(StandardCharsets.UTF_8));
+                Type type = new TypeToken<HashMap<String, Double>>() {}.getType();
+                HashMap<String, Double> lbinMap = new Gson().fromJson(json, type);
+
+                ArrayList<Double> costs = new ArrayList<>();
+                ArrayList<Item> itemList = new ArrayList<>();
+
+                for (String s : items) {
+                    Item item = new Item(s);
+
+                    itemList.add(item);
+                }
+
+                for (String s : items) {
+                    Item item = new Item(s);
+                    itemList.add(item);
+                }
+
+
+                for (String item : items) {
+                    try {
+                        item = item.replace(" ", "_").toUpperCase();
+                        costs.add(lbinMap.get(item));
+                    } catch (Exception e) {
+                        System.out.println("Item not found in auction house: " + item);
+                    }
+                }
+                return costs;
+
+            } catch (IOException exception) {
+                // rethrow it and pass it to the next developer
+                throw new RuntimeException(exception);
+            }
+        });
+}
+
+    /*
     public static ArrayList<Double> neulbinSearch(ArrayList<String> items) {
-        CompletableFuture<HashMap<String, Double>> lbinMap = new CompletableFuture<>();
+
         try {
-            Thread apiRequest = new Thread(() -> {
-               try {
-                   URL apiURL = new URL("https://moulberry.codes/lowestbin.json.gz");
-
-                   HttpURLConnection connection = (HttpURLConnection) apiURL.openConnection();
-                   connection.setRequestMethod("GET");
-                   connection.setRequestProperty("Accept-Encoding", "gzip");
-                   connection.connect();
-
-                   InputStream inputStream = connection.getInputStream();
-                   GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
-                   ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-
-                   byte[] buffer = new byte[1024];
-                   int len;
-                   while ((len = gzipInputStream.read(buffer)) > 0) {
-                       byteArrayOutputStream.write(buffer, 0, len);
-                   }
-
-                   byte[] byteArray = byteArrayOutputStream.toByteArray();
-
-                   String json = new String(byteArray, StandardCharsets.UTF_8);
-                   Type type = new TypeToken<HashMap<String, Double>>() {}.getType();
-                   HashMap<String, Double> lbin = new Gson().fromJson(json, type);
-
-                   lbinMap.complete(lbin);
-
-               } catch (IOException e) {
-                   System.out.println("Error: " + e);
-               }
+            fetchPriceMap(items).whenComplete((lbinMap, throwable) -> {
+                if (throwable != null) {
+                    // handle this properly
+                    throwable.printStackTrace();
+                }
             });
 
-            apiRequest.start();
+                ArrayList<Double> costs = new ArrayList<>();
+                ArrayList<Item> itemList = new ArrayList<>();
 
-            ArrayList<Item> itemList = new ArrayList<>();
+                for (String s : items) {
+                    Item item = new Item(s);
 
-            for (String s : items) {
-                Item item = new Item(s);
-                itemList.add(item);
-            }
-
-            ArrayList<Double> costs = new ArrayList<>();
-            for (String item : items) {
-
-                try {
-                    item = item.replace(" ", "_").toUpperCase();
-                    costs.add(lbinMap.get().get(item));
-                } catch (Exception e) {
-                    System.out.println("Item not found in auction house: " + item);
+                    itemList.add(item);
                 }
-            }
-            return costs;
-        } catch (Exception e) {
-            System.out.println("Error: " + e);
-            return null;
+
+                for (String s : items) {
+                    Item item = new Item(s);
+                    itemList.add(item);
+                }
+
+
+                for (String item : items) {
+                    try {
+                        item = item.replace(" ", "_").toUpperCase();
+                        costs.add(lbinMap.get(item));
+                    } catch (Exception e) {
+                        System.out.println("Item not found in auction house: " + item);
+                    }
+                }
+                return costs;
+            } catch (Exception e) {
+                System.out.println("Error: " + e);
         }
+        return null;
     }
+    */
 
 
 
