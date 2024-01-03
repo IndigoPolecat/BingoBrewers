@@ -24,27 +24,34 @@ import java.util.HashMap;
 public class auctionAPI {
 
     // input: array of display names, output: array of lowest bin prices from neu as doubles in a matching order
+    // Assumes Display Name ID is DISPLAY_NAME
+    // TODO: get item ID from NBT tag instead of display name
+    static long lastFetch = 0;
+    static String json = "";
     public static CompletableFuture<ArrayList<Double>> fetchPriceMap(ArrayList<String> items) {
+
         return CompletableFuture.supplyAsync(() -> {
             try {
-                URL apiURL = new URL("https://moulberry.codes/lowestbin.json.gz");
+                if (lastFetch < System.currentTimeMillis() - 60000) {
+                    lastFetch = System.currentTimeMillis();
+                    URL apiURL = new URL("https://moulberry.codes/lowestbin.json.gz");
 
-                HttpURLConnection connection = (HttpURLConnection) apiURL.openConnection();
-                connection.setRequestMethod("GET");
-                connection.setRequestProperty("Accept-Encoding", "gzip");
-                connection.connect();
+                    HttpURLConnection connection = (HttpURLConnection) apiURL.openConnection();
+                    connection.setRequestMethod("GET");
+                    connection.setRequestProperty("Accept-Encoding", "gzip");
+                    connection.connect();
 
-                InputStream inputStream = connection.getInputStream();
-                GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    InputStream inputStream = connection.getInputStream();
+                    GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-                byte[] buffer = new byte[1024];
-                int len;
-                while ((len = gzipInputStream.read(buffer)) > 0) {
-                    byteArrayOutputStream.write(buffer, 0, len);
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = gzipInputStream.read(buffer)) > 0) {
+                        byteArrayOutputStream.write(buffer, 0, len);
+                    }
+                    json = byteArrayOutputStream.toString(String.valueOf(StandardCharsets.UTF_8));
                 }
-
-                String json = byteArrayOutputStream.toString(String.valueOf(StandardCharsets.UTF_8));
                 Type type = new TypeToken<HashMap<String, Double>>() {}.getType();
                 HashMap<String, Double> lbinMap = new Gson().fromJson(json, type);
 
@@ -57,20 +64,16 @@ public class auctionAPI {
                     itemList.add(item);
                 }
 
-                for (String s : items) {
-                    Item item = new Item(s);
-                    itemList.add(item);
-                }
-
-
                 for (String item : items) {
                     try {
                         item = item.replace(" ", "_").toUpperCase();
+                        System.out.println(item);
                         costs.add(lbinMap.get(item));
                     } catch (Exception e) {
                         System.out.println("Item not found in auction house: " + item);
                     }
                 }
+                System.out.println(costs);
                 return costs;
 
             } catch (IOException exception) {
