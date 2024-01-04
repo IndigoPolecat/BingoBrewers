@@ -4,7 +4,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.common.MinecraftForge;
 
-@Mod(modid = "bingobrewers", useMetadata=true)
+@Mod(modid = "bingobrewers", version = "0.1", useMetadata=true)
 public class bingoBrewers {
 
     @Mod.EventHandler
