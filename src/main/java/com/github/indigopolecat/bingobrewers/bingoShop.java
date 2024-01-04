@@ -29,7 +29,6 @@ public class bingoShop {
                 ContainerChest containerChest = (ContainerChest) gui;
                 String name = containerChest.getLowerChestInventory().getDisplayName().getUnformattedText();
                 if (name.equals("Bingo Shop")) {
-                    System.out.println("Bingo Shop opened!");
                     doneLoading chestLoad = new doneLoading();
                     chestLoad.onInventoryChanged(containerChest);
                     MinecraftForge.EVENT_BUS.register(new bingoShop() {
@@ -43,6 +42,8 @@ public class bingoShop {
                             ArrayList<Integer> itemCosts = new ArrayList<>();
                             ArrayList<String> extraItems = new ArrayList<>();
                             List<ItemStack> chestInventory = containerChest.getInventory();
+                            // Remove the last 36 slots in the chest inventory, which are the player inventory
+                            chestInventory.subList(chestInventory.size() - 36, chestInventory.size()).clear();
 
                             for (ItemStack item : chestInventory) {
                                 if (item != null) {
@@ -55,7 +56,6 @@ public class bingoShop {
                                         if (costFound) {
                                             cost = itemLore.get(i);
                                             String unformattedCost = removeFormatting(cost);
-                                            System.out.println(cost);
 
                                             // if the next lore line is not empty, set it to the extra item variable, doesn't work for multiple extra items in the cost
                                             if (!itemLore.get(i + 1).equals("")) {
@@ -63,7 +63,6 @@ public class bingoShop {
                                             }
                                             try {
                                                 costInt = Integer.parseInt(unformattedCost);
-                                                System.out.println(costInt);
                                             } catch (NumberFormatException e) {
                                                 System.out.println("Cost is not a number!");
                                             }
@@ -92,16 +91,13 @@ public class bingoShop {
                             for (String extraItem : extraItems) {
                                 extraItemsFormatless.add(removeFormatting(extraItem));
                             }
-                            System.out.println("Extra Items" + extraItemsFormatless);
 
-                            System.out.println(itemNamesFormatless);
                             CompletableFuture<ArrayList<Double>> costFuture = auctionAPI.fetchPriceMap(itemNamesFormatless).whenComplete((lbinMap, throwable) -> {
                             });
                             costFuture.thenAccept (coinCosts -> {
                                 CompletableFuture<ArrayList<Double>> extraItemFuture = auctionAPI.fetchPriceMap(extraItemsFormatless).whenComplete((lbinMap, throwable) -> {
                                 });
                             extraItemFuture.thenAccept(extraCoinCosts -> {
-                            System.out.println(coinCosts);
 
                             if (itemCosts.size() == coinCosts.size() && itemCosts.size() == itemNames.size()) {
                                 DecimalFormat decimalFormat = new DecimalFormat("#,###");
@@ -141,25 +137,17 @@ public class bingoShop {
                                                     NBTTagCompound nbt = item.getTagCompound();
                                                     NBTTagCompound displayTag = nbt.getCompoundTag("display");
                                                     NBTTagList loreList = displayTag.getTagList("Lore", 8);
-                                                    System.out.println("lorelist: " + loreList);
 
                                                     int costLineIndex = -1;
                                                     int extraCostIndex = -1;
                                                     for (int j = 0; j < loreList.tagCount(); j++) {
                                                         // Compare the current line without formatting to the cost in bingo points
                                                         // removeFormatting method removes " Bingo Points" from the end of the string
-                                                        System.out.println("loreList.getStringTagAt(j): " + loreList.getStringTagAt(j));
                                                         if (removeFormatting(loreList.getStringTagAt(j)).equals(Integer.toString(bingoCost))) {
-                                                            costLineIndex = j + 1;
-                                                            System.out.println("costLineIndex: " + costLineIndex);
-                                                            System.out.println("nextline: " + removeFormatting(loreList.getStringTagAt(j + 1)));
-                                                            System.out.println("extraName: " + extraName);
+                                                            costLineIndex = j + 1;;
                                                             if (extraName != null && extraName.equals(removeFormatting(loreList.getStringTagAt(j + 1)))) {
-                                                                System.out.println("running");
                                                                 extraCostIndex = j + 2;
                                                                 costLineIndex += 1;
-
-                                                                System.out.println("extra: " + extraCostIndex);
                                                             }
                                                         }
                                                     }
@@ -169,7 +157,6 @@ public class bingoShop {
                                                         costLineIndex = loreList.tagCount() + 1;
                                                     }
 
-                                                    System.out.println("costLineIndex: " + costLineIndex + " item name: " + itemName);
                                                     int finalCostLineIndex = costLineIndex;
                                                     int finalExtraCostIndex = extraCostIndex;
                                                     String finalExtraCost = null;
@@ -177,8 +164,6 @@ public class bingoShop {
                                                         finalExtraCost = formatNumber(Math.round(extraCoinCost));
                                                     }
                                                     String finalExtraCost2 = finalExtraCost;
-                                                    System.out.println("finalExtraCostIndex: " + finalExtraCostIndex);
-                                                    System.out.println("finalExtraCost2: " + finalExtraCost2);
                                                     MinecraftForge.EVENT_BUS.register(new bingoShop() {
                                                         @SubscribeEvent
                                                         public void onItemTooltip(ItemTooltipEvent event) {

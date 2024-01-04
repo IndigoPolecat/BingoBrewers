@@ -15,7 +15,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
-
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -27,13 +26,15 @@ public class auctionAPI {
     // Assumes Display Name ID is DISPLAY_NAME
     // TODO: get item ID from NBT tag instead of display name
     static long lastFetch = 0;
-    static String json = "";
+    static String auctionJson = "";
+    static String bazaarJson = "";
     public static CompletableFuture<ArrayList<Double>> fetchPriceMap(ArrayList<String> items) {
 
         return CompletableFuture.supplyAsync(() -> {
             try {
                 if (lastFetch < System.currentTimeMillis() - 60000) {
                     lastFetch = System.currentTimeMillis();
+                    // api magic
                     URL apiURL = new URL("https://moulberry.codes/lowestbin.json.gz");
 
                     HttpURLConnection connection = (HttpURLConnection) apiURL.openConnection();
@@ -49,11 +50,30 @@ public class auctionAPI {
                     int len;
                     while ((len = gzipInputStream.read(buffer)) > 0) {
                         byteArrayOutputStream.write(buffer, 0, len);
+
                     }
-                    json = byteArrayOutputStream.toString(String.valueOf(StandardCharsets.UTF_8));
+                    // api magic but this time no gzip and it's from hypixel not neu
+                    URL bazaarUrl = new URL("https://api.hypixel.net/v2/skyblock/bazaar");
+
+                    HttpURLConnection connectionBz = (HttpURLConnection) bazaarUrl.openConnection();
+                    connectionBz.setRequestMethod("GET");
+                    connectionBz.connect();
+
+                    InputStream inputStreamBz = connectionBz.getInputStream();
+
+                    ByteArrayOutputStream byteArrayOutputStreamBz = new ByteArrayOutputStream();
+
+                    byte[] bufferbz = new byte[1024];
+                    int lenbz;
+                    while ((lenbz = inputStreamBz.read(bufferbz)) > 0) {
+                        byteArrayOutputStreamBz.write(bufferbz, 0, lenbz);
+                    }
+                    bazaarJson = byteArrayOutputStreamBz.toString("UTF-8");
+
+                    auctionJson = byteArrayOutputStream.toString(String.valueOf(StandardCharsets.UTF_8));
                 }
                 Type type = new TypeToken<HashMap<String, Double>>() {}.getType();
-                HashMap<String, Double> lbinMap = new Gson().fromJson(json, type);
+                HashMap<String, Double> lbinMap = new Gson().fromJson(auctionJson, type);
 
                 ArrayList<Double> costs = new ArrayList<>();
                 ArrayList<Item> itemList = new ArrayList<>();
@@ -65,15 +85,16 @@ public class auctionAPI {
                 }
 
                 for (String item : items) {
-                    try {
-                        item = item.replace(" ", "_").toUpperCase();
-                        System.out.println(item);
+                    item = item.replace(" ", "_").toUpperCase();
+                     if (lbinMap.containsKey(item)) {
                         costs.add(lbinMap.get(item));
-                    } catch (Exception e) {
-                        System.out.println("Item not found in auction house: " + item);
+                    } else if (new Gson().fromJson(bazaarJson, JsonObject.class).getAsJsonObject("products").has(item)){
+                         // Try to get it from bz instead if ah fails
+                         costs.add(new Gson().fromJson(bazaarJson, JsonObject.class).getAsJsonObject("products").getAsJsonObject(item).get("quick_status").getAsJsonObject().get("sellPrice").getAsDouble());
+                    } else {
+                         costs.add(null);
                     }
                 }
-                System.out.println(costs);
                 return costs;
 
             } catch (IOException exception) {
