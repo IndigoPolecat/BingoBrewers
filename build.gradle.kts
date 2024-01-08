@@ -83,6 +83,7 @@ dependencies {
     // If you don't want to log in with your real minecraft account, remove this line
     runtimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.1.2")
     implementation("com.google.code.gson:gson:2.10.1")
+    shadowImpl("org.java-websocket:Java-WebSocket:1.5.4")
 }
 
 // Tasks:

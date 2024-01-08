@@ -3,6 +3,7 @@ package com.github.indigopolecat.bingobrewers;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.common.MinecraftForge;
+import com.github.indigopolecat.events.PacketHandler;
 
 @Mod(modid = "bingobrewers", version = "0.1", useMetadata=true)
 public class bingoBrewers {
@@ -12,5 +13,6 @@ public class bingoBrewers {
         doneLoading doneLoading = new doneLoading();
         MinecraftForge.EVENT_BUS.register(new bingoShop());
         MinecraftForge.EVENT_BUS.register(doneLoading);
+        MinecraftForge.EVENT_BUS.register(PacketHandler.INSTANCE);
     }
 }
