@@ -7,12 +7,8 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.network.play.INetHandlerPlayServer;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 
-public class PacketHandler extends ChannelDuplexHandler {
-    public static final PacketHandler INSTANCE = new PacketHandler();
-
+final class PacketHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof Packet<?>) {
@@ -43,10 +39,5 @@ public class PacketHandler extends ChannelDuplexHandler {
         }
 
         super.write(ctx, msg, promise);
-    }
-
-    @SubscribeEvent
-    public void onConnect(FMLNetworkEvent.ClientConnectedToServerEvent event) {
-        event.manager.channel().pipeline().addBefore("packet_handler", "examplemod_packet_handler", this);
     }
 }

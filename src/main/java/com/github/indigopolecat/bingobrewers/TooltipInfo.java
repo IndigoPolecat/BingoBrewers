@@ -1,6 +1,7 @@
 package com.github.indigopolecat.bingobrewers;
 
 public class TooltipInfo {
+    // Contains all of the necessary information to add tooltip to bingo shop items
     private final String name;
     private final String costPerPoint;
     private final String extraCost;

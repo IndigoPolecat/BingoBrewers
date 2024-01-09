@@ -25,9 +25,7 @@ public class bingoShop {
     int finalExtraCostIndex;
     String finalExtraCost2;
     ArrayList<TooltipInfo> tooltipInfoList = new ArrayList<>();
-
     long lastRan;
-
     @SubscribeEvent
     public void onShopOpen(GuiOpenEvent event) {
         calculationsReady = false;
@@ -42,7 +40,7 @@ public class bingoShop {
                 String name = containerChest.getLowerChestInventory().getDisplayName().getUnformattedText();
                 if (name.equals("Bingo Shop")) {
                     // If everything has been calculated within the last 60 seconds, don't bother recalculating
-                    if (System.currentTimeMillis() - lastRan < 60000) {
+                    if (System.currentTimeMillis() - lastRan < 120000) {
                         calculationsReady = true;
                         return;
                     }
@@ -55,7 +53,7 @@ public class bingoShop {
 
 
     @SubscribeEvent
-        // Event that occurs after the last item in the chest is loaded, or 3 seconds later.
+    // Event that occurs once a packet from your inventory instead of the chest is sent, meaning the chest is loaded
     public void onInitGuiPost(doneLoading.InventoryLoadingDoneEvent event) {
         if (bingoShopOpen) {
             System.out.println("Bingo Shop loaded!");
@@ -71,8 +69,8 @@ public class bingoShop {
 
             for (ItemStack item : chestInventory) {
                 if (item != null) {
+
                     List<String> itemLore = item.getTooltip(Minecraft.getMinecraft().thePlayer, false);
-                    String target = "Cost";
                     boolean costFound = false;
                     for (int i = 0; i < itemLore.size(); i++) {
                         String extraItem = null;
@@ -97,7 +95,7 @@ public class bingoShop {
                             break;
                         } else {
                             // if lore line is "§5§o§7Cost"
-                            if (removeFormatting(itemLore.get(i)).equals(target)) {
+                            if (removeFormatting(itemLore.get(i)).equals("Cost")) {
                                 costFound = true;
                             }
                         }
@@ -116,6 +114,7 @@ public class bingoShop {
                 extraItemsFormatless.add(removeFormatting(extraItem));
             }
 
+            // Fetch the price map for all items in the chest with a cost, execute the rest of the code after
             CompletableFuture<ArrayList<Double>> costFuture = auctionAPI.fetchPriceMap(itemNamesFormatless).whenComplete((lbinMap, throwable) -> {
             });
             costFuture.thenAccept(coinCosts -> {
@@ -127,6 +126,11 @@ public class bingoShop {
                         DecimalFormat decimalFormat = new DecimalFormat("#,###");
                         String extraName = null;
                         Double extraCoinCost = null;
+                        tooltipInfoList.clear();
+                        System.out.println(itemCosts);
+                        System.out.println(coinCosts);
+                        System.out.println(itemNames);
+                        System.out.println(extraItems);
                         for (int i = 0; i < itemCosts.size(); i++) {
                             Double coinCost = coinCosts.get(i);
 
@@ -135,6 +139,7 @@ public class bingoShop {
                                 continue;
                             }
 
+                            // If there is an extra item, subtract the cost of the extra item from the total cost
                             if (extraCoinCosts.get(i) != null) {
                                 extraCoinCost = extraCoinCosts.get(i);
                                 coinCost = coinCost - extraCoinCost;

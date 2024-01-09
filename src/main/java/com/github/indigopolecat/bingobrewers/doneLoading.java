@@ -27,6 +27,7 @@ public class doneLoading {
                 alreadyFired = true;
                 new Thread(() -> {
                     try {
+                        // wait 100ms to make sure the inventory is loaded
                         Thread.sleep(100);
                         MinecraftForge.EVENT_BUS.post(new InventoryLoadingDoneEvent());
                     } catch (InterruptedException e) {
