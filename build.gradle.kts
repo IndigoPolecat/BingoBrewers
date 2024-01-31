@@ -8,6 +8,8 @@ plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
+
+
 //Constants:
 
 val baseGroup: String by project
@@ -23,6 +25,10 @@ java {
 
 // Minecraft configuration:
 loom {
+    launchConfigs.named("client") {
+        // Loads OneConfig in dev env. Replace other tweak classes with this, but keep any other attributes!
+        arg("--tweakClass", "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker")
+    }
     log4jConfigs.from(file("log4j2.xml"))
     launchConfigs {
         "client" {
@@ -60,6 +66,7 @@ sourceSets.main {
 
 repositories {
     mavenCentral()
+    maven("https://repo.polyfrost.org/releases")
     maven("https://repo.spongepowered.org/maven/")
     // If you don't want to log in with your real minecraft account, remove this line
     maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
@@ -83,10 +90,25 @@ dependencies {
     // If you don't want to log in with your real minecraft account, remove this line
     runtimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.1.2")
     implementation("com.google.code.gson:gson:2.10.1")
-    shadowImpl("org.java-websocket:Java-WebSocket:1.5.4")
+    shadowImpl("com.esotericsoftware:kryonet:2.22.0-RC1")
+    // Basic OneConfig dependencies for legacy versions. See OneConfig example mod for more info
+    compileOnly("cc.polyfrost:oneconfig-1.8.9-forge:0.2.2-alpha+") // Should not be included in jar
+    // include should be replaced with a configuration that includes this in the jar
+    shadowImpl("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+") // Should be included in jar
 }
 
 // Tasks:
+
+tasks {
+    jar { // loads OneConfig at launch. Add these launch attributes but keep your old attributes!
+        manifest.attributes += mapOf(
+                "ModSide" to "CLIENT",
+                "TweakOrder" to 0,
+                "ForceLoadAsMod" to true,
+                "TweakClass" to "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker"
+        )
+    }
+}
 
 tasks.withType(JavaCompile::class) {
     options.encoding = "UTF-8"
@@ -144,4 +166,6 @@ tasks.shadowJar {
 }
 
 tasks.assemble.get().dependsOn(tasks.remapJar)
+
+
 

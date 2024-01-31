@@ -8,6 +8,8 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
@@ -15,7 +17,9 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import java.text.DecimalFormat;
 
-public class bingoShop {
+public class BingoShop {
+
+    // TODO: Add points left to afford item and how many bingoes are required for those points
     boolean bingoShopOpen = false;
     boolean calculationsReady = false;
     ContainerChest containerChest;
@@ -54,7 +58,7 @@ public class bingoShop {
 
     @SubscribeEvent
     // Event that occurs once a packet from your inventory instead of the chest is sent, meaning the chest is loaded
-    public void onInitGuiPost(doneLoading.InventoryLoadingDoneEvent event) {
+    public void onInitGuiPost(Packets.InventoryLoadingDoneEvent event) {
         if (bingoShopOpen) {
             System.out.println("Bingo Shop loaded!");
             // set variables in correct scope
