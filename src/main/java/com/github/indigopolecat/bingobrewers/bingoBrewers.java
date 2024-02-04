@@ -20,7 +20,8 @@ public class bingoBrewers {
         config = new BingoBrewersConfig();
         ServerConnection serverConnection = new ServerConnection();
         try {
-            serverConnection.start();
+            Thread serverThread = new Thread(serverConnection);
+            serverThread.start();
         } catch (Exception e) {
             System.out.println("Server Connection Error: " + e.getMessage());
         }

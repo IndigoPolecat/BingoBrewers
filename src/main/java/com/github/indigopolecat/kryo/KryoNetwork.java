@@ -29,5 +29,6 @@ public class KryoNetwork {
         public String partyHost;
         public List<String> note;
         public String location;
+        public String splash;
     }
 }

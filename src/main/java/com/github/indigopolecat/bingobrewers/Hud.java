@@ -80,8 +80,8 @@ public class Hud extends BasicHud {
         }
 
         // Render each item in the list
-        for (int i = 0; i < infoPanel.size(); i++) {
-            HashMap<String, ArrayList<String>> map = infoPanel.get(i);
+        for (HashMap<String, ArrayList<String>> map : infoPanel) {
+            System.out.println(map);
 
             // White
             Color colorText = new Color(255, 255, 255);
@@ -89,47 +89,47 @@ public class Hud extends BasicHud {
             Color colorPrefix = new Color(255, 255, 85);
             lineCount = 0;
             listTooLong = false;
-            for (int k = 0; k < ServerConnection.keyOrder.size(); k++) {
-                if (listTooLong) {
-                    break;
-                }
-                String key = ServerConnection.keyOrder.get(k);
-                ArrayList<String> splashInfo = map.get(key);
-                if (!splashInfo.isEmpty()) {
+            instance.setupAndDraw(true, vg -> {
+                for (int k = 0; k < ServerConnection.keyOrder.size(); k++) {
+                    if (listTooLong) {
+                        break;
+                    }
+                    String key = ServerConnection.keyOrder.get(k);
+                    ArrayList<String> splashInfo = map.get(key);
+                    if (splashInfo.isEmpty()) return;
                     // Consider moving this above the loops (unsure how this impacts performance currently)
-                    instance.setupAndDraw(true, vg -> {
-                        int fontSize = 6;
-                        int width = 106;
-                        String prefix = splashInfo.get(0);
-                        instance.drawWrappedString(vg, prefix, x, y + (lastLineRenderedAtY), width, colorPrefix.getRGB(), fontSize, 1, Fonts.MINECRAFT_BOLD);
-                        // When to start the line after the prefix
-                        float nextStart = instance.getWrappedStringWidth(vg, prefix, width, fontSize, Fonts.MINECRAFT_BOLD) + 0.25F;
-                        float height = instance.getWrappedStringHeight(vg, prefix, width, fontSize, 1, Fonts.MINECRAFT_BOLD);
-                        height -= 5;
-                        for (int j = 1; j < splashInfo.size(); j++) {
-                            // Reset the offset if there is more than one line
-                            if (j == 2) nextStart = 0;
-                            String info = splashInfo.get(j);
-                            if (lineCount >= 10) {
-                                info = "...";
-                                instance.drawWrappedString(vg, info, x + nextStart, y + (lastLineRenderedAtY), width, colorText.getRGB(), fontSize, 1, Fonts.MINECRAFT_REGULAR);
-                                lineCount += 1;
-                                lastLineRenderedAtY += 5;
-                                listTooLong = true;
-                                break;
-                            }
-
-                            float heightText = instance.getWrappedStringHeight(vg, info, width, fontSize, 1, Fonts.MINECRAFT_REGULAR);
-                            if (heightText + (lineCount * 6) > 50 ) continue;
+                    int fontSize = 6;
+                    int width = 106;
+                    String prefix = splashInfo.get(0);
+                    System.out.println("prefix: " + prefix);
+                    instance.drawWrappedString(vg, prefix, x, y + (lastLineRenderedAtY), width, colorPrefix.getRGB(), fontSize, 1, Fonts.MINECRAFT_BOLD);
+                    // When to start the line after the prefix
+                    float nextStart = instance.getWrappedStringWidth(vg, prefix, width, fontSize, Fonts.MINECRAFT_BOLD) + 0.25F;
+                    float height = instance.getWrappedStringHeight(vg, prefix, width, fontSize, 1, Fonts.MINECRAFT_BOLD);
+                    height -= 5;
+                    for (int j = 1; j < splashInfo.size(); j++) {
+                        // Reset the offset if there is more than one line
+                        if (j == 2) nextStart = 0;
+                        String info = splashInfo.get(j);
+                        if (lineCount >= 10) {
+                            info = "...";
                             instance.drawWrappedString(vg, info, x + nextStart, y + (lastLineRenderedAtY), width, colorText.getRGB(), fontSize, 1, Fonts.MINECRAFT_REGULAR);
-                            lastLineRenderedAtY += heightText;
-                            lineCount += (int) ((height + heightText)/6);
-
+                            lineCount += 1;
+                            lastLineRenderedAtY += 5;
+                            listTooLong = true;
+                            break;
                         }
 
-                    });
+                        float heightText = instance.getWrappedStringHeight(vg, info, width, fontSize, 1, Fonts.MINECRAFT_REGULAR);
+                        if (heightText + (lineCount * 6) > 50) continue;
+                        System.out.println("info: " + info);
+                        instance.drawWrappedString(vg, info, x + nextStart, y + (lastLineRenderedAtY), width, colorText.getRGB(), fontSize, 1, Fonts.MINECRAFT_REGULAR);
+                        lastLineRenderedAtY += heightText;
+                        lineCount += (int) ((height + heightText) / 6);
+
+                    }
                 }
-            }
+            });
             // buffer between parts
             lastLineRenderedAtY += 5;
         }
