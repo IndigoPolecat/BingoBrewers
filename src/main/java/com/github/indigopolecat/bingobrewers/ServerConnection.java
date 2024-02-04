@@ -158,7 +158,9 @@ public class ServerConnection extends Listener implements Runnable {
         splashInfo.put("Splash", splashId);
 
         mapList.add(splashInfo);
-        notification(hub);
+        if (sendNotif) {
+            notification(hub);
+        }
     }
 
     public void notification(String hub) {

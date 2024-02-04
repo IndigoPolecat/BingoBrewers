@@ -81,8 +81,6 @@ public class Hud extends BasicHud {
 
         // Render each item in the list
         for (HashMap<String, ArrayList<String>> map : infoPanel) {
-            System.out.println(map);
-
             // White
             Color colorText = new Color(255, 255, 255);
             // Yellow
@@ -101,7 +99,6 @@ public class Hud extends BasicHud {
                     int fontSize = 6;
                     int width = 106;
                     String prefix = splashInfo.get(0);
-                    System.out.println("prefix: " + prefix);
                     instance.drawWrappedString(vg, prefix, x, y + (lastLineRenderedAtY), width, colorPrefix.getRGB(), fontSize, 1, Fonts.MINECRAFT_BOLD);
                     // When to start the line after the prefix
                     float nextStart = instance.getWrappedStringWidth(vg, prefix, width, fontSize, Fonts.MINECRAFT_BOLD) + 0.25F;
@@ -122,7 +119,6 @@ public class Hud extends BasicHud {
 
                         float heightText = instance.getWrappedStringHeight(vg, info, width, fontSize, 1, Fonts.MINECRAFT_REGULAR);
                         if (heightText + (lineCount * 6) > 50) continue;
-                        System.out.println("info: " + info);
                         instance.drawWrappedString(vg, info, x + nextStart, y + (lastLineRenderedAtY), width, colorText.getRGB(), fontSize, 1, Fonts.MINECRAFT_REGULAR);
                         lastLineRenderedAtY += heightText;
                         lineCount += (int) ((height + heightText) / 6);
