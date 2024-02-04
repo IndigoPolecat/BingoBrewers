@@ -6,6 +6,8 @@ plugins {
     id("gg.essential.loom") version "0.10.0.+"
     id("dev.architectury.architectury-pack200") version "0.1.3"
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("net.kyori.blossom") version "1.3.1"
+    id("signing")
 }
 
 
@@ -43,6 +45,8 @@ loom {
             if (SystemUtils.IS_OS_MAC_OSX) {
                 // This argument causes a crash on macOS
                 vmArgs.remove("-XstartOnFirstThread")
+                programArgs("--tweakClass", "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker")
+                property("mixin.debug.export", "true")
             }
         }
         remove(getByName("server"))
@@ -60,6 +64,13 @@ loom {
 
 sourceSets.main {
     output.setResourcesDir(sourceSets.main.flatMap { it.java.classesDirectory })
+}
+
+val shade: Configuration by configurations.creating {
+    configurations.implementation.get().extendsFrom(this)
+}
+val modShade: Configuration by configurations.creating {
+    configurations.modImplementation.get().extendsFrom(this)
 }
 
 // Dependencies:
@@ -92,9 +103,9 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     shadowImpl("com.esotericsoftware:kryonet:2.22.0-RC1")
     // Basic OneConfig dependencies for legacy versions. See OneConfig example mod for more info
-    compileOnly("cc.polyfrost:oneconfig-1.8.9-forge:0.2.2-alpha+") // Should not be included in jar
+    modCompileOnly("cc.polyfrost:oneconfig-1.8.9-forge:0.2.2-alpha+") // Should not be included in jar
     // include should be replaced with a configuration that includes this in the jar
-    shadowImpl("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+") // Should be included in jar
+    shade("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+") // Should be included in jar
 }
 
 // Tasks:

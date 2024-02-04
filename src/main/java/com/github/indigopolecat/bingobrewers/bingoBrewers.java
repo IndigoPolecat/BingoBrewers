@@ -8,7 +8,7 @@ import com.github.indigopolecat.events.PacketListener;
 
 @Mod(modid = "bingobrewers", version = "0.1", useMetadata=true)
 public class bingoBrewers {
-    public BingoBrewersConfig config;
+    private BingoBrewersConfig config;
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
@@ -17,6 +17,7 @@ public class bingoBrewers {
         MinecraftForge.EVENT_BUS.register(doneLoading);
         MinecraftForge.EVENT_BUS.register(new PacketListener());
         MinecraftForge.EVENT_BUS.register(new CHChests());
+        MinecraftForge.EVENT_BUS.register(new PlayerInfo());
         config = new BingoBrewersConfig();
         ServerConnection serverConnection = new ServerConnection();
         try {
