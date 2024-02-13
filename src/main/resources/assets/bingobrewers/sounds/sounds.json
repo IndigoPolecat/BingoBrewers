@@ -1,7 +1,0 @@
-{
-  "splash_notification": {
-    "category": "player",
-    "subtitle": "Splash Notification",
-    "sounds": ["bingobrewers:BigWave"]
-  }
-}

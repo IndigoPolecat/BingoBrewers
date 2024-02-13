@@ -3,7 +3,7 @@
     "modid": "${modid}",
     "name": "Bingo Brewers",
     "description": "A Mod for Hypixel Skyblock's Bingo Event",
-    "version": "0.1",
+    "version": "1.0",
     "mcversion": "${mcversion}",
     "url": "https://github.com/IndigoPolecat/BingoBrewers",
     "updateUrl": "",

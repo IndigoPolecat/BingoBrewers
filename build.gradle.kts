@@ -100,17 +100,17 @@ dependencies {
 
     // If you don't want to log in with your real minecraft account, remove this line
     runtimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.1.2")
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.google.code.gson:gson:2.8.1")
     shadowImpl("com.esotericsoftware:kryonet:2.22.0-RC1")
     // Basic OneConfig dependencies for legacy versions. See OneConfig example mod for more info
     modCompileOnly("cc.polyfrost:oneconfig-1.8.9-forge:0.2.2-alpha+") // Should not be included in jar
     // include should be replaced with a configuration that includes this in the jar
-    shade("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+") // Should be included in jar
+    shadowImpl("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+") // Should be included in jar
 }
 
 // Tasks:
 
-tasks {
+/*tasks {
     jar { // loads OneConfig at launch. Add these launch attributes but keep your old attributes!
         manifest.attributes += mapOf(
                 "ModSide" to "CLIENT",
@@ -119,7 +119,7 @@ tasks {
                 "TweakClass" to "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker"
         )
     }
-}
+}*/
 
 tasks.withType(JavaCompile::class) {
     options.encoding = "UTF-8"
@@ -132,7 +132,7 @@ tasks.withType(Jar::class) {
         this["ForceLoadAsMod"] = "true"
 
         // If you don't want mixins, remove these lines
-        this["TweakClass"] = "org.spongepowered.asm.launch.MixinTweaker"
+        this["TweakClass"] = "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker"
         this["MixinConfigs"] = "mixins.$modid.json"
     }
 }
@@ -171,11 +171,12 @@ tasks.shadowJar {
             println("Copying jars into mod: ${it.files}")
         }
     }
+    //relocate("com.google.gson", "com.github.indigopolecat")
 
     // If you want to include other dependencies and shadow them, you can relocate them in here
-    fun relocate(name: String) = relocate(name, "$baseGroup.deps.$name")
+    fun relocate(name: String) = relocate(name, "com.github.indigopolecat.$name")
 }
-
+tasks.assemble.get().dependsOn(tasks.shadowJar)
 tasks.assemble.get().dependsOn(tasks.remapJar)
 
 

@@ -1,5 +1,6 @@
 package com.github.indigopolecat.bingobrewers;
 
+import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Server;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -9,6 +10,7 @@ import com.github.indigopolecat.events.PacketListener;
 @Mod(modid = "bingobrewers", version = "0.1", useMetadata=true)
 public class bingoBrewers {
     private BingoBrewersConfig config;
+    public static volatile Client client;
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {

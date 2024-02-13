@@ -83,7 +83,7 @@ public class CHChests {
         listeningChests.put(coords, newTime);
         //String message = event.message.toString().replaceAll("§.", "");
         for (String message : RecentChatMessages) {
-            System.out.println(message);
+            message = removeFormatting(message);
             Pattern itemPattern = Pattern.compile("^[You received] +?(\\d+)\\[\\w+(\\s+\\w+)*].");
             Matcher matcher = itemPattern.matcher(message);
 
@@ -94,5 +94,9 @@ public class CHChests {
             }
         }
         RecentChatMessages.clear();
+    }
+
+    public static String removeFormatting(String message) {
+        return message.replaceAll("§.", "");
     }
 }

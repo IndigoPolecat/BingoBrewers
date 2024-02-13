@@ -1,0 +1,9 @@
+{
+  "splash_notification": {
+    "sounds": [{
+      "name":"bingobrewers:SplashNotification",
+      "stream": true,
+      "category": "master"
+    }]
+  }
+}

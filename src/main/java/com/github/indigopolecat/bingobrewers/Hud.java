@@ -48,32 +48,27 @@ public class Hud extends BasicHud {
                 long time = Long.parseLong(infoMap.get("Time").get(0));
 
                 if (System.currentTimeMillis() - time > 120000) {
+                    ServerConnection.hubList.remove(infoMap.get("Hub").get(1).substring(2));
                     ServerConnection.mapList.remove(infoMap);
                     continue;
                 }
-                // jank
-                if (latestSplash.size() < 2) {
-                    latestSplash.add(time);
-                    continue;
-                }
 
-                long old;
+                latestSplash.add(time);
+
+                // This is a mess but it works, can't easily expand
+                long newSplash = 0;
+                long newerSplash = 0;
                 for (int j = 0; j < latestSplash.size(); j++) {
-                    if (time > latestSplash.get(j)) {
-                        old = latestSplash.get(j);
-                        latestSplash.set(j, time);
-
-                        for (int k = 0; k < latestSplash.size(); k++) {
-                            if (latestSplash.get(k) < old) {
-                                latestSplash.set(k, old);
-                                break;
-                            }
-                        }
-                        break;
+                    if (latestSplash.get(i) > newerSplash) {
+                        newSplash = newerSplash;
+                        newerSplash = latestSplash.get(i);
+                    } else if(latestSplash.get(i) > newSplash) {
+                        newSplash = latestSplash.get(i);
                     }
+
                 }
 
-                if (!latestSplash.contains(time)) {
+                if (!latestSplash.contains(newerSplash) && !latestSplash.contains(newSplash)) {
                     infoPanel.remove(infoMap);
                 }
             }
