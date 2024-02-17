@@ -7,10 +7,11 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.common.MinecraftForge;
 import com.github.indigopolecat.events.PacketListener;
 
-@Mod(modid = "bingobrewers", version = "0.1", useMetadata=true)
+@Mod(modid = "bingobrewers", version = "1.0", useMetadata=true)
 public class bingoBrewers {
     private BingoBrewersConfig config;
     public static volatile Client client;
+    public static volatile TitleHud activeTitle;
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
@@ -20,6 +21,7 @@ public class bingoBrewers {
         MinecraftForge.EVENT_BUS.register(new PacketListener());
         MinecraftForge.EVENT_BUS.register(new CHChests());
         MinecraftForge.EVENT_BUS.register(new PlayerInfo());
+        MinecraftForge.EVENT_BUS.register(new Hud());
         config = new BingoBrewersConfig();
         ServerConnection serverConnection = new ServerConnection();
         try {

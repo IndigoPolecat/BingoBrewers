@@ -7,11 +7,14 @@ import cc.polyfrost.oneconfig.renderer.NanoVGHelper;
 import java.util.ArrayList;
 
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
-
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import java.awt.Color;
-import java.lang.Math;
 import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class Hud extends BasicHud {
     float lastLineRenderedAtY = -3;
@@ -20,6 +23,8 @@ public class Hud extends BasicHud {
     long renderCounter = 0;
     ArrayList<Long> latestSplash = new ArrayList<>(2);
     float totalHeight = 0;
+    public volatile boolean showNotification = false;
+
 
 
 
@@ -90,26 +95,32 @@ public class Hud extends BasicHud {
                     String key = ServerConnection.keyOrder.get(k);
                     ArrayList<String> splashInfo = map.get(key);
                     if (splashInfo.isEmpty()) return;
-                    // Consider moving this above the loops (unsure how this impacts performance currently)
+
                     int fontSize = 6;
                     int width = 106;
                     String prefix = splashInfo.get(0);
+
                     instance.drawWrappedString(vg, prefix, x, y + (lastLineRenderedAtY), width, colorPrefix.getRGB(), fontSize, 1, Fonts.MINECRAFT_BOLD);
                     // When to start the line after the prefix
                     float nextStart = instance.getWrappedStringWidth(vg, prefix, width, fontSize, Fonts.MINECRAFT_BOLD) + 0.25F;
                     float height = instance.getWrappedStringHeight(vg, prefix, width, fontSize, 1, Fonts.MINECRAFT_BOLD);
                     height -= 5;
                     for (int j = 1; j < splashInfo.size(); j++) {
+
+                        // Break the loop early if the text is too long
+                        if (listTooLong) {
+                            break;
+                        }
+
                         // Reset the offset if there is more than one line
                         if (j == 2) nextStart = 0;
                         String info = splashInfo.get(j);
-                        if (lineCount >= 10) {
-                            info = "...";
-                            instance.drawWrappedString(vg, info, x + nextStart, y + (lastLineRenderedAtY), width, colorText.getRGB(), fontSize, 1, Fonts.MINECRAFT_REGULAR);
+                        if (lineCount >= 14) {
+                            info = info + "...";
+                            //instance.drawWrappedString(vg, info, x + nextStart, y + (lastLineRenderedAtY), width, colorText.getRGB(), fontSize, 1, Fonts.MINECRAFT_REGULAR);
                             lineCount += 1;
                             lastLineRenderedAtY += 5;
                             listTooLong = true;
-                            break;
                         }
 
                         float heightText = instance.getWrappedStringHeight(vg, info, width, fontSize, 1, Fonts.MINECRAFT_REGULAR);
@@ -117,6 +128,8 @@ public class Hud extends BasicHud {
                         instance.drawWrappedString(vg, info, x + nextStart, y + (lastLineRenderedAtY), width, colorText.getRGB(), fontSize, 1, Fonts.MINECRAFT_REGULAR);
                         lastLineRenderedAtY += heightText;
                         lineCount += (int) ((height + heightText) / 6);
+
+                        // Manually break the loop early if the list is too long
 
                     }
                 }
@@ -142,5 +155,14 @@ public class Hud extends BasicHud {
     protected float getHeight(float scale, boolean example) {
         return totalHeight;
 
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void renderGameOverlay(RenderGameOverlayEvent event) {
+        if (event.type != RenderGameOverlayEvent.ElementType.TEXT) return;
+        TitleHud activeTitle = bingoBrewers.activeTitle;
+        if (activeTitle != null && activeTitle.displayTime > System.currentTimeMillis() - activeTitle.startTime) {
+            activeTitle.drawTitle();
+        }
     }
 }

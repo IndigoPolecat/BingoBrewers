@@ -11,7 +11,12 @@ import com.github.indigopolecat.kryo.KryoNetwork.ResponseString;
 import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.network.play.server.S45PacketTitle;
+import net.minecraft.util.IChatComponent;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.eventhandler.Event;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +28,6 @@ public class ServerConnection extends Listener implements Runnable {
     // The Hud renderer checks this every time it renders
     public static ArrayList<HashMap<String, ArrayList<String>>> mapList = new ArrayList<>();
     public static ArrayList<String> keyOrder = new ArrayList<>();
-    public static ResourceLocation alarm = new ResourceLocation("bingobrewers", "BigWave");
     int waitTime;
     boolean repeat;
     public static ArrayList<String> hubList = new ArrayList<>();
@@ -33,8 +37,8 @@ public class ServerConnection extends Listener implements Runnable {
     public void run() {
         Client client1 = new Client();
         setClient(client1);
-        if(bingoBrewers.client == null) {
-            System.out.println("Client is null2");
+        if (bingoBrewers.client == null) {
+            System.out.println("Client is null");
         }
         waitTime = 5000;
         System.out.println("Disconnected from server. Reconnecting in " + waitTime / 1000 + " seconds.");
@@ -132,18 +136,19 @@ public class ServerConnection extends Listener implements Runnable {
 
     public synchronized void setClient(Client client) {
         bingoBrewers.client = client;
-        System.out.println("Client set");
-        if(bingoBrewers.client == null) {
-            System.out.println("Client is null");
-        }
-        if (getClient() == null) {
-            System.out.println("Client is null");
-        }
     }
 
     public synchronized Client getClient() {
         return bingoBrewers.client;
 
+    }
+
+    public synchronized void setActiveHud(TitleHud activeTitle) {
+        bingoBrewers.activeTitle = activeTitle;
+    }
+
+    public synchronized TitleHud getActiveHud() {
+        return bingoBrewers.activeTitle;
     }
 
     public void updateMapList(SplashNotification notif, boolean sendNotif) {
@@ -208,12 +213,12 @@ public class ServerConnection extends Listener implements Runnable {
     }
 
     public void notification(String hub) {
-        Minecraft.getMinecraft().ingameGUI.displayTitle("Splash in Hub " + hub, "subtitle", 0, 5, 0);
         EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-
+        TitleHud titleHud = new TitleHud("Splash in Hub " + hub, 0x8BAFE0, 4000);
+        setActiveHud(titleHud);
         System.out.println("attempting to play sound");
 
-        player.playSound("bingobrewers:SplashNotification", 1.0f, 1.0f);
+        player.playSound("bingobrewers:splash_notification", 1.0f, 1.0f);
     }
 
     public synchronized void sendPlayerCount(KryoNetwork.PlayerCount count) {
@@ -226,7 +231,6 @@ public class ServerConnection extends Listener implements Runnable {
         System.out.println(count.IGN);
         System.out.println(count.server);
         currentClient.sendUDP(count);
-        System.out.println("Sent player count");
     }
 
     public void reconnect() {
@@ -251,10 +255,5 @@ public class ServerConnection extends Listener implements Runnable {
             }
         }
     }
-
-
-
-
-
 }
 
