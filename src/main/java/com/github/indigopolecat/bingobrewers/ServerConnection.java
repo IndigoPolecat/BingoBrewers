@@ -167,12 +167,14 @@ public class ServerConnection extends Listener implements Runnable {
         ArrayList<String> hubInfo = new ArrayList<>();
         if (!notif.dungeonHub) {
             hubInfo.add("Hub");
+            hubList.add(hub);
         } else {
             hubInfo.add("Dungeon Hub");
+            // Identify a hub as a dungeonhub to avoid mixing up regular hubs and dhubs
+            hubList.add("DH" + hub);
         }
         hubInfo.add(": " + hub);
         splashInfo.put("Hub", hubInfo);
-        hubList.add(hub);
 
         ArrayList<String> splasherInfo = new ArrayList<>();
         splasherInfo.add("Splasher");
@@ -208,14 +210,19 @@ public class ServerConnection extends Listener implements Runnable {
 
         mapList.add(splashInfo);
         if (sendNotif) {
-            notification(hub);
+            notification(hub, notif.dungeonHub);
         }
     }
 
-    public void notification(String hub) {
+    public void notification(String hub, boolean dungeonHub) {
         EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-        TitleHud titleHud = new TitleHud("Splash in Hub " + hub, 0x8BAFE0, 4000);
-        setActiveHud(titleHud);
+        if (!dungeonHub) {
+            TitleHud titleHud = new TitleHud("Splash in Hub " + hub, 0x8BAFE0, 4000);
+            setActiveHud(titleHud);
+        } else {
+            TitleHud titleHud = new TitleHud("Splash in Dungeon Hub " + hub, 0x8BAFE0, 4000);
+            setActiveHud(titleHud);
+        }
         System.out.println("attempting to play sound");
 
         player.playSound("bingobrewers:splash_notification", 1.0f, 1.0f);

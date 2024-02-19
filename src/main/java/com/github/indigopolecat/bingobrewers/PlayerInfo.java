@@ -8,6 +8,8 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
+import java.util.HashMap;
+
 public class PlayerInfo {
     public static String playerLocation = "";
     public static String playerGameType = "";
@@ -18,6 +20,9 @@ public class PlayerInfo {
     public static boolean inSplashHub;
     public static long lastSplashHubUpdate = -1;
     public static int playerCount;
+    public static String currentServer = "";
+    public static HashMap<String, String> hubServerMap = new HashMap<>();
+    public static HashMap<String, String> dungeonHubServerMap = new HashMap<>();
 
     @SubscribeEvent
     public void onWorldJoin(WorldEvent event) {
@@ -42,6 +47,7 @@ public class PlayerInfo {
                 EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
                 if (player != null) {
                     player.sendChatMessage("/locraw");
+                    // unused, for rerunning the command occassionally if there are bugs
                     lastPositionUpdate = System.currentTimeMillis();
                     newLoad = false;
                 }

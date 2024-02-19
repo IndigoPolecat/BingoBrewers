@@ -9,7 +9,6 @@ import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
@@ -17,7 +16,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import java.text.DecimalFormat;
 
-public class BingoShop {
+public class ChestInventories {
 
     // TODO: Add points left to afford item and how many bingoes are required for those points
     boolean bingoShopOpen = false;
@@ -30,6 +29,8 @@ public class BingoShop {
     String finalExtraCost2;
     ArrayList<TooltipInfo> tooltipInfoList = new ArrayList<>();
     long lastRan;
+    boolean hubSelectorOpen = false;
+    boolean dungeonHubSelectorOpen = false;
     @SubscribeEvent
     public void onShopOpen(GuiOpenEvent event) {
         calculationsReady = false;
@@ -50,7 +51,13 @@ public class BingoShop {
                     }
                     tooltipInfoList.clear();
                     bingoShopOpen = true;
+                } else if (name.equals("SkyBlock Hub Selector")) {
+                    System.out.println("Hub Selector Open");
+                    hubSelectorOpen = true;
+                } else if (name.equals("Dungeon Hub Selector")) {
+                    dungeonHubSelectorOpen = true;
                 }
+                System.out.println(name);
             }
         }
     }
@@ -60,7 +67,6 @@ public class BingoShop {
     // Event that occurs once a packet from your inventory instead of the chest is sent, meaning the chest is loaded
     public void onInitGuiPost(Packets.InventoryLoadingDoneEvent event) {
         if (bingoShopOpen) {
-            System.out.println("Bingo Shop loaded!");
             // set variables in correct scope
             String cost;
             int costInt = 0;
@@ -213,6 +219,44 @@ public class BingoShop {
                 });
             });
 
+        } else if (hubSelectorOpen || dungeonHubSelectorOpen) {
+            List<ItemStack> chestInventory = containerChest.getInventory();
+            // Remove the last 36 slots in the chest inventory, which are the player inventory
+            chestInventory.subList(chestInventory.size() - 36, chestInventory.size()).clear();
+
+            // loop through the items in the chest
+            for (ItemStack item : chestInventory) {
+                // verify the item slot isn't empty
+                if (item != null) {
+                    // Get the lore of the item
+                    List<String> itemLore = item.getTooltip(Minecraft.getMinecraft().thePlayer, false);
+                    String hubNumber = null;
+                    // loop through the lore lines of the item
+                    for (String s : itemLore) {
+                        // look for the lore line that contains the hub number
+                        if (s.contains("Hub #")) {
+                            // Match the hub number and remove formatting codes
+                            hubNumber = s.replaceAll("SkyBlock Hub #(\\d+)", "$1");
+                            hubNumber = hubNumber.replaceAll("Dungeon Hub #(\\d+)", "$1");
+                            hubNumber = removeFormatting(hubNumber);
+                            System.out.println("Hub number: " + hubNumber);
+                        } else if (s.contains("Server:")) { // Look for the lore line containing the server id
+                            // Match the server id and remove formatting codes
+                            String server = s.replaceAll("Server: (.+)", "$1");
+                            server = removeFormatting(server);
+                            System.out.println("Server: " + server);
+                            // if we're in a hub selector, add the server and hub number to the hubServerMap
+                            if (hubNumber != null && hubSelectorOpen) {
+                                PlayerInfo.hubServerMap.put(server, hubNumber);
+                                System.out.println("Hub Server Map: " + PlayerInfo.hubServerMap);
+                            } else if (hubNumber != null && dungeonHubSelectorOpen) { // if we're in a dungeon hub selector, add the server and hub number to the dungeonHubServerMap
+                                PlayerInfo.dungeonHubServerMap.put(server, hubNumber);
+                            }
+                        }
+                    }
+
+                }
+            }
         }
     }
 

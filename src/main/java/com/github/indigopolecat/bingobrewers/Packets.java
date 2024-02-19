@@ -68,7 +68,25 @@ public class Packets {
                 if (PlayerInfo.playerGameType.equals("SKYBLOCK")) {
                     PlayerInfo.playerLocation = locrawMap.get("mode");
                 }
-            } else if (CHChests.removeFormatting(message).startsWith("Request join for Hub #")) {
+                PlayerInfo.currentServer = locrawMap.get("server");
+                if (PlayerInfo.currentServer != null) {
+                    PlayerInfo.playerHubNumber = PlayerInfo.hubServerMap.get(PlayerInfo.currentServer);
+
+                    // This is lacking the "DH" tag that dungeon hubs have, unimportant but commenting for clarity
+                    if (PlayerInfo.playerHubNumber != null && ServerConnection.hubList.contains(PlayerInfo.playerHubNumber)) {
+                        PlayerInfo.inSplashHub = true;
+                        PlayerInfo.lastSplashHubUpdate = System.currentTimeMillis();
+                    } else { // basically if the server isn't a hub, then it might be a dungeon hub so we check that
+                        PlayerInfo.playerHubNumber  = PlayerInfo.dungeonHubServerMap.get(PlayerInfo.currentServer);
+
+                        // DH is a tag added to the hub number so regular hubs and dungeon hubs can be differentiated
+                        if (PlayerInfo.playerHubNumber != null && ServerConnection.hubList.contains("DH" + PlayerInfo.playerHubNumber)) {
+                            PlayerInfo.inSplashHub = true;
+                            PlayerInfo.lastSplashHubUpdate = System.currentTimeMillis();
+                        }
+                    }
+                }
+            } /*else if (CHChests.removeFormatting(message).startsWith("Request join for Hub #")) {
                 Pattern pattern = Pattern.compile("Request join for Hub #([0-9]+) (\\(.+\\))");
                 Matcher matcher = pattern.matcher(message);
                 if (matcher.find()) {
@@ -80,7 +98,7 @@ public class Packets {
                         PlayerInfo.lastSplashHubUpdate = System.currentTimeMillis();
                     }
                 }
-            } else if (message.contains("You received") && PlayerInfo.playerLocation.equals("crystal_hollows")) {
+            }*/ else if (message.contains("You received") && PlayerInfo.playerLocation.equals("crystal_hollows")) {
                 CHChests.addChatMessage(message);
             }
 

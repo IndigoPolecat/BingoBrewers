@@ -1,7 +1,6 @@
 package com.github.indigopolecat.bingobrewers;
 
 import com.esotericsoftware.kryonet.Client;
-import com.esotericsoftware.kryonet.Server;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -16,7 +15,7 @@ public class bingoBrewers {
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         Packets doneLoading = new Packets();
-        MinecraftForge.EVENT_BUS.register(new BingoShop());
+        MinecraftForge.EVENT_BUS.register(new ChestInventories());
         MinecraftForge.EVENT_BUS.register(doneLoading);
         MinecraftForge.EVENT_BUS.register(new PacketListener());
         MinecraftForge.EVENT_BUS.register(new CHChests());

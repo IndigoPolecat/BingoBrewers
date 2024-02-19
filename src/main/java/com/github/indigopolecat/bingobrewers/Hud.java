@@ -53,8 +53,13 @@ public class Hud extends BasicHud {
                 long time = Long.parseLong(infoMap.get("Time").get(0));
 
                 if (System.currentTimeMillis() - time > 120000) {
-                    ServerConnection.hubList.remove(infoMap.get("Hub").get(1).substring(2));
+                    String hubNumber = infoMap.get("Hub").get(1).substring(2);
+                    ServerConnection.hubList.remove(hubNumber);
+                    ServerConnection.hubList.remove("DH" + hubNumber);
                     ServerConnection.mapList.remove(infoMap);
+                    if (PlayerInfo.playerHubNumber.equals(hubNumber) || PlayerInfo.playerHubNumber.equals(hubNumber.substring(2))) {
+                        PlayerInfo.inSplashHub = false;
+                    }
                     continue;
                 }
 
@@ -80,6 +85,17 @@ public class Hud extends BasicHud {
         }
 
         // Render each item in the list
+        renderSplashHud(infoPanel, instance, x, y);
+
+        // Reset at the end
+        lastLineRenderedAtY = y;
+        // Set height
+        totalHeight = lastLineRenderedAtY - y;
+        // Dwarven Mines Event
+
+    }
+
+    private void renderSplashHud(ArrayList<HashMap<String, ArrayList<String>>> infoPanel, NanoVGHelper instance, float x, float y) {
         for (HashMap<String, ArrayList<String>> map : infoPanel) {
             // White
             Color colorText = new Color(255, 255, 255);
@@ -117,43 +133,38 @@ public class Hud extends BasicHud {
                         String info = splashInfo.get(j);
                         if (lineCount >= 14) {
                             info = info + "...";
-                            //instance.drawWrappedString(vg, info, x + nextStart, y + (lastLineRenderedAtY), width, colorText.getRGB(), fontSize, 1, Fonts.MINECRAFT_REGULAR);
-                            lineCount += 1;
-                            lastLineRenderedAtY += 5;
                             listTooLong = true;
                         }
 
                         float heightText = instance.getWrappedStringHeight(vg, info, width, fontSize, 1, Fonts.MINECRAFT_REGULAR);
-                        if (heightText + (lineCount * 6) > 50) continue;
                         instance.drawWrappedString(vg, info, x + nextStart, y + (lastLineRenderedAtY), width, colorText.getRGB(), fontSize, 1, Fonts.MINECRAFT_REGULAR);
                         lastLineRenderedAtY += heightText;
                         lineCount += (int) ((height + heightText) / 6);
 
-                        // Manually break the loop early if the list is too long
+                        ScaledResolution scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
+                        int heightScaled = scaledResolution.getScaledHeight();
+                        if (lastLineRenderedAtY > heightScaled - 12) {
+                            listTooLong = true;
+                            // stop rendering if we're off the screen
+                            return;
+                        }
 
                     }
                 }
             });
             // buffer between parts
-            lastLineRenderedAtY += 5;
+            lastLineRenderedAtY += 6;
         }
-
-        // Reset at the end
-        lastLineRenderedAtY = y;
-        // Set height
-        totalHeight = lastLineRenderedAtY - y;
-        // Dwarven Mines Event
-
     }
 
     @Override
     protected float getWidth(float scale, boolean example) {
-        return 106;
+        return 0;
     }
 
     @Override
     protected float getHeight(float scale, boolean example) {
-        return totalHeight;
+        return 0;
 
     }
 
