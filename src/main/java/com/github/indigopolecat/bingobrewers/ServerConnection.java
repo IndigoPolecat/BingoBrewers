@@ -238,9 +238,6 @@ public class ServerConnection extends Listener implements Runnable {
             System.out.println("Client is null");
             return;
         }
-        System.out.println(count.playerCount);
-        System.out.println(count.IGN);
-        System.out.println(count.server);
         currentClient.sendUDP(count);
     }
 

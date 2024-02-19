@@ -72,7 +72,7 @@ public class Packets {
                 if (PlayerInfo.currentServer != null) {
                     PlayerInfo.playerHubNumber = PlayerInfo.hubServerMap.get(PlayerInfo.currentServer);
 
-                    // This is lacking the "DH" tag that dungeon hubs have, unimportant but commenting for clarity
+                    // This is checking without "DH" tag that dungeon hubs have, unimportant but commenting for clarity
                     if (PlayerInfo.playerHubNumber != null && ServerConnection.hubList.contains(PlayerInfo.playerHubNumber)) {
                         PlayerInfo.inSplashHub = true;
                         PlayerInfo.lastSplashHubUpdate = System.currentTimeMillis();
