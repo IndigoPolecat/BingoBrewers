@@ -15,5 +15,5 @@ public class BingoBrewersConfig extends Config {
             name = "Splash Hud",
             category = "Hud"
     )
-    public Hud hud = new Hud();
+    public HudRendering hud = new HudRendering();
 }

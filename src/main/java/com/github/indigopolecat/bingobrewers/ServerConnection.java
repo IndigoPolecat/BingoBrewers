@@ -55,7 +55,7 @@ public class ServerConnection extends Listener implements Runnable {
                     throw new RuntimeException(ex);
                 }
                 if (waitTime < 60000) {
-                    waitTime *= 2;
+                    waitTime *= (Math.random());
                 }
             }
         }
@@ -79,29 +79,34 @@ public class ServerConnection extends Listener implements Runnable {
                     SplashNotification notif = (SplashNotification) object;
                     // Remove the previous splash notification with the same ID (if message is edited)
                     for (int i = 0; i < mapList.size(); i++) {
-                        if (mapList.get(i).get("Splash").get(0).equals(notif.splash)) {
-                            // Don't send notification if the hub # hasn't changed
-                            if (mapList.get(i).get("Hub").get(1).contains(notif.message)) {
-                                sendNotif = false;
-                            }
+                        HashMap<String, ArrayList<String>> map = mapList.get(i);
+                        if (map.get("Splash").get(0).equals(notif.splash)) {
+                            ArrayList<String> hubField = map.get("Hub");
+                            // Don't send notification if the hub # or hub type (dungeon/normal) hasn't changed
+                            try {
+                                String hubNumber = hubField.get(1).replaceAll(": (\\d+).*", "$1");
+                                if (hubNumber.equals(notif.message) && notif.dungeonHub == hubField.get(0).contains("Dungeon Hub")) {
+                                    sendNotif = false;
+                                    hubList.remove(hubNumber);
+                                    hubList.remove("DH" + hubNumber);
+                                }
+
+                            } catch (Exception ignored) {}
                             mapList.remove(mapList.get(i));
                         }
                     }
                     updateMapList(notif, sendNotif);
                 } else if (object instanceof KryoNetwork.PlayerCountBroadcast) {
-                    System.out.println("Received player count broadcast");
                     KryoNetwork.PlayerCountBroadcast request = (KryoNetwork.PlayerCountBroadcast) object;
-                    System.out.println(request.playerCounts);
-                    for (int i = 0; i < mapList.size(); i++) {
-                        if (mapList.get(i).containsKey("Hub")) {
-                            String hub = mapList.get(i).get("Hub").get(1).replaceAll(": (\\d+).*", "$1");
-                            System.out.println(hub);
+                    for (HashMap<String, ArrayList<String>> map : mapList) {
+                        if (map.containsKey("Hub")) {
+                            String hub = map.get("Hub").get(1).replaceAll(": (\\d+).*", "$1");
                             if (request.playerCounts.containsKey(hub)) {
                                 // If the hub is a dungeon hub, it has a 24 player limit
-                                if (mapList.get(i).get("Hub").get(0).equals("Dungeon Hub")) {
-                                    mapList.get(i).get("Hub").set(1, ": " + hub + " (" + request.playerCounts.get(hub) + "/24)");
+                                if (map.get("Hub").get(0).equals("Dungeon Hub")) {
+                                    map.get("Hub").set(1, ": " + hub + " (" + request.playerCounts.get(hub) + "/24)");
                                 } else {
-                                    mapList.get(i).get("Hub").set(1, ": " + hub + " (" + request.playerCounts.get(hub) + "/80)");
+                                    map.get("Hub").set(1, ": " + hub + " (" + request.playerCounts.get(hub) + "/80)");
                                 }
                             }
                         }
@@ -223,7 +228,6 @@ public class ServerConnection extends Listener implements Runnable {
             TitleHud titleHud = new TitleHud("Splash in Dungeon Hub " + hub, 0x8BAFE0, 4000);
             setActiveHud(titleHud);
         }
-        System.out.println("attempting to play sound");
 
         player.playSound("bingobrewers:splash_notification", 1.0f, 1.0f);
     }
@@ -242,8 +246,8 @@ public class ServerConnection extends Listener implements Runnable {
 
     public void reconnect() {
         bingoBrewers.client.close();
-        waitTime = 5000;
-        System.out.println("Disconnected from server. Reconnecting in " + waitTime / 1000 + " seconds.");
+        waitTime = (int) (5000 * Math.random());
+        System.out.println("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
         repeat = true;
         while (repeat) {
             try {
@@ -258,7 +262,10 @@ public class ServerConnection extends Listener implements Runnable {
                 }
                 if (waitTime < 60000) {
                     waitTime *= 2;
+                } else if (waitTime > 60000) {
+                    waitTime = 60000;
                 }
+                System.out.println("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
             }
         }
     }

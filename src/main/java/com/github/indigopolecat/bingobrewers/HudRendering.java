@@ -2,13 +2,13 @@ package com.github.indigopolecat.bingobrewers;
 
 import cc.polyfrost.oneconfig.events.EventManager;
 import cc.polyfrost.oneconfig.hud.BasicHud;
+import cc.polyfrost.oneconfig.hud.Hud;
 import cc.polyfrost.oneconfig.renderer.NanoVGHelper;
 
 import java.util.ArrayList;
 
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -16,19 +16,20 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import java.awt.Color;
 import java.util.HashMap;
 
-public class Hud extends BasicHud {
-    float lastLineRenderedAtY = -3;
+public class HudRendering extends Hud {
+    float lastLineRenderedAtY = 0;
     int lineCount = 0;
     boolean listTooLong = false;
     long renderCounter = 0;
     ArrayList<Long> latestSplash = new ArrayList<>(2);
     float totalHeight = 0;
-    public volatile boolean showNotification = false;
+    float longestWidth = 0;
+    float fontSize = 6;
 
 
 
 
-    public Hud() {
+    public HudRendering() {
         super(true);
         EventManager.INSTANCE.register(this);
     }
@@ -84,18 +85,21 @@ public class Hud extends BasicHud {
             }
         }
 
+        x+=1;
         // Render each item in the list
-        renderSplashHud(infoPanel, instance, x, y);
+        renderSplashHud(infoPanel, instance, x, y, scale);
+
+        // Set height of background
+        totalHeight = lastLineRenderedAtY;
 
         // Reset at the end
-        lastLineRenderedAtY = y;
-        // Set height
-        totalHeight = lastLineRenderedAtY - y;
+        lastLineRenderedAtY = y + fontSize/2;
+
         // Dwarven Mines Event
 
     }
 
-    private void renderSplashHud(ArrayList<HashMap<String, ArrayList<String>>> infoPanel, NanoVGHelper instance, float x, float y) {
+    private void renderSplashHud(ArrayList<HashMap<String, ArrayList<String>>> infoPanel, NanoVGHelper instance, float x, float y, float scale) {
         for (HashMap<String, ArrayList<String>> map : infoPanel) {
             // White
             Color colorText = new Color(255, 255, 255);
@@ -112,8 +116,8 @@ public class Hud extends BasicHud {
                     ArrayList<String> splashInfo = map.get(key);
                     if (splashInfo.isEmpty()) return;
 
-                    int fontSize = 6;
-                    int width = 106;
+                    fontSize = 6 * scale;
+                    float width = 106 * scale;
                     String prefix = splashInfo.get(0);
 
                     instance.drawWrappedString(vg, prefix, x, y + (lastLineRenderedAtY), width, colorPrefix.getRGB(), fontSize, 1, Fonts.MINECRAFT_BOLD);
@@ -138,12 +142,18 @@ public class Hud extends BasicHud {
 
                         float heightText = instance.getWrappedStringHeight(vg, info, width, fontSize, 1, Fonts.MINECRAFT_REGULAR);
                         instance.drawWrappedString(vg, info, x + nextStart, y + (lastLineRenderedAtY), width, colorText.getRGB(), fontSize, 1, Fonts.MINECRAFT_REGULAR);
+                        float textWidth = instance.getWrappedStringWidth(vg, info, width, fontSize, Fonts.MINECRAFT_REGULAR);
+
+                        if ((textWidth + nextStart) > longestWidth) {
+                            longestWidth = textWidth + nextStart;
+                        }
+
                         lastLineRenderedAtY += heightText;
-                        lineCount += (int) ((height + heightText) / 6);
+                        lineCount += (int) ((height + heightText) / fontSize);
 
                         ScaledResolution scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
                         int heightScaled = scaledResolution.getScaledHeight();
-                        if (lastLineRenderedAtY > heightScaled - 12) {
+                        if (lastLineRenderedAtY > heightScaled - 2 * fontSize) {
                             listTooLong = true;
                             // stop rendering if we're off the screen
                             return;
@@ -151,20 +161,26 @@ public class Hud extends BasicHud {
 
                     }
                 }
+
             });
             // buffer between parts
-            lastLineRenderedAtY += 6;
+            lastLineRenderedAtY += fontSize;
         }
+
     }
 
     @Override
     protected float getWidth(float scale, boolean example) {
-        return 0;
+        // the string wraps at 106
+        if (longestWidth > 106) {
+            longestWidth = 106;
+        }
+        return longestWidth * scale;
     }
 
     @Override
     protected float getHeight(float scale, boolean example) {
-        return 0;
+        return totalHeight * scale;
 
     }
 

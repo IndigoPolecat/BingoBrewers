@@ -15,12 +15,12 @@ public class bingoBrewers {
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         Packets doneLoading = new Packets();
-        MinecraftForge.EVENT_BUS.register(new ChestInventories());
         MinecraftForge.EVENT_BUS.register(doneLoading);
+        MinecraftForge.EVENT_BUS.register(new ChestInventories());
         MinecraftForge.EVENT_BUS.register(new PacketListener());
         MinecraftForge.EVENT_BUS.register(new CHChests());
         MinecraftForge.EVENT_BUS.register(new PlayerInfo());
-        MinecraftForge.EVENT_BUS.register(new Hud());
+        MinecraftForge.EVENT_BUS.register(new HudRendering());
         config = new BingoBrewersConfig();
         ServerConnection serverConnection = new ServerConnection();
         try {

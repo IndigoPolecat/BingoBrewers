@@ -41,8 +41,9 @@ public class PlayerInfo {
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
-            // /locraw 2s after you join the server
-            if (lastWorldLoad != -1 && System.currentTimeMillis() - lastWorldLoad > 2000) {
+            // /locraw 2s after you join the server and every 20s after
+            if (lastWorldLoad == -1) return;
+            if (System.currentTimeMillis() - lastWorldLoad > 2000 || System.currentTimeMillis() - lastPositionUpdate > 20000) {
                 if (!newLoad) return;
                 EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
                 if (player != null) {
