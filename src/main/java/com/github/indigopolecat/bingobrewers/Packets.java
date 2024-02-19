@@ -86,19 +86,9 @@ public class Packets {
                         }
                     }
                 }
-            } /*else if (CHChests.removeFormatting(message).startsWith("Request join for Hub #")) {
-                Pattern pattern = Pattern.compile("Request join for Hub #([0-9]+) (\\(.+\\))");
-                Matcher matcher = pattern.matcher(message);
-                if (matcher.find()) {
-                    PlayerInfo.playerHubNumber = matcher.group(1);
-                    System.out.println("Hub number: " + PlayerInfo.playerHubNumber);
-                    if (ServerConnection.hubList.contains(PlayerInfo.playerHubNumber)) {
-                        System.out.println("Hub " + PlayerInfo.playerHubNumber + " is in the list");
-                        PlayerInfo.inSplashHub = true;
-                        PlayerInfo.lastSplashHubUpdate = System.currentTimeMillis();
-                    }
-                }
-            }*/ else if (message.contains("You received") && PlayerInfo.playerLocation.equals("crystal_hollows")) {
+                // don't send locraw messages in chat
+                event.setCanceled(true);
+            }  else if (message.contains("You received") && PlayerInfo.playerLocation.equals("crystal_hollows")) {
                 CHChests.addChatMessage(message);
             }
 
