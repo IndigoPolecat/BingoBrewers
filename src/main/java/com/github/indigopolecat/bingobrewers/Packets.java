@@ -1,25 +1,19 @@
 package com.github.indigopolecat.bingobrewers;
 
-import cc.polyfrost.oneconfig.libs.checker.units.qual.C;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.play.client.C01PacketChatMessage;
 import net.minecraft.network.play.server.*;
 import net.minecraft.util.BlockPos;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import com.github.indigopolecat.events.PacketEvent;
-
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Set;
-import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

@@ -1,16 +1,9 @@
 package com.github.indigopolecat.bingobrewers;
 
-import cc.polyfrost.oneconfig.events.event.RenderEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.opengl.GL11;
-
-import java.awt.*;
 
 public class TitleHud {
     long startTime;

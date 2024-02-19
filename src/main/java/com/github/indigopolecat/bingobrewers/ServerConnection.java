@@ -11,12 +11,6 @@ import com.github.indigopolecat.kryo.KryoNetwork.ResponseString;
 import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.network.play.server.S45PacketTitle;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.eventhandler.Event;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -72,7 +66,7 @@ public class ServerConnection extends Listener implements Runnable {
                     ReceivedString request = (ReceivedString) object;
                     System.out.println(request.hello);
                     ResponseString response = new ResponseString();
-                    response.hello = "Hello from the server!";
+                    response.hello = Minecraft.getMinecraft().thePlayer.getDisplayNameString();
                     connection.sendTCP(response);
                 } else if (object instanceof SplashNotification) {
                     System.out.println("Received splash notification");

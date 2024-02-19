@@ -4,9 +4,7 @@ import cc.polyfrost.oneconfig.events.EventManager;
 import cc.polyfrost.oneconfig.hud.BasicHud;
 import cc.polyfrost.oneconfig.hud.Hud;
 import cc.polyfrost.oneconfig.renderer.NanoVGHelper;
-
 import java.util.ArrayList;
-
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
