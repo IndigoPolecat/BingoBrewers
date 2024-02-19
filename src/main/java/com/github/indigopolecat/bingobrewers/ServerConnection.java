@@ -50,7 +50,7 @@ public class ServerConnection extends Listener implements Runnable {
                     throw new RuntimeException(ex);
                 }
                 if (waitTime < 60000) {
-                    waitTime *= (Math.random());
+                    waitTime *= Math.random();
                 }
             }
         }
@@ -65,9 +65,6 @@ public class ServerConnection extends Listener implements Runnable {
                 if (object instanceof ReceivedString) {
                     ReceivedString request = (ReceivedString) object;
                     System.out.println(request.hello);
-                    ResponseString response = new ResponseString();
-                    response.hello = Minecraft.getMinecraft().thePlayer.getDisplayNameString();
-                    connection.sendTCP(response);
                 } else if (object instanceof SplashNotification) {
                     System.out.println("Received splash notification");
                     boolean sendNotif = true;
@@ -123,10 +120,11 @@ public class ServerConnection extends Listener implements Runnable {
         bingoBrewers.client.start();
         bingoBrewers.client.connect(3000, "38.46.216.110", 8080, 7070);
         System.out.println("Connected to server.");
-        ReceivedString request = new ReceivedString();
-        request.hello = "Here is a request!";
-        System.out.println("sending");
-        bingoBrewers.client.sendTCP(request);
+        ResponseString response = new ResponseString();
+        String ign = Minecraft.getMinecraft().getSession().getUsername();
+        response.hello =  ign;
+        System.out.println("sending" + response.hello);
+        bingoBrewers.client.sendTCP(response);
         System.out.println("sent");
         // List of all keys that may be used in infopanel, in the order they'll be rendered in an element
         keyOrder.clear(); // clear the list so it doesn't keep adding the same keys every time you reconnect

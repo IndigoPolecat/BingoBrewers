@@ -29,6 +29,5 @@ public class bingoBrewers {
         } catch (Exception e) {
             System.out.println("Server Connection Error: " + e.getMessage());
         }
-
     }
 }
