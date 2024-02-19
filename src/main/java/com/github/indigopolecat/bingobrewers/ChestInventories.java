@@ -55,9 +55,9 @@ public class ChestInventories {
                     System.out.println("Hub Selector Open");
                     hubSelectorOpen = true;
                 } else if (name.equals("Dungeon Hub Selector")) {
+                    System.out.println("Dungeon Hub Selector Open");
                     dungeonHubSelectorOpen = true;
                 }
-                System.out.println(name);
             }
         }
     }
@@ -239,16 +239,14 @@ public class ChestInventories {
                             hubNumber = s.replaceAll("SkyBlock Hub #(\\d+)", "$1");
                             hubNumber = hubNumber.replaceAll("Dungeon Hub #(\\d+)", "$1");
                             hubNumber = removeFormatting(hubNumber);
-                            System.out.println("Hub number: " + hubNumber);
                         } else if (s.contains("Server:")) { // Look for the lore line containing the server id
                             // Match the server id and remove formatting codes
                             String server = s.replaceAll("Server: (.+)", "$1");
                             server = removeFormatting(server);
-                            System.out.println("Server: " + server);
+
                             // if we're in a hub selector, add the server and hub number to the hubServerMap
                             if (hubNumber != null && hubSelectorOpen) {
                                 PlayerInfo.hubServerMap.put(server, hubNumber);
-                                System.out.println("Hub Server Map: " + PlayerInfo.hubServerMap);
                             } else if (hubNumber != null && dungeonHubSelectorOpen) { // if we're in a dungeon hub selector, add the server and hub number to the dungeonHubServerMap
                                 PlayerInfo.dungeonHubServerMap.put(server, hubNumber);
                             }

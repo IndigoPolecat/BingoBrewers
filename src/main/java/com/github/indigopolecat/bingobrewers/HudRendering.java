@@ -58,7 +58,7 @@ public class HudRendering extends Hud {
                     ServerConnection.hubList.remove(hubNumber);
                     ServerConnection.hubList.remove("DH" + hubNumber);
                     ServerConnection.mapList.remove(infoMap);
-                    if (PlayerInfo.playerHubNumber.equals(hubNumber) || PlayerInfo.playerHubNumber.equals(hubNumber.substring(2))) {
+                    if (PlayerInfo.playerHubNumber.equals(hubNumber) || PlayerInfo.playerHubNumber.equals("DH" + hubNumber)) {
                         PlayerInfo.inSplashHub = false;
                     }
                     continue;

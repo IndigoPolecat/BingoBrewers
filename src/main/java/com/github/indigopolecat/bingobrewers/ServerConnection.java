@@ -31,6 +31,7 @@ public class ServerConnection extends Listener implements Runnable {
     int waitTime;
     boolean repeat;
     public static ArrayList<String> hubList = new ArrayList<>();
+    long originalTime = -1;
 
 
     @Override
@@ -92,6 +93,10 @@ public class ServerConnection extends Listener implements Runnable {
                                 }
 
                             } catch (Exception ignored) {}
+
+                            // keep track of the original time the splash was sent, instead of updating each time it's edited
+                            originalTime = Long.parseLong(map.get("Time").get(0));
+
                             mapList.remove(mapList.get(i));
                         }
                     }
@@ -207,7 +212,12 @@ public class ServerConnection extends Listener implements Runnable {
         splashInfo.put("Note", noteInfo);
 
         ArrayList<String> timeInfo = new ArrayList<>();
-        timeInfo.add(valueOf(System.currentTimeMillis()));
+        if (originalTime != -1) {
+            timeInfo.add(valueOf(originalTime));
+            originalTime = -1;
+        } else {
+            timeInfo.add(valueOf(System.currentTimeMillis()));
+        }
         splashInfo.put("Time", timeInfo);
         ArrayList<String> splashId = new ArrayList<>();
         splashId.add(notif.splash);

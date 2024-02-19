@@ -33,7 +33,6 @@ public class PlayerInfo {
             newLoad = true;
             if (System.currentTimeMillis() - lastSplashHubUpdate > 3000) {
                 inSplashHub = false;
-                System.out.println("false");
             }
         }
     }
