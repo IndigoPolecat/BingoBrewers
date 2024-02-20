@@ -12,7 +12,7 @@ import java.util.HashMap;
 public class PlayerInfo {
     public static String playerLocation = "";
     public static String playerGameType = "";
-    public static String playerHubNumber = "";
+    public static String playerHubNumber = null;
     public static long lastWorldLoad = -1;
     public static long lastPositionUpdate = -1;
     private static boolean newLoad = false;
@@ -62,6 +62,10 @@ public class PlayerInfo {
             KryoNetwork.PlayerCount count = new KryoNetwork.PlayerCount();
             count.playerCount = playercount;
             count.IGN = Minecraft.getMinecraft().thePlayer.getName();
+            if (playerHubNumber == null) {
+                System.out.println("Player hub number is null");
+                return;
+            }
             count.server = playerHubNumber;
             ServerConnection serverConnection = new ServerConnection();
             serverConnection.sendPlayerCount(count);

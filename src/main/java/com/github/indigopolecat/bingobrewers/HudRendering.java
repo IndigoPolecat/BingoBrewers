@@ -56,6 +56,10 @@ public class HudRendering extends Hud {
                     ServerConnection.hubList.remove(hubNumber);
                     ServerConnection.hubList.remove("DH" + hubNumber);
                     ServerConnection.mapList.remove(infoMap);
+                    if (PlayerInfo.playerHubNumber == null) {
+                        PlayerInfo.inSplashHub = false;
+                        continue;
+                    }
                     if (PlayerInfo.playerHubNumber.equals(hubNumber) || PlayerInfo.playerHubNumber.equals("DH" + hubNumber)) {
                         PlayerInfo.inSplashHub = false;
                     }
@@ -122,7 +126,7 @@ public class HudRendering extends Hud {
                     // When to start the line after the prefix
                     float nextStart = instance.getWrappedStringWidth(vg, prefix, width, fontSize, Fonts.MINECRAFT_BOLD) + 0.25F;
                     float height = instance.getWrappedStringHeight(vg, prefix, width, fontSize, 1, Fonts.MINECRAFT_BOLD);
-                    height -= 5;
+                    height -= fontSize;
                     for (int j = 1; j < splashInfo.size(); j++) {
 
                         // Break the loop early if the text is too long

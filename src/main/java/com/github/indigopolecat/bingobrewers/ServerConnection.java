@@ -195,7 +195,7 @@ public class ServerConnection extends Listener implements Runnable {
 
         ArrayList<String> noteInfo = new ArrayList<>();
         noteInfo.add("Note");
-        if (note.isEmpty()) {
+        if (note == null || note.isEmpty()) {
             noteInfo.add(": No Note");
         } else {
             noteInfo.add(": ");
