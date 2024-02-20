@@ -123,7 +123,7 @@ public class ServerConnection extends Listener implements Runnable {
         ResponseString response = new ResponseString();
         String ign = Minecraft.getMinecraft().getSession().getUsername();
         response.hello =  ign;
-        System.out.println("sending" + response.hello);
+        System.out.println("sending " + response.hello);
         bingoBrewers.client.sendTCP(response);
         System.out.println("sent");
         // List of all keys that may be used in infopanel, in the order they'll be rendered in an element

@@ -7,12 +7,17 @@ import cc.polyfrost.oneconfig.renderer.NanoVGHelper;
 import java.util.ArrayList;
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
+import org.lwjgl.opengl.GL11;
+
 import java.awt.Color;
 import java.util.HashMap;
+import java.util.List;
 
 public class HudRendering extends Hud {
     float lastLineRenderedAtY = 0;
@@ -22,7 +27,7 @@ public class HudRendering extends Hud {
     ArrayList<Long> latestSplash = new ArrayList<>(2);
     float totalHeight = 0;
     float longestWidth = 0;
-    float fontSize = 6;
+    float fontSize = 0.2F;
 
 
 
@@ -89,19 +94,19 @@ public class HudRendering extends Hud {
 
         x+=1;
         // Render each item in the list
-        renderSplashHud(infoPanel, instance, x, y, scale);
+        renderSplashHud(infoPanel, x, y, scale);
 
         // Set height of background
         totalHeight = lastLineRenderedAtY;
 
         // Reset at the end
-        lastLineRenderedAtY = y + fontSize/2;
+        lastLineRenderedAtY = y + 3;
 
         // Dwarven Mines Event
 
     }
 
-    private void renderSplashHud(ArrayList<HashMap<String, ArrayList<String>>> infoPanel, NanoVGHelper instance, float x, float y, float scale) {
+    private void renderSplashHud2(ArrayList<HashMap<String, ArrayList<String>>> infoPanel, NanoVGHelper instance, float x, float y, float scale) {
         for (HashMap<String, ArrayList<String>> map : infoPanel) {
             // White
             Color colorText = new Color(255, 255, 255);
@@ -184,6 +189,97 @@ public class HudRendering extends Hud {
     protected float getHeight(float scale, boolean example) {
         return totalHeight * scale;
 
+    }
+
+    public void renderSplashHud(ArrayList<HashMap<String, ArrayList<String>>> infoPanel, float x, float y, float scale) {
+        FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
+
+        ScaledResolution scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
+        int heightScaled = scaledResolution.getScaledHeight();
+
+        fontSize = 0.05F * scale;
+
+        // set font size
+        GL11.glPushMatrix();
+        GL11.glScalef(scale, scale, scale);
+
+        // loop through splashes to render
+        for (HashMap<String, ArrayList<String>> map : infoPanel) {
+            // set color of text
+            // White
+            Color colorText = new Color(255, 255, 255);
+            // Yellow
+            Color colorPrefix = new Color(255, 255, 85);
+            lineCount = 0;
+            listTooLong = false;
+            // loop through the hashmap of the splash
+            for (int k = 0; k < ServerConnection.keyOrder.size(); k++) {
+                String key = ServerConnection.keyOrder.get(k);
+
+                float maxWidth = 200 * scale;
+                // render prefix
+
+                ArrayList<String> splashInfo = map.get(key);
+                String prefix = splashInfo.get(0);
+                float nextStart = renderBoldText(prefix, (int) x, (int) (y + lastLineRenderedAtY), colorPrefix.getRGB()) - x;
+                // height = height of prefix
+                // loop through the info
+                infoRenderLoop:
+                for (int j = 1; j < splashInfo.size(); j++) {
+                    // reset the offset if there is more than one line
+                    if (j == 2) nextStart = 0;
+
+                    // find strings that are too long and trim them into a list of separate strings
+                    String info = splashInfo.get(j);
+                    List<String> wrappedLines = fontRenderer.listFormattedStringToWidth(info, (int) maxWidth);
+
+                    for (int l = 0; l < wrappedLines.size(); l++) {
+                        String line = wrappedLines.get(l);
+                        // reset the offset if there is more than one line
+                        if (l == 1) nextStart = 0;
+                        // if the line count is greater than 14, break the loop on the next iteration and set the end of the string to "..."
+                        if (listTooLong) {
+                            break infoRenderLoop;
+                        }
+
+                        if (lineCount >= 14) {
+                            line = line.substring(0, line.length() - 2) + "...";
+                            listTooLong = true;
+                        }
+
+
+                        // render the string
+                        fontRenderer.drawStringWithShadow(line, x + nextStart, y + lastLineRenderedAtY, colorText.getRGB());
+                        // mark the last y value we rendered a string at
+                        lastLineRenderedAtY += 10;
+                        // increase the line count
+                        lineCount++;
+                        // stop rendering if we're off screen
+                        if (lastLineRenderedAtY > heightScaled - 10) {
+                            listTooLong = true;
+                            break;
+                        }
+                    }
+                    // add a buffer between parts
+                }
+            }
+            lastLineRenderedAtY += 10;
+        }
+        GL11.glPopMatrix();
+    }
+
+    public static float renderBoldText(String text, int x, int y, int color) {
+        FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
+        // Render the text slightly offset for a bold effect and add extra space after each character
+        for (int i = 0; i < text.length(); i++) {
+            char character = text.charAt(i);
+            int charWidth = fontRenderer.getCharWidth(character);
+            fontRenderer.drawString(String.valueOf(character), x + 1, y, color);
+            fontRenderer.drawString(String.valueOf(character), x, y, color);
+            // Add extra space after rendering each character
+            x += charWidth + 1;
+        }
+        return x;
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
