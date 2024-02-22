@@ -122,7 +122,7 @@ public class ServerConnection extends Listener implements Runnable {
         System.out.println("Connected to server.");
         ResponseString response = new ResponseString();
         String ign = Minecraft.getMinecraft().getSession().getUsername();
-        response.hello =  ign;
+        response.hello =  ign + "";
         System.out.println("sending " + response.hello);
         bingoBrewers.client.sendTCP(response);
         System.out.println("sent");
