@@ -22,7 +22,7 @@ public class ServerConnection extends Listener implements Runnable {
     // The Hud renderer checks this every time it renders
     public static ArrayList<HashMap<String, ArrayList<String>>> mapList = new ArrayList<>();
     public static ArrayList<String> keyOrder = new ArrayList<>();
-    int waitTime;
+    int waitTime = 0;
     boolean repeat;
     public static ArrayList<String> hubList = new ArrayList<>();
     long originalTime = -1;
@@ -118,7 +118,11 @@ public class ServerConnection extends Listener implements Runnable {
 
         });
         bingoBrewers.client.start();
-        bingoBrewers.client.connect(3000, "38.46.216.110", 8080, 7070);
+        if (bingoBrewers.testInstance) {
+            bingoBrewers.client.connect(3000, "38.46.216.110", 9090, 9191);
+        } else {
+            bingoBrewers.client.connect(3000, "38.46.216.110", 8080, 7070);
+        }
         System.out.println("Connected to server.");
         ResponseString response = new ResponseString();
         String ign = Minecraft.getMinecraft().getSession().getUsername();
@@ -245,7 +249,9 @@ public class ServerConnection extends Listener implements Runnable {
 
     public void reconnect() {
         bingoBrewers.client.close();
-        waitTime = (int) (5000 * Math.random());
+        if (waitTime == 0) {
+            waitTime = (int) (5000 * Math.random());
+        }
         System.out.println("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
         repeat = true;
         while (repeat) {

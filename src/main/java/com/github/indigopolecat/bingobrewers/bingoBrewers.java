@@ -9,8 +9,11 @@ import com.github.indigopolecat.events.PacketListener;
 @Mod(modid = "bingobrewers", version = "1.0", useMetadata=true)
 public class bingoBrewers {
     private BingoBrewersConfig config;
-    public static volatile Client client;
+
     public static volatile TitleHud activeTitle;
+    public static volatile Client client;
+    // controls which server is connected to
+    public static final boolean testInstance = false;
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
