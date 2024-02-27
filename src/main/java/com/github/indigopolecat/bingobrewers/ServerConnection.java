@@ -119,6 +119,7 @@ public class ServerConnection extends Listener implements Runnable {
         });
         bingoBrewers.client.start();
         if (bingoBrewers.testInstance) {
+            System.out.println("Connecting to test server");
             bingoBrewers.client.connect(3000, "38.46.216.110", 9090, 9191);
         } else {
             bingoBrewers.client.connect(3000, "38.46.216.110", 8080, 7070);

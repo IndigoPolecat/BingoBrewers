@@ -53,6 +53,9 @@ public class Packets {
             S02PacketChat packet = (S02PacketChat) event.getPacket();
             String message = packet.getChatComponent().getUnformattedText();
             if (message.startsWith("{") && message.endsWith("}")) {
+                // don't send locraw messages in chat
+                event.setCanceled(true);
+
                 JsonObject locraw = new JsonParser().parse(message).getAsJsonObject();
                 Type type = new TypeToken<HashMap<String, String>>() {}.getType();
                 HashMap<String, String> locrawMap = new Gson().fromJson(locraw, type);
@@ -80,8 +83,7 @@ public class Packets {
                         }
                     }
                 }
-                // don't send locraw messages in chat
-                event.setCanceled(true);
+
             }  else if (message.contains("You received") && PlayerInfo.playerLocation.equals("crystal_hollows")) {
                 CHChests.addChatMessage(message);
             }
