@@ -3,9 +3,11 @@ package com.github.indigopolecat.bingobrewers;
 import cc.polyfrost.oneconfig.events.EventManager;
 import cc.polyfrost.oneconfig.hud.BasicHud;
 import cc.polyfrost.oneconfig.hud.Hud;
+import cc.polyfrost.oneconfig.platform.Platform;
 import cc.polyfrost.oneconfig.renderer.NanoVGHelper;
 import java.util.ArrayList;
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
+import cc.polyfrost.oneconfig.renderer.TextRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
@@ -178,7 +180,7 @@ public class HudRendering extends Hud {
         GL11.glPushMatrix();
         GL11.glScalef(fontSize, fontSize, scale);
         x = (x / fontSize);
-        y = (y / fontSize / heightScaled);
+        y = (y / fontSize / (heightScaled + 2));
         y = Math.min(y, heightScaled - getHeight(scale, false));
 
 
@@ -253,12 +255,16 @@ public class HudRendering extends Hud {
         GL11.glPopMatrix();
     }
 
+    // renders bold text and returns its length
     public static float renderBoldText(String text, float x, float y, int color) {
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
         // Render the text slightly offset for a bold effect and add extra space after each character
         for (int i = 0; i < text.length(); i++) {
             char character = text.charAt(i);
             int charWidth = fontRenderer.getCharWidth(character);
+            // I don't know what I changed but when I switched to these, the y offset was fixed, switched back and it's still fixed
+            //Platform.getGLPlatform().drawText(String.valueOf(character), x, y, color, false);
+            //Platform.getGLPlatform().drawText(String.valueOf(character), x + 1, y, color, false);
             fontRenderer.drawString(String.valueOf(character), x + 1, y, color, false);
             fontRenderer.drawString(String.valueOf(character), x, y, color, false);
             // Add extra space after rendering each character
