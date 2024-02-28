@@ -1,17 +1,12 @@
 package com.github.indigopolecat.bingobrewers;
 
 import cc.polyfrost.oneconfig.events.EventManager;
-import cc.polyfrost.oneconfig.hud.BasicHud;
 import cc.polyfrost.oneconfig.hud.Hud;
-import cc.polyfrost.oneconfig.platform.Platform;
-import cc.polyfrost.oneconfig.renderer.NanoVGHelper;
 import java.util.ArrayList;
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
-import cc.polyfrost.oneconfig.renderer.TextRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
