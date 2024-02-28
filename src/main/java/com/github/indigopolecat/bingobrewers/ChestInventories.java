@@ -47,20 +47,24 @@ public class ChestInventories {
             if (gui instanceof ContainerChest) {
                 containerChest = (ContainerChest) gui;
                 String name = containerChest.getLowerChestInventory().getDisplayName().getUnformattedText();
-                if (name.equals("Bingo Shop")) {
-                    // If everything has been calculated within the last 60 seconds, don't bother recalculating
-                    if (System.currentTimeMillis() - lastRan < 120000) {
-                        calculationsReady = true;
-                        return;
-                    }
-                    tooltipInfoList.clear();
-                    bingoShopOpen = true;
-                } else if (name.equals("SkyBlock Hub Selector")) {
-                    System.out.println("Hub Selector Open");
-                    hubSelectorOpen = true;
-                } else if (name.equals("Dungeon Hub Selector")) {
-                    System.out.println("Dungeon Hub Selector Open");
-                    dungeonHubSelectorOpen = true;
+                switch (name) {
+                    case "Bingo Shop":
+                        // If everything has been calculated within the last 60 seconds, don't bother recalculating
+                        if (System.currentTimeMillis() - lastRan < 120000) {
+                            calculationsReady = true;
+                            return;
+                        }
+                        tooltipInfoList.clear();
+                        bingoShopOpen = true;
+                        break;
+                    case "SkyBlock Hub Selector":
+                        LoggerUtil.LOGGER.info("Hub Selector Open");
+                        hubSelectorOpen = true;
+                        break;
+                    case "Dungeon Hub Selector":
+                        LoggerUtil.LOGGER.info("Dungeon Hub Selector Open");
+                        dungeonHubSelectorOpen = true;
+                        break;
                 }
             }
         }
