@@ -131,10 +131,10 @@ public class ChestInventories {
             }
 
             // Fetch the price map for all items in the chest with a cost, execute the rest of the code after
-            CompletableFuture<ArrayList<Double>> costFuture = auctionAPI.fetchPriceMap(itemNamesFormatless).whenComplete((lbinMap, throwable) -> {
+            CompletableFuture<ArrayList<Double>> costFuture = AuctionAPI.fetchPriceMap(itemNamesFormatless).whenComplete((lbinMap, throwable) -> {
             });
             costFuture.thenAccept(coinCosts -> {
-                CompletableFuture<ArrayList<Double>> extraItemFuture = auctionAPI.fetchPriceMap(extraItemsFormatless).whenComplete((lbinMap, throwable) -> {
+                CompletableFuture<ArrayList<Double>> extraItemFuture = AuctionAPI.fetchPriceMap(extraItemsFormatless).whenComplete((lbinMap, throwable) -> {
                 });
                 extraItemFuture.thenAccept(extraCoinCosts -> {
 

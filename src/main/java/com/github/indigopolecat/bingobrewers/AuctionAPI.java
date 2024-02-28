@@ -21,9 +21,9 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 
 
-public class auctionAPI {
+public class AuctionAPI {
 
-    static Logger logger = Logger.getLogger(auctionAPI.class.getName());
+    static Logger logger = Logger.getLogger(AuctionAPI.class.getName());
 
     // input: array of display names, output: array of lowest bin prices from neu as doubles in a matching order
     // Assumes Display Name ID is DISPLAY_NAME
