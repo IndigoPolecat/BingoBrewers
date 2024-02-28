@@ -2,14 +2,19 @@ package com.github.indigopolecat.bingobrewers;
 
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 public class CHChests {
+
+    static Logger logger = Logger.getLogger(CHChests.class.getName());
+
     public static ArrayList<String> RecentChatMessages = new ArrayList<>();
     public static HashMap<Long, String> ChestBlacklist = new HashMap<>();
     static HashMap<String, Long> listeningChests = new HashMap<>();
@@ -42,7 +47,7 @@ public class CHChests {
 
     public static void parseChat() {
 
-        System.out.println("chat messages done");
+        logger.info("chat messages done");
         Object[] ChestBlacklistArray = ChestBlacklist.values().toArray();
 
         for (int i = 0; i < ChestBlacklist.size(); i++) {
@@ -71,7 +76,7 @@ public class CHChests {
                 System.out.println(System.currentTimeMillis() - oldest);
             }
         }
-        System.out.println("going4");
+       logger.info("going4");
 
         // Once a "You received" message is received, set the time remaining to 1 second for messages to come in
         long newTime = oldest + 8500;
@@ -85,8 +90,8 @@ public class CHChests {
 
             while (matcher.find()) {
                 String item = matcher.group(2);
-                System.out.println(item);
-                System.out.println("item found");
+                logger.info(item);
+                logger.info("item found");
             }
         }
         RecentChatMessages.clear();

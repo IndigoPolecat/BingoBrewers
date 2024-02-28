@@ -14,11 +14,15 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import com.github.indigopolecat.events.PacketEvent;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 public class Packets {
+
+    Logger logger = Logger.getLogger(Packets.class.getName());
+
     // Fires event when an inventory packet is sent with a slot number greater than the slot count of the window.
     int slotCount = -1;
     boolean alreadyFired = false;
@@ -117,7 +121,7 @@ public class Packets {
                 return;
             }
             if (!hardstone.containsKey(coords.toString())) return;
-            System.out.println("Adding to blacklist " + coords);
+            logger.info("Adding to blacklist " + coords);
 
             CHChests.ChestBlacklist.put(System.currentTimeMillis(), coords.toString());
 

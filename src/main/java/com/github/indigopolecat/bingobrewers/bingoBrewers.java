@@ -6,8 +6,13 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.common.MinecraftForge;
 import com.github.indigopolecat.events.PacketListener;
 
-@Mod(modid = "bingobrewers", version = "0.1", useMetadata=true)
+import java.util.logging.Logger;
+
+@Mod(modid = "bingobrewers", version = "0.1", useMetadata = true)
 public class bingoBrewers {
+
+    Logger logger = Logger.getLogger(bingoBrewers.class.getName());
+
     private BingoBrewersConfig config;
 
     public static volatile TitleHud activeTitle;
@@ -30,7 +35,7 @@ public class bingoBrewers {
             Thread serverThread = new Thread(serverConnection);
             serverThread.start();
         } catch (Exception e) {
-            System.out.println("Server Connection Error: " + e.getMessage());
+            logger.info("Server Connection Error: " + e.getMessage());
         }
     }
 }

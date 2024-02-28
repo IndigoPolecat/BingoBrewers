@@ -10,6 +10,7 @@ import com.google.gson.JsonArray;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,6 +22,8 @@ import java.util.HashMap;
 
 
 public class auctionAPI {
+
+    static Logger logger = Logger.getLogger(auctionAPI.class.getName());
 
     // input: array of display names, output: array of lowest bin prices from neu as doubles in a matching order
     // Assumes Display Name ID is DISPLAY_NAME
@@ -172,7 +175,7 @@ public class auctionAPI {
             String auctionPage = Objects.requireNonNull(queryAPI("https://api.hypixel.net/skyblock/auctions?page=" + i)).toString();
             JsonObject auctionJSON = new Gson().fromJson(auctionPage, JsonObject.class);
             JsonArray auctions = auctionJSON.get("auctions").getAsJsonArray();
-            System.out.println("page: " + auctionJSON.get("page").getAsInt());
+           logger.info("page: " + auctionJSON.get("page").getAsInt());
 
             for (int j = 0; j < auctions.size(); j++) {
                 JsonObject auction = auctions.get(j).getAsJsonObject();
@@ -236,11 +239,11 @@ public class auctionAPI {
 
                 return response;
             } else {
-                System.out.println("API connection failed!");
+                logger.info("API connection failed!");
             }
 
         } catch (Exception e) {
-            System.out.println("Error: " + e);
+            logger.info("Error: " + e);
         }
         return null;
     }

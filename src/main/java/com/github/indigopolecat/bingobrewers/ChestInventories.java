@@ -8,14 +8,20 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+
 import java.text.DecimalFormat;
+import java.util.logging.Logger;
 
 public class ChestInventories {
+
+    Logger logger = Logger.getLogger(ChestInventories.class.getName());
 
     // TODO: Add points left to afford item and how many bingoes are required for those points
     boolean bingoShopOpen = false;
@@ -30,6 +36,7 @@ public class ChestInventories {
     long lastRan;
     boolean hubSelectorOpen = false;
     boolean dungeonHubSelectorOpen = false;
+
     @SubscribeEvent
     public void onShopOpen(GuiOpenEvent event) {
         calculationsReady = false;
@@ -112,7 +119,7 @@ public class ChestInventories {
                 }
             }
             if (costInt == 0) {
-                System.out.println("Something went wrong: Bingo Point Cost not found in inventory named Bingo Shop!");
+                logger.info("Something went wrong: Bingo Point Cost not found in inventory named Bingo Shop!");
             }
             ArrayList<String> itemNamesFormatless = new ArrayList<>();
             for (String itemName : itemNames) {
@@ -158,9 +165,9 @@ public class ChestInventories {
                             itemName = itemNames.get(i);
 
                             if (coinCost == 0) {
-                                System.out.println("Item not found in auction house or price is somehow 0: " + itemName);
+                               logger.info("Item not found in auction house or price is somehow 0: " + itemName);
                             } else if (bingoCost == 0) {
-                                System.out.println("Failed to get Bingo Point cost of item: " + itemName);
+                                logger.info("Failed to get Bingo Point cost of item: " + itemName);
                             } else {
                                 double coinsPerPointdouble = coinCost / bingoCost;
                                 long coinsPerPointLong = Math.round(coinsPerPointdouble);
@@ -213,7 +220,7 @@ public class ChestInventories {
                         }
                         lastRan = System.currentTimeMillis();
                     } else {
-                        System.out.println("Something went wrong: itemCosts, coinCosts, and itemNames are not the same size!");
+                        logger.info("Something went wrong: itemCosts, coinCosts, and itemNames are not the same size!");
                     }
                 });
             });
@@ -281,6 +288,7 @@ public class ChestInventories {
         }
         return news;
     }
+
     public static String formatNumber(long number) {
         if (number < 1_000) {
             return String.valueOf(number);
