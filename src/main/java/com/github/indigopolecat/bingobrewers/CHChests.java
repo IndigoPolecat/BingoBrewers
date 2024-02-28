@@ -50,10 +50,10 @@ public class CHChests {
     public static void parseChat() {
 
         logger.info("chat messages done");
-        Object[] ChestBlacklistArray = ChestBlacklist.values().toArray();
+        Object[] chestBlacklistArray = ChestBlacklist.values().toArray();
 
         for (int i = 0; i < ChestBlacklist.size(); i++) {
-            String key = (String) ChestBlacklistArray[i];
+            String key = (String) chestBlacklistArray[i];
             // Try to remove blacklisted chests
             listeningChests.remove(key);
         }
