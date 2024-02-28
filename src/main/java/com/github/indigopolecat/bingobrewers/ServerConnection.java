@@ -20,6 +20,12 @@ import static java.lang.String.valueOf;
 
 public class ServerConnection extends Listener implements Runnable {
 
+    public static final String DUNGEON_HUB = "Dungeon Hub";
+    public static final String HUB = "Hub";
+    public static final String SPLASHER = "Splasher";
+    public static final String PARTY = "Party";
+    public static final String LOCATION = "Location";
+    public static final String NOTE = "Note";
     Logger logger = Logger.getLogger(ServerConnection.class.getName());
 
     // The Hud renderer checks this every time it renders
@@ -77,11 +83,11 @@ public class ServerConnection extends Listener implements Runnable {
                     for (int i = 0; i < mapList.size(); i++) {
                         HashMap<String, ArrayList<String>> map = mapList.get(i);
                         if (map.get("Splash").get(0).equals(notif.splash)) {
-                            ArrayList<String> hubField = map.get("Hub");
+                            ArrayList<String> hubField = map.get(HUB);
                             // Don't send notification if the hub # or hub type (dungeon/normal) hasn't changed
                             try {
                                 String hubNumber = hubField.get(1).replaceAll(": (\\d+).*", "$1");
-                                if (hubNumber.equals(notif.message) && notif.dungeonHub == hubField.get(0).contains("Dungeon Hub")) {
+                                if (hubNumber.equals(notif.message) && notif.dungeonHub == hubField.get(0).contains(DUNGEON_HUB)) {
                                     sendNotif = false;
                                     hubList.remove(hubNumber);
                                     hubList.remove("DH" + hubNumber);
@@ -99,14 +105,14 @@ public class ServerConnection extends Listener implements Runnable {
                 } else if (object instanceof KryoNetwork.PlayerCountBroadcast) {
                     KryoNetwork.PlayerCountBroadcast request = (KryoNetwork.PlayerCountBroadcast) object;
                     for (HashMap<String, ArrayList<String>> map : mapList) {
-                        if (map.containsKey("Hub")) {
-                            String hub = map.get("Hub").get(1).replaceAll(": (\\d+).*", "$1");
+                        if (map.containsKey(HUB)) {
+                            String hub = map.get(HUB).get(1).replaceAll(": (\\d+).*", "$1");
                             if (request.playerCounts.containsKey(hub)) {
                                 // If the hub is a dungeon hub, it has a 24 player limit
-                                if (map.get("Hub").get(0).equals("Dungeon Hub")) {
-                                    map.get("Hub").set(1, ": " + hub + " (" + request.playerCounts.get(hub) + "/24)");
+                                if (map.get(HUB).get(0).equals(DUNGEON_HUB)) {
+                                    map.get(HUB).set(1, ": " + hub + " (" + request.playerCounts.get(hub) + "/24)");
                                 } else {
-                                    map.get("Hub").set(1, ": " + hub + " (" + request.playerCounts.get(hub) + "/80)");
+                                    map.get(HUB).set(1, ": " + hub + " (" + request.playerCounts.get(hub) + "/80)");
                                 }
                             }
                         }
@@ -139,11 +145,11 @@ public class ServerConnection extends Listener implements Runnable {
         logger.info("sent");
         // List of all keys that may be used in infopanel, in the order they'll be rendered in an element
         keyOrder.clear(); // clear the list so it doesn't keep adding the same keys every time you reconnect
-        keyOrder.add("Hub");
-        keyOrder.add("Splasher");
-        keyOrder.add("Party");
-        keyOrder.add("Location");
-        keyOrder.add("Note");
+        keyOrder.add(HUB);
+        keyOrder.add(SPLASHER);
+        keyOrder.add(PARTY);
+        keyOrder.add(LOCATION);
+        keyOrder.add(NOTE);
         repeat = false;
     }
 
@@ -179,40 +185,40 @@ public class ServerConnection extends Listener implements Runnable {
 
         ArrayList<String> hubInfo = new ArrayList<>();
         if (!notif.dungeonHub) {
-            hubInfo.add("Hub");
+            hubInfo.add(HUB);
             hubList.add(hub);
         } else {
-            hubInfo.add("Dungeon Hub");
+            hubInfo.add(DUNGEON_HUB);
             // Identify a hub as a dungeonhub to avoid mixing up regular hubs and dhubs
             hubList.add("DH" + hub);
         }
         hubInfo.add(": " + hub);
-        splashInfo.put("Hub", hubInfo);
+        splashInfo.put(HUB, hubInfo);
 
         ArrayList<String> splasherInfo = new ArrayList<>();
-        splasherInfo.add("Splasher");
+        splasherInfo.add(SPLASHER);
         splasherInfo.add(": " + splasher);
-        splashInfo.put("Splasher", splasherInfo);
+        splashInfo.put(SPLASHER, splasherInfo);
 
         ArrayList<String> partyInfo = new ArrayList<>();
         partyInfo.add("Bingo Party");
         partyInfo.add(": " + partyHost);
-        splashInfo.put("Party", partyInfo);
+        splashInfo.put(PARTY, partyInfo);
 
         ArrayList<String> locationInfo = new ArrayList<>();
-        locationInfo.add("Location");
+        locationInfo.add(LOCATION);
         locationInfo.add(": " + location);
-        splashInfo.put("Location", locationInfo);
+        splashInfo.put(LOCATION, locationInfo);
 
         ArrayList<String> noteInfo = new ArrayList<>();
-        noteInfo.add("Note");
+        noteInfo.add(NOTE);
         if (note == null || note.isEmpty()) {
             noteInfo.add(": No Note");
         } else {
             noteInfo.add(": ");
             noteInfo.addAll(note);
         }
-        splashInfo.put("Note", noteInfo);
+        splashInfo.put(NOTE, noteInfo);
 
         ArrayList<String> timeInfo = new ArrayList<>();
         if (originalTime != -1) {
