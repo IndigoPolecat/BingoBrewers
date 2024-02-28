@@ -1,5 +1,6 @@
 package com.github.indigopolecat.bingobrewers;
 
+import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerChest;
 import net.minecraftforge.client.event.GuiOpenEvent;
@@ -17,11 +18,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
 import java.text.DecimalFormat;
-import java.util.logging.Logger;
 
 public class ChestInventories {
-
-    Logger logger = Logger.getLogger(ChestInventories.class.getName());
 
     // TODO: Add points left to afford item and how many bingoes are required for those points
     boolean bingoShopOpen = false;
@@ -119,7 +117,7 @@ public class ChestInventories {
                 }
             }
             if (costInt == 0) {
-                logger.info("Something went wrong: Bingo Point Cost not found in inventory named Bingo Shop!");
+                LoggerUtil.LOGGER.info("Something went wrong: Bingo Point Cost not found in inventory named Bingo Shop!");
             }
             ArrayList<String> itemNamesFormatless = new ArrayList<>();
             for (String itemName : itemNames) {
@@ -165,9 +163,9 @@ public class ChestInventories {
                             itemName = itemNames.get(i);
 
                             if (coinCost == 0) {
-                               logger.info("Item not found in auction house or price is somehow 0: " + itemName);
+                                LoggerUtil.LOGGER.info("Item not found in auction house or price is somehow 0: " + itemName);
                             } else if (bingoCost == 0) {
-                                logger.info("Failed to get Bingo Point cost of item: " + itemName);
+                                LoggerUtil.LOGGER.info("Failed to get Bingo Point cost of item: " + itemName);
                             } else {
                                 double coinsPerPointdouble = coinCost / bingoCost;
                                 long coinsPerPointLong = Math.round(coinsPerPointdouble);
@@ -220,7 +218,7 @@ public class ChestInventories {
                         }
                         lastRan = System.currentTimeMillis();
                     } else {
-                        logger.info("Something went wrong: itemCosts, coinCosts, and itemNames are not the same size!");
+                        LoggerUtil.LOGGER.info("Something went wrong: itemCosts, coinCosts, and itemNames are not the same size!");
                     }
                 });
             });

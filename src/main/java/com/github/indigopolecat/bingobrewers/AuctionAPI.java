@@ -4,26 +4,28 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+
+import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
+
 import java.util.ArrayList;
 import java.util.Objects;
 import java.nio.charset.StandardCharsets;
-import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
+
 import com.google.gson.reflect.TypeToken;
+
 import java.lang.reflect.Type;
 import java.util.HashMap;
 
 
 public class AuctionAPI {
-
-    static Logger logger = Logger.getLogger(AuctionAPI.class.getName());
 
     // input: array of display names, output: array of lowest bin prices from neu as doubles in a matching order
     // Assumes Display Name ID is DISPLAY_NAME
@@ -31,6 +33,7 @@ public class AuctionAPI {
     static long lastFetch = 0;
     static String auctionJson = "";
     static String bazaarJson = "";
+
     public static CompletableFuture<ArrayList<Double>> fetchPriceMap(ArrayList<String> items) {
 
         return CompletableFuture.supplyAsync(() -> {
@@ -75,7 +78,8 @@ public class AuctionAPI {
 
                     auctionJson = byteArrayOutputStream.toString(String.valueOf(StandardCharsets.UTF_8));
                 }
-                Type type = new TypeToken<HashMap<String, Double>>() {}.getType();
+                Type type = new TypeToken<HashMap<String, Double>>() {
+                }.getType();
                 HashMap<String, Double> lbinMap = new Gson().fromJson(auctionJson, type);
 
                 ArrayList<Double> costs = new ArrayList<>();
@@ -89,13 +93,13 @@ public class AuctionAPI {
 
                 for (String item : items) {
                     item = item.replace(" ", "_").toUpperCase();
-                     if (lbinMap.containsKey(item)) {
+                    if (lbinMap.containsKey(item)) {
                         costs.add(lbinMap.get(item));
-                    } else if (new Gson().fromJson(bazaarJson, JsonObject.class).getAsJsonObject("products").has(item)){
-                         // Try to get it from bz instead if ah fails
-                         costs.add(new Gson().fromJson(bazaarJson, JsonObject.class).getAsJsonObject("products").getAsJsonObject(item).get("quick_status").getAsJsonObject().get("sellPrice").getAsDouble());
+                    } else if (new Gson().fromJson(bazaarJson, JsonObject.class).getAsJsonObject("products").has(item)) {
+                        // Try to get it from bz instead if ah fails
+                        costs.add(new Gson().fromJson(bazaarJson, JsonObject.class).getAsJsonObject("products").getAsJsonObject(item).get("quick_status").getAsJsonObject().get("sellPrice").getAsDouble());
                     } else {
-                         costs.add(null);
+                        costs.add(null);
                     }
                 }
                 return costs;
@@ -105,7 +109,7 @@ public class AuctionAPI {
                 throw new RuntimeException(exception);
             }
         });
-}
+    }
 
     /*
     public static ArrayList<Double> neulbinSearch(ArrayList<String> items) {
@@ -150,7 +154,6 @@ public class AuctionAPI {
     */
 
 
-
     // This method is unused. keeping incase we need to do it on our own server in the future. Combined with Item.java it fetches lbin of an array of display names input.
 
     public static ArrayList<Double> auctionAPISearch(ArrayList<String> items) {
@@ -175,7 +178,7 @@ public class AuctionAPI {
             String auctionPage = Objects.requireNonNull(queryAPI("https://api.hypixel.net/skyblock/auctions?page=" + i)).toString();
             JsonObject auctionJSON = new Gson().fromJson(auctionPage, JsonObject.class);
             JsonArray auctions = auctionJSON.get("auctions").getAsJsonArray();
-           logger.info("page: " + auctionJSON.get("page").getAsInt());
+            LoggerUtil.LOGGER.info("page: " + auctionJSON.get("page").getAsInt());
 
             for (int j = 0; j < auctions.size(); j++) {
                 JsonObject auction = auctions.get(j).getAsJsonObject();
@@ -186,11 +189,11 @@ public class AuctionAPI {
                     System.out.println("Found item!");
 
                     if (auction.get("bin").getAsBoolean()) {
-                        logger.info("Item is BIN!");
+                        LoggerUtil.LOGGER.info("Item is BIN!");
                         int price = auction.get("starting_bid").getAsInt();
                         Item itemObject = getItemByName(itemList, item);
                         if (itemObject != null) {
-                            logger.info(itemObject.getName());
+                            LoggerUtil.LOGGER.info(itemObject.getName());
                         }
                         if (itemObject != null) {
                             itemObject.addCost(price);
@@ -239,11 +242,11 @@ public class AuctionAPI {
 
                 return response;
             } else {
-                logger.info("API connection failed!");
+                LoggerUtil.LOGGER.info("API connection failed!");
             }
 
         } catch (Exception e) {
-            logger.info("Error: " + e);
+            LoggerUtil.LOGGER.info("Error: " + e);
         }
         return null;
     }

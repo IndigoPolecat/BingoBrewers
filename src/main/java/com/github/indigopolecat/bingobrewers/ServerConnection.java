@@ -1,19 +1,21 @@
 package com.github.indigopolecat.bingobrewers;
 
 import java.io.IOException;
+
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.minlog.Log;
+import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.ConnectionIgn;
 import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Logger;
 
 import static com.esotericsoftware.minlog.Log.*;
 import static java.lang.String.valueOf;
@@ -26,7 +28,6 @@ public class ServerConnection extends Listener implements Runnable {
     public static final String PARTY = "Party";
     public static final String LOCATION = "Location";
     public static final String NOTE = "Note";
-    Logger logger = Logger.getLogger(ServerConnection.class.getName());
 
     // The Hud renderer checks this every time it renders
     public static ArrayList<HashMap<String, ArrayList<String>>> mapList = new ArrayList<>();
@@ -42,16 +43,16 @@ public class ServerConnection extends Listener implements Runnable {
         Client client1 = new Client();
         setClient(client1);
         if (bingoBrewers.client == null) {
-           logger.info("Client is null");
+            LoggerUtil.LOGGER.info("Client is null");
         }
         waitTime = 5000;
-        logger.info("Disconnected from server. Reconnecting in " + waitTime / 1000 + " seconds.");
+        LoggerUtil.LOGGER.info("Disconnected from server. Reconnecting in " + waitTime / 1000 + " seconds.");
         repeat = true;
         while (repeat) {
             try {
                 connection();
             } catch (Exception e) {
-                logger.info("Server Connection Error: " + e.getMessage());
+                LoggerUtil.LOGGER.info("Server Connection Error: " + e.getMessage());
                 bingoBrewers.client.close();
                 try {
                     Thread.sleep(waitTime);
@@ -74,9 +75,9 @@ public class ServerConnection extends Listener implements Runnable {
             public void received(Connection connection, Object object) {
                 if (object instanceof ConnectionIgn) {
                     ConnectionIgn request = (ConnectionIgn) object;
-                    logger.info(request.hello);
+                    LoggerUtil.LOGGER.info(request.hello);
                 } else if (object instanceof SplashNotification) {
-                   logger.info("Received splash notification");
+                    LoggerUtil.LOGGER.info("Received splash notification");
                     boolean sendNotif = true;
                     SplashNotification notif = (SplashNotification) object;
                     // Remove the previous splash notification with the same ID (if message is edited)
@@ -93,7 +94,9 @@ public class ServerConnection extends Listener implements Runnable {
                                     hubList.remove("DH" + hubNumber);
                                 }
 
-                            } catch (Exception ignored) {}
+                            } catch (Exception ignored) {
+
+                            }
 
                             // keep track of the original time the splash was sent, instead of updating each time it's edited
                             originalTime = Long.parseLong(map.get("Time").get(0));
@@ -130,19 +133,19 @@ public class ServerConnection extends Listener implements Runnable {
         bingoBrewers.client.start();
         if (bingoBrewers.TEST_INSTANCE) {
             // Note: for those compiling their own version, the test server will rarely be active so keep the boolean as false
-            logger.info("Connecting to test server");
+            LoggerUtil.LOGGER.info("Connecting to test server");
             bingoBrewers.client.connect(3000, "38.46.216.110", 9090, 9191);
         } else {
             bingoBrewers.client.connect(3000, "38.46.216.110", 8080, 7070);
         }
-        logger.info("Connected to server.");
+        LoggerUtil.LOGGER.info("Connected to server.");
         // send server player ign and version
         ConnectionIgn response = new ConnectionIgn();
         String ign = Minecraft.getMinecraft().getSession().getUsername();
-        response.hello =  ign + " v0.1 Beta";
-        logger.info("sending " + response.hello);
+        response.hello = ign + " v0.1 Beta";
+        LoggerUtil.LOGGER.info("sending " + response.hello);
         bingoBrewers.client.sendTCP(response);
-        logger.info("sent");
+        LoggerUtil.LOGGER.info("sent");
         // List of all keys that may be used in infopanel, in the order they'll be rendered in an element
         keyOrder.clear(); // clear the list so it doesn't keep adding the same keys every time you reconnect
         keyOrder.add(HUB);
@@ -254,7 +257,7 @@ public class ServerConnection extends Listener implements Runnable {
     public synchronized void sendPlayerCount(KryoNetwork.PlayerCount count) {
         Client currentClient = getClient();
         if (currentClient == null) {
-            logger.info("Client is null");
+            LoggerUtil.LOGGER.info("Client is null");
             return;
         }
         currentClient.sendUDP(count);
@@ -265,14 +268,14 @@ public class ServerConnection extends Listener implements Runnable {
         if (waitTime == 0) {
             waitTime = (int) (5000 * Math.random());
         }
-        logger.info("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
+        LoggerUtil.LOGGER.info("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
         repeat = true;
         while (repeat) {
             try {
                 bingoBrewers.client = new Client();
                 connection();
             } catch (Exception e) {
-               logger.info("Server Connection Error: " + e.getMessage());
+                LoggerUtil.LOGGER.info("Server Connection Error: " + e.getMessage());
                 try {
                     Thread.sleep(waitTime);
                 } catch (InterruptedException ex) {
@@ -283,7 +286,7 @@ public class ServerConnection extends Listener implements Runnable {
                 } else if (waitTime > 60000) {
                     waitTime = 60000;
                 }
-               logger.info("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
+                LoggerUtil.LOGGER.info("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
             }
         }
     }
