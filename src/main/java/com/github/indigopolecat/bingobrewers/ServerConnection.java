@@ -64,6 +64,7 @@ public class ServerConnection extends Listener implements Runnable {
         Log.set(LEVEL_ERROR);
         KryoNetwork.register(bingoBrewers.client);
         bingoBrewers.client.addListener(new Listener() {
+            @Override
             public void received(Connection connection, Object object) {
                 if (object instanceof ConnectionIgn) {
                     ConnectionIgn request = (ConnectionIgn) object;
