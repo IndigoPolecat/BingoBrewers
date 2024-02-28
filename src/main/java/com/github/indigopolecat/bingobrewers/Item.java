@@ -2,6 +2,7 @@ package com.github.indigopolecat.bingobrewers;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Logger;
 
 // This class is unused. keeping incase we need to do it on our own server in the future.
@@ -26,7 +27,7 @@ public class Item {
         return this.name;
     }
 
-    public ArrayList<Double> getCost() {
+    public List<Double> getCost() {
         return cost;
     }
 
