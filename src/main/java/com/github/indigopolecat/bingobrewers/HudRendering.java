@@ -128,7 +128,7 @@ public class HudRendering extends Hud {
 
     }
 
-    public void renderSplashHud(ArrayList<HashMap<String, ArrayList<String>>> infoPanel, float x, float y, float scale) {
+    public void renderSplashHud(List<HashMap<String, ArrayList<String>>> infoPanel, float x, float y, float scale) {
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
 
         ScaledResolution scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
