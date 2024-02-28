@@ -186,11 +186,11 @@ public class auctionAPI {
                     System.out.println("Found item!");
 
                     if (auction.get("bin").getAsBoolean()) {
-                        System.out.println("Item is BIN!");
+                        logger.info("Item is BIN!");
                         int price = auction.get("starting_bid").getAsInt();
                         Item itemObject = getItemByName(itemList, item);
                         if (itemObject != null) {
-                            System.out.println(itemObject.getName());
+                            logger.info(itemObject.getName());
                         }
                         if (itemObject != null) {
                             itemObject.addCost(price);
