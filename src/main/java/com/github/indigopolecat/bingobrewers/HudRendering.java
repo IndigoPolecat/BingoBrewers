@@ -46,41 +46,7 @@ public class HudRendering extends Hud {
         ArrayList<HashMap<String, ArrayList<String>>> infoPanel = new ArrayList<>();
         if (example && ServerConnection.mapList.isEmpty()) {
             // Example splash displayed in settings if none is active
-            HashMap<String, ArrayList<String>> infoMap = new HashMap<>();
-            ArrayList<String> hubInfo = new ArrayList<>();
-            hubInfo.add("Hub");
-            hubInfo.add(": 14");
-            infoMap.put("Hub", hubInfo);
-
-            ArrayList<String> splasherInfo = new ArrayList<>();
-            splasherInfo.add("Splasher");
-            splasherInfo.add(": indigo_polecat");
-            infoMap.put("Splasher", splasherInfo);
-
-            ArrayList<String> partyInfo = new ArrayList<>();
-            partyInfo.add("Bingo Party");
-            partyInfo.add(": /p join BingoParty");
-            infoMap.put("Party", partyInfo);
-
-            ArrayList<String> locationInfo = new ArrayList<>();
-            locationInfo.add("Location");
-            locationInfo.add(": Bea House");
-            infoMap.put("Location", locationInfo);
-
-            ArrayList<String> noteInfo = new ArrayList<>();
-            noteInfo.add("Note");
-            noteInfo.add(":");
-            noteInfo.add("This is an example splash");
-            infoMap.put("Note", noteInfo);
-
-            ArrayList<String> timeInfo = new ArrayList<>();
-            timeInfo.add("Time");
-            timeInfo.add(String.valueOf(Long.MAX_VALUE));
-            infoMap.put("Time", timeInfo);
-
-            ArrayList<String> splashId = new ArrayList<>();
-            splashId.add("1");
-            infoMap.put("Splash", splashId);
+            HashMap<String, ArrayList<String>> infoMap = getExampleHud();
 
             infoPanel.add(infoMap);
         } else {

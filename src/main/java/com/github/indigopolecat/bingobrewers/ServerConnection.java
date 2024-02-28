@@ -6,8 +6,7 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.minlog.Log;
 import com.github.indigopolecat.kryo.KryoNetwork;
-import com.github.indigopolecat.kryo.KryoNetwork.ReceivedString;
-import com.github.indigopolecat.kryo.KryoNetwork.ResponseString;
+import com.github.indigopolecat.kryo.KryoNetwork.ConnectionIgn;
 import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -62,8 +61,8 @@ public class ServerConnection extends Listener implements Runnable {
         KryoNetwork.register(bingoBrewers.client);
         bingoBrewers.client.addListener(new Listener() {
             public void received(Connection connection, Object object) {
-                if (object instanceof ReceivedString) {
-                    ReceivedString request = (ReceivedString) object;
+                if (object instanceof ConnectionIgn) {
+                    ConnectionIgn request = (ConnectionIgn) object;
                     System.out.println(request.hello);
                 } else if (object instanceof SplashNotification) {
                     System.out.println("Received splash notification");
@@ -119,15 +118,17 @@ public class ServerConnection extends Listener implements Runnable {
         });
         bingoBrewers.client.start();
         if (bingoBrewers.testInstance) {
+            // Note: for those compiling their own version, the test server will rarely be active so keep the boolean as false
             System.out.println("Connecting to test server");
             bingoBrewers.client.connect(3000, "38.46.216.110", 9090, 9191);
         } else {
             bingoBrewers.client.connect(3000, "38.46.216.110", 8080, 7070);
         }
         System.out.println("Connected to server.");
-        ResponseString response = new ResponseString();
+        // send server player ign and version
+        ConnectionIgn response = new ConnectionIgn();
         String ign = Minecraft.getMinecraft().getSession().getUsername();
-        response.hello =  ign + "";
+        response.hello =  ign + " v0.1 Beta";
         System.out.println("sending " + response.hello);
         bingoBrewers.client.sendTCP(response);
         System.out.println("sent");
