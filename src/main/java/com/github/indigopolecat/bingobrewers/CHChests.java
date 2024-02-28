@@ -5,6 +5,8 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -15,8 +17,8 @@ public class CHChests {
 
     static Logger logger = Logger.getLogger(CHChests.class.getName());
 
-    public static ArrayList<String> RecentChatMessages = new ArrayList<>();
-    public static HashMap<Long, String> ChestBlacklist = new HashMap<>();
+    public static List<String> RecentChatMessages = new ArrayList<>();
+    public static Map<Long, String> ChestBlacklist = new HashMap<>();
     static HashMap<String, Long> listeningChests = new HashMap<>();
     static long lastMessageTime = 0;
     static boolean addMessages = false;
