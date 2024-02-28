@@ -1,7 +1,10 @@
 package com.github.indigopolecat.bingobrewers;
 
+import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 // This class is unused. keeping incase we need to do it on our own server in the future.
 // Required for auctionAPI.java
@@ -11,26 +14,26 @@ public class Item {
 
     public Item(String name) {
         this.name = name;
-        this.cost = new ArrayList<Double>();
+        this.cost = new ArrayList<>();
     }
 
     public void addCost(double price) {
         this.cost.add(price);
-        System.out.println(price);
-        System.out.println(this.cost);
+        LoggerUtil.LOGGER.info(String.valueOf(price));
+        LoggerUtil.LOGGER.info(String.valueOf(this.cost));
     }
 
     public String getName() {
         return this.name;
     }
 
-    public ArrayList<Double> getCost() {
+    public List<Double> getCost() {
         return cost;
     }
 
     public double getLowestCost() {
         if (cost.isEmpty()) {
-            System.out.println("No Auction Items Found!");
+            LoggerUtil.LOGGER.info("No Auction Items Found!");
             return 0;
         } else {
             Collections.sort(cost);

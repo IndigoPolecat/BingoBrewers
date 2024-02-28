@@ -1,5 +1,6 @@
 package com.github.indigopolecat.bingobrewers;
 
+import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerChest;
 import net.minecraftforge.client.event.GuiOpenEvent;
@@ -8,11 +9,14 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+
 import java.text.DecimalFormat;
 
 public class ChestInventories {
@@ -30,6 +34,7 @@ public class ChestInventories {
     long lastRan;
     boolean hubSelectorOpen = false;
     boolean dungeonHubSelectorOpen = false;
+
     @SubscribeEvent
     public void onShopOpen(GuiOpenEvent event) {
         calculationsReady = false;
@@ -42,20 +47,24 @@ public class ChestInventories {
             if (gui instanceof ContainerChest) {
                 containerChest = (ContainerChest) gui;
                 String name = containerChest.getLowerChestInventory().getDisplayName().getUnformattedText();
-                if (name.equals("Bingo Shop")) {
-                    // If everything has been calculated within the last 60 seconds, don't bother recalculating
-                    if (System.currentTimeMillis() - lastRan < 120000) {
-                        calculationsReady = true;
-                        return;
-                    }
-                    tooltipInfoList.clear();
-                    bingoShopOpen = true;
-                } else if (name.equals("SkyBlock Hub Selector")) {
-                    System.out.println("Hub Selector Open");
-                    hubSelectorOpen = true;
-                } else if (name.equals("Dungeon Hub Selector")) {
-                    System.out.println("Dungeon Hub Selector Open");
-                    dungeonHubSelectorOpen = true;
+                switch (name) {
+                    case "Bingo Shop":
+                        // If everything has been calculated within the last 60 seconds, don't bother recalculating
+                        if (System.currentTimeMillis() - lastRan < 120000) {
+                            calculationsReady = true;
+                            return;
+                        }
+                        tooltipInfoList.clear();
+                        bingoShopOpen = true;
+                        break;
+                    case "SkyBlock Hub Selector":
+                        LoggerUtil.LOGGER.info("Hub Selector Open");
+                        hubSelectorOpen = true;
+                        break;
+                    case "Dungeon Hub Selector":
+                        LoggerUtil.LOGGER.info("Dungeon Hub Selector Open");
+                        dungeonHubSelectorOpen = true;
+                        break;
                 }
             }
         }
@@ -112,7 +121,7 @@ public class ChestInventories {
                 }
             }
             if (costInt == 0) {
-                System.out.println("Something went wrong: Bingo Point Cost not found in inventory named Bingo Shop!");
+                LoggerUtil.LOGGER.info("Something went wrong: Bingo Point Cost not found in inventory named Bingo Shop!");
             }
             ArrayList<String> itemNamesFormatless = new ArrayList<>();
             for (String itemName : itemNames) {
@@ -124,10 +133,10 @@ public class ChestInventories {
             }
 
             // Fetch the price map for all items in the chest with a cost, execute the rest of the code after
-            CompletableFuture<ArrayList<Double>> costFuture = auctionAPI.fetchPriceMap(itemNamesFormatless).whenComplete((lbinMap, throwable) -> {
+            CompletableFuture<ArrayList<Double>> costFuture = AuctionAPI.fetchPriceMap(itemNamesFormatless).whenComplete((lbinMap, throwable) -> {
             });
             costFuture.thenAccept(coinCosts -> {
-                CompletableFuture<ArrayList<Double>> extraItemFuture = auctionAPI.fetchPriceMap(extraItemsFormatless).whenComplete((lbinMap, throwable) -> {
+                CompletableFuture<ArrayList<Double>> extraItemFuture = AuctionAPI.fetchPriceMap(extraItemsFormatless).whenComplete((lbinMap, throwable) -> {
                 });
                 extraItemFuture.thenAccept(extraCoinCosts -> {
 
@@ -158,9 +167,9 @@ public class ChestInventories {
                             itemName = itemNames.get(i);
 
                             if (coinCost == 0) {
-                                System.out.println("Item not found in auction house or price is somehow 0: " + itemName);
+                                LoggerUtil.LOGGER.info("Item not found in auction house or price is somehow 0: " + itemName);
                             } else if (bingoCost == 0) {
-                                System.out.println("Failed to get Bingo Point cost of item: " + itemName);
+                                LoggerUtil.LOGGER.info("Failed to get Bingo Point cost of item: " + itemName);
                             } else {
                                 double coinsPerPointdouble = coinCost / bingoCost;
                                 long coinsPerPointLong = Math.round(coinsPerPointdouble);
@@ -213,7 +222,7 @@ public class ChestInventories {
                         }
                         lastRan = System.currentTimeMillis();
                     } else {
-                        System.out.println("Something went wrong: itemCosts, coinCosts, and itemNames are not the same size!");
+                        LoggerUtil.LOGGER.info("Something went wrong: itemCosts, coinCosts, and itemNames are not the same size!");
                     }
                 });
             });
@@ -281,6 +290,7 @@ public class ChestInventories {
         }
         return news;
     }
+
     public static String formatNumber(long number) {
         if (number < 1_000) {
             return String.valueOf(number);

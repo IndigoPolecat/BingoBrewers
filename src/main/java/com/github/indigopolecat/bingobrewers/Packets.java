@@ -1,5 +1,6 @@
 package com.github.indigopolecat.bingobrewers;
 
+import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -12,6 +13,7 @@ import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import com.github.indigopolecat.events.PacketEvent;
+
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -19,6 +21,7 @@ import java.util.regex.Pattern;
 
 
 public class Packets {
+
     // Fires event when an inventory packet is sent with a slot number greater than the slot count of the window.
     int slotCount = -1;
     boolean alreadyFired = false;
@@ -57,7 +60,8 @@ public class Packets {
                 event.setCanceled(true);
 
                 JsonObject locraw = new JsonParser().parse(message).getAsJsonObject();
-                Type type = new TypeToken<HashMap<String, String>>() {}.getType();
+                Type type = new TypeToken<HashMap<String, String>>() {
+                }.getType();
                 HashMap<String, String> locrawMap = new Gson().fromJson(locraw, type);
 
                 PlayerInfo.playerGameType = locrawMap.get("gametype");
@@ -74,7 +78,7 @@ public class Packets {
                         PlayerInfo.inSplashHub = true;
                         PlayerInfo.lastSplashHubUpdate = System.currentTimeMillis();
                     } else { // basically if the server isn't a hub, then it might be a dungeon hub so we check that
-                        PlayerInfo.playerHubNumber  = PlayerInfo.dungeonHubServerMap.get(PlayerInfo.currentServer);
+                        PlayerInfo.playerHubNumber = PlayerInfo.dungeonHubServerMap.get(PlayerInfo.currentServer);
 
                         // DH is a tag added to the hub number so regular hubs and dungeon hubs can be differentiated
                         if (PlayerInfo.playerHubNumber != null && ServerConnection.hubList.contains("DH" + PlayerInfo.playerHubNumber)) {
@@ -84,7 +88,7 @@ public class Packets {
                     }
                 }
 
-            }  else if (message.contains("You received") && PlayerInfo.playerLocation.equals("crystal_hollows")) {
+            } else if (message.contains("You received") && PlayerInfo.playerLocation.equals("crystal_hollows")) {
                 CHChests.addChatMessage(message);
             }
 
@@ -117,7 +121,7 @@ public class Packets {
                 return;
             }
             if (!hardstone.containsKey(coords.toString())) return;
-            System.out.println("Adding to blacklist " + coords);
+            LoggerUtil.LOGGER.info("Adding to blacklist " + coords);
 
             CHChests.ChestBlacklist.put(System.currentTimeMillis(), coords.toString());
 

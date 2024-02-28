@@ -1,5 +1,6 @@
 package com.github.indigopolecat.bingobrewers.mixin;
 
+import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import net.minecraft.client.gui.GuiMainMenu;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -11,6 +12,6 @@ public class MixinGuiMainMenu {
 
     @Inject(method = "initGui", at = @At("HEAD"))
     public void onInitGui(CallbackInfo ci) {
-        System.out.println("Hello from Main Menu!");
+        LoggerUtil.LOGGER.info("Hello from Main Menu!");
     }
 }

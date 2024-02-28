@@ -1,21 +1,22 @@
 package com.github.indigopolecat.bingobrewers;
 
-import net.minecraftforge.client.event.ClientChatReceivedEvent;
-import net.minecraftforge.event.ServerChatEvent;
+import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 public class CHChests {
-    public static ArrayList<String> RecentChatMessages = new ArrayList<>();
-    public static HashMap<Long, String> ChestBlacklist = new HashMap<>();
+
+    public static List<String> RecentChatMessages = new ArrayList<>();
+    public static Map<Long, String> ChestBlacklist = new HashMap<>();
     static HashMap<String, Long> listeningChests = new HashMap<>();
     static long lastMessageTime = 0;
     static boolean addMessages = false;
@@ -46,11 +47,11 @@ public class CHChests {
 
     public static void parseChat() {
 
-        System.out.println("chat messages done");
-        Object[] ChestBlacklistArray = ChestBlacklist.values().toArray();
+        LoggerUtil.LOGGER.info("chat messages done");
+        Object[] chestBlacklistArray = ChestBlacklist.values().toArray();
 
         for (int i = 0; i < ChestBlacklist.size(); i++) {
-            String key = (String) ChestBlacklistArray[i];
+            String key = (String) chestBlacklistArray[i];
             // Try to remove blacklisted chests
             listeningChests.remove(key);
         }
@@ -75,7 +76,7 @@ public class CHChests {
                 System.out.println(System.currentTimeMillis() - oldest);
             }
         }
-        System.out.println("going4");
+        LoggerUtil.LOGGER.info("going4");
 
         // Once a "You received" message is received, set the time remaining to 1 second for messages to come in
         long newTime = oldest + 8500;
@@ -84,13 +85,13 @@ public class CHChests {
         //String message = event.message.toString().replaceAll("§.", "");
         for (String message : RecentChatMessages) {
             message = removeFormatting(message);
-            Pattern itemPattern = Pattern.compile("^[You received] +?(\\d+)\\[\\w+(\\s+\\w+)*].");
+            Pattern itemPattern = Pattern.compile("^You received +?(\\d+)\\[\\w+(\\s+\\w+)*].");
             Matcher matcher = itemPattern.matcher(message);
 
             while (matcher.find()) {
                 String item = matcher.group(2);
-                System.out.println(item);
-                System.out.println("item found");
+                LoggerUtil.LOGGER.info(item);
+                LoggerUtil.LOGGER.info("item found");
             }
         }
         RecentChatMessages.clear();

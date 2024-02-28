@@ -100,7 +100,7 @@ dependencies {
 
     // If you don't want to log in with your real minecraft account, remove this line
     runtimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.1.2")
-    implementation("com.google.code.gson:gson:2.8.1")
+    implementation("com.google.code.gson:gson:2.9.1")
     shadowImpl("com.esotericsoftware:kryonet:2.22.0-RC1")
     // Basic OneConfig dependencies for legacy versions. See OneConfig example mod for more info
     modCompileOnly("cc.polyfrost:oneconfig-1.8.9-forge:0.2.2-alpha+") // Should not be included in jar

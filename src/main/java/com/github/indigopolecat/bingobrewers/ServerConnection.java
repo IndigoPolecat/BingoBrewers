@@ -1,22 +1,33 @@
 package com.github.indigopolecat.bingobrewers;
 
 import java.io.IOException;
+
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.minlog.Log;
+import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.ConnectionIgn;
 import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import static com.esotericsoftware.minlog.Log.*;
 import static java.lang.String.valueOf;
 
 public class ServerConnection extends Listener implements Runnable {
+
+    public static final String DUNGEON_HUB = "Dungeon Hub";
+    public static final String HUB = "Hub";
+    public static final String SPLASHER = "Splasher";
+    public static final String PARTY = "Party";
+    public static final String LOCATION = "Location";
+    public static final String NOTE = "Note";
 
     // The Hud renderer checks this every time it renders
     public static ArrayList<HashMap<String, ArrayList<String>>> mapList = new ArrayList<>();
@@ -32,16 +43,16 @@ public class ServerConnection extends Listener implements Runnable {
         Client client1 = new Client();
         setClient(client1);
         if (bingoBrewers.client == null) {
-            System.out.println("Client is null");
+            LoggerUtil.LOGGER.info("Client is null");
         }
         waitTime = 5000;
-        System.out.println("Disconnected from server. Reconnecting in " + waitTime / 1000 + " seconds.");
+        LoggerUtil.LOGGER.info("Disconnected from server. Reconnecting in " + waitTime / 1000 + " seconds.");
         repeat = true;
         while (repeat) {
             try {
                 connection();
             } catch (Exception e) {
-                System.out.println("Server Connection Error: " + e.getMessage());
+                LoggerUtil.LOGGER.info("Server Connection Error: " + e.getMessage());
                 bingoBrewers.client.close();
                 try {
                     Thread.sleep(waitTime);
@@ -60,29 +71,32 @@ public class ServerConnection extends Listener implements Runnable {
         Log.set(LEVEL_ERROR);
         KryoNetwork.register(bingoBrewers.client);
         bingoBrewers.client.addListener(new Listener() {
+            @Override
             public void received(Connection connection, Object object) {
                 if (object instanceof ConnectionIgn) {
                     ConnectionIgn request = (ConnectionIgn) object;
-                    System.out.println(request.hello);
+                    LoggerUtil.LOGGER.info(request.hello);
                 } else if (object instanceof SplashNotification) {
-                    System.out.println("Received splash notification");
+                    LoggerUtil.LOGGER.info("Received splash notification");
                     boolean sendNotif = true;
                     SplashNotification notif = (SplashNotification) object;
                     // Remove the previous splash notification with the same ID (if message is edited)
                     for (int i = 0; i < mapList.size(); i++) {
                         HashMap<String, ArrayList<String>> map = mapList.get(i);
                         if (map.get("Splash").get(0).equals(notif.splash)) {
-                            ArrayList<String> hubField = map.get("Hub");
+                            ArrayList<String> hubField = map.get(HUB);
                             // Don't send notification if the hub # or hub type (dungeon/normal) hasn't changed
                             try {
                                 String hubNumber = hubField.get(1).replaceAll(": (\\d+).*", "$1");
-                                if (hubNumber.equals(notif.message) && notif.dungeonHub == hubField.get(0).contains("Dungeon Hub")) {
+                                if (hubNumber.equals(notif.message) && notif.dungeonHub == hubField.get(0).contains(DUNGEON_HUB)) {
                                     sendNotif = false;
                                     hubList.remove(hubNumber);
                                     hubList.remove("DH" + hubNumber);
                                 }
 
-                            } catch (Exception ignored) {}
+                            } catch (Exception ignored) {
+
+                            }
 
                             // keep track of the original time the splash was sent, instead of updating each time it's edited
                             originalTime = Long.parseLong(map.get("Time").get(0));
@@ -94,14 +108,14 @@ public class ServerConnection extends Listener implements Runnable {
                 } else if (object instanceof KryoNetwork.PlayerCountBroadcast) {
                     KryoNetwork.PlayerCountBroadcast request = (KryoNetwork.PlayerCountBroadcast) object;
                     for (HashMap<String, ArrayList<String>> map : mapList) {
-                        if (map.containsKey("Hub")) {
-                            String hub = map.get("Hub").get(1).replaceAll(": (\\d+).*", "$1");
+                        if (map.containsKey(HUB)) {
+                            String hub = map.get(HUB).get(1).replaceAll(": (\\d+).*", "$1");
                             if (request.playerCounts.containsKey(hub)) {
                                 // If the hub is a dungeon hub, it has a 24 player limit
-                                if (map.get("Hub").get(0).equals("Dungeon Hub")) {
-                                    map.get("Hub").set(1, ": " + hub + " (" + request.playerCounts.get(hub) + "/24)");
+                                if (map.get(HUB).get(0).equals(DUNGEON_HUB)) {
+                                    map.get(HUB).set(1, ": " + hub + " (" + request.playerCounts.get(hub) + "/24)");
                                 } else {
-                                    map.get("Hub").set(1, ": " + hub + " (" + request.playerCounts.get(hub) + "/80)");
+                                    map.get(HUB).set(1, ": " + hub + " (" + request.playerCounts.get(hub) + "/80)");
                                 }
                             }
                         }
@@ -117,28 +131,28 @@ public class ServerConnection extends Listener implements Runnable {
 
         });
         bingoBrewers.client.start();
-        if (bingoBrewers.testInstance) {
+        if (bingoBrewers.TEST_INSTANCE) {
             // Note: for those compiling their own version, the test server will rarely be active so keep the boolean as false
-            System.out.println("Connecting to test server");
+            LoggerUtil.LOGGER.info("Connecting to test server");
             bingoBrewers.client.connect(3000, "38.46.216.110", 9090, 9191);
         } else {
             bingoBrewers.client.connect(3000, "38.46.216.110", 8080, 7070);
         }
-        System.out.println("Connected to server.");
+        LoggerUtil.LOGGER.info("Connected to server.");
         // send server player ign and version
         ConnectionIgn response = new ConnectionIgn();
         String ign = Minecraft.getMinecraft().getSession().getUsername();
-        response.hello =  ign + " v0.1 Beta";
-        System.out.println("sending " + response.hello);
+        response.hello = ign + " v0.1 Beta";
+        LoggerUtil.LOGGER.info("sending " + response.hello);
         bingoBrewers.client.sendTCP(response);
-        System.out.println("sent");
+        LoggerUtil.LOGGER.info("sent");
         // List of all keys that may be used in infopanel, in the order they'll be rendered in an element
         keyOrder.clear(); // clear the list so it doesn't keep adding the same keys every time you reconnect
-        keyOrder.add("Hub");
-        keyOrder.add("Splasher");
-        keyOrder.add("Party");
-        keyOrder.add("Location");
-        keyOrder.add("Note");
+        keyOrder.add(HUB);
+        keyOrder.add(SPLASHER);
+        keyOrder.add(PARTY);
+        keyOrder.add(LOCATION);
+        keyOrder.add(NOTE);
         repeat = false;
     }
 
@@ -174,40 +188,40 @@ public class ServerConnection extends Listener implements Runnable {
 
         ArrayList<String> hubInfo = new ArrayList<>();
         if (!notif.dungeonHub) {
-            hubInfo.add("Hub");
+            hubInfo.add(HUB);
             hubList.add(hub);
         } else {
-            hubInfo.add("Dungeon Hub");
+            hubInfo.add(DUNGEON_HUB);
             // Identify a hub as a dungeonhub to avoid mixing up regular hubs and dhubs
             hubList.add("DH" + hub);
         }
         hubInfo.add(": " + hub);
-        splashInfo.put("Hub", hubInfo);
+        splashInfo.put(HUB, hubInfo);
 
         ArrayList<String> splasherInfo = new ArrayList<>();
-        splasherInfo.add("Splasher");
+        splasherInfo.add(SPLASHER);
         splasherInfo.add(": " + splasher);
-        splashInfo.put("Splasher", splasherInfo);
+        splashInfo.put(SPLASHER, splasherInfo);
 
         ArrayList<String> partyInfo = new ArrayList<>();
         partyInfo.add("Bingo Party");
         partyInfo.add(": " + partyHost);
-        splashInfo.put("Party", partyInfo);
+        splashInfo.put(PARTY, partyInfo);
 
         ArrayList<String> locationInfo = new ArrayList<>();
-        locationInfo.add("Location");
+        locationInfo.add(LOCATION);
         locationInfo.add(": " + location);
-        splashInfo.put("Location", locationInfo);
+        splashInfo.put(LOCATION, locationInfo);
 
         ArrayList<String> noteInfo = new ArrayList<>();
-        noteInfo.add("Note");
+        noteInfo.add(NOTE);
         if (note == null || note.isEmpty()) {
             noteInfo.add(": No Note");
         } else {
             noteInfo.add(": ");
             noteInfo.addAll(note);
         }
-        splashInfo.put("Note", noteInfo);
+        splashInfo.put(NOTE, noteInfo);
 
         ArrayList<String> timeInfo = new ArrayList<>();
         if (originalTime != -1) {
@@ -243,7 +257,7 @@ public class ServerConnection extends Listener implements Runnable {
     public synchronized void sendPlayerCount(KryoNetwork.PlayerCount count) {
         Client currentClient = getClient();
         if (currentClient == null) {
-            System.out.println("Client is null");
+            LoggerUtil.LOGGER.info("Client is null");
             return;
         }
         currentClient.sendUDP(count);
@@ -254,14 +268,14 @@ public class ServerConnection extends Listener implements Runnable {
         if (waitTime == 0) {
             waitTime = (int) (5000 * Math.random());
         }
-        System.out.println("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
+        LoggerUtil.LOGGER.info("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
         repeat = true;
         while (repeat) {
             try {
                 bingoBrewers.client = new Client();
                 connection();
             } catch (Exception e) {
-                System.out.println("Server Connection Error: " + e.getMessage());
+                LoggerUtil.LOGGER.info("Server Connection Error: " + e.getMessage());
                 try {
                     Thread.sleep(waitTime);
                 } catch (InterruptedException ex) {
@@ -272,7 +286,7 @@ public class ServerConnection extends Listener implements Runnable {
                 } else if (waitTime > 60000) {
                     waitTime = 60000;
                 }
-                System.out.println("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
+                LoggerUtil.LOGGER.info("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
             }
         }
     }
