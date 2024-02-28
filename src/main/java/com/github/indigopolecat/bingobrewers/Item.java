@@ -14,7 +14,7 @@ public class Item {
 
     public Item(String name) {
         this.name = name;
-        this.cost = new ArrayList<Double>();
+        this.cost = new ArrayList<>();
     }
 
     public void addCost(double price) {
