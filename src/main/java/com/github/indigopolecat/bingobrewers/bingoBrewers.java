@@ -18,7 +18,7 @@ public class bingoBrewers {
     public static volatile TitleHud activeTitle;
     public static volatile Client client;
     // controls which server is connected to
-    public static final boolean testInstance = false;
+    public static final boolean TEST_INSTANCE = false;
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
