@@ -56,8 +56,6 @@ public class Packets {
             S02PacketChat packet = (S02PacketChat) event.getPacket();
             String message = packet.getChatComponent().getUnformattedText();
             if (message.startsWith("{") && message.endsWith("}")) {
-                // don't send locraw messages in chat
-                event.setCanceled(true);
 
                 JsonObject locraw = new JsonParser().parse(message).getAsJsonObject();
                 Type type = new TypeToken<HashMap<String, String>>() {
@@ -164,17 +162,4 @@ public class Packets {
     public static class InventoryLoadingDoneEvent extends Event {
     }
 
-    public static class RandomString {
-        public static String randomString(int size) {
-            String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                    + "0123456789"
-                    + "abcdefghijklmnopqrstuvxyz";
-            StringBuilder sb = new StringBuilder(size);
-            for (int i = 0; i < size; i++) {
-                int index = (int) (AlphaNumericString.length() * Math.random());
-                sb.append(AlphaNumericString.charAt(index));
-            }
-            return sb.toString();
-        }
-    }
 }

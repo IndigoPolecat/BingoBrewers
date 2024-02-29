@@ -25,6 +25,7 @@ public class bingoBrewers {
         MinecraftForge.EVENT_BUS.register(new CHChests());
         MinecraftForge.EVENT_BUS.register(new PlayerInfo());
         MinecraftForge.EVENT_BUS.register(new HudRendering());
+        MinecraftForge.EVENT_BUS.register(new ChatTextUtil());
         config = new BingoBrewersConfig();
         ServerConnection serverConnection = new ServerConnection();
         try {

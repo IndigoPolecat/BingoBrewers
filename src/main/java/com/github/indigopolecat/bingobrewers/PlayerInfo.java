@@ -46,6 +46,7 @@ public class PlayerInfo {
                 EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
                 if (player != null) {
                     player.sendChatMessage("/locraw");
+                    ChatTextUtil.cancelLocRawMessage = true;
 
                     lastPositionUpdate = System.currentTimeMillis();
                     newLoad = false;
