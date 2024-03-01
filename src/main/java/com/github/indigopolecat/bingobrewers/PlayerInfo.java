@@ -60,7 +60,6 @@ public class PlayerInfo {
                 }
             }
             ServerData serverData = Minecraft.getMinecraft().getCurrentServerData();
-            System.out.println(serverData);
             if (serverData != null) {
                 currentServer = serverData.serverIP;
                 if (currentServer != null) {
