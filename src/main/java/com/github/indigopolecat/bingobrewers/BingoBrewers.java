@@ -8,13 +8,14 @@ import net.minecraftforge.common.MinecraftForge;
 import com.github.indigopolecat.events.PacketListener;
 
 @Mod(modid = "bingobrewers", version = "0.1", useMetadata = true)
-public class bingoBrewers {
+public class BingoBrewers {
     private BingoBrewersConfig config;
 
     public static volatile TitleHud activeTitle;
     public static volatile Client client;
     // controls which server is connected to
     public static final boolean TEST_INSTANCE = false;
+    public static boolean onHypixel = false;
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {

@@ -237,7 +237,7 @@ public class HudRendering extends Hud {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void renderGameOverlay(RenderGameOverlayEvent event) {
         if (event.type != RenderGameOverlayEvent.ElementType.TEXT) return;
-        TitleHud activeTitle = bingoBrewers.activeTitle;
+        TitleHud activeTitle = BingoBrewers.activeTitle;
         if (activeTitle != null && activeTitle.displayTime > System.currentTimeMillis() - activeTitle.startTime) {
             activeTitle.drawTitle();
         }

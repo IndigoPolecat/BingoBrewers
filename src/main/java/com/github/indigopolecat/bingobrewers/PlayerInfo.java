@@ -4,6 +4,7 @@ package com.github.indigopolecat.bingobrewers;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.multiplayer.ServerData;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -22,6 +23,7 @@ public class PlayerInfo {
     public static String currentServer = "";
     public static HashMap<String, String> hubServerMap = new HashMap<>();
     public static HashMap<String, String> dungeonHubServerMap = new HashMap<>();
+    public static int tickCounter = 0;
 
     @SubscribeEvent
     public void onWorldJoin(WorldEvent event) {
@@ -40,20 +42,41 @@ public class PlayerInfo {
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             // /locraw 2s after you join the server and every 20s after
-            if (lastWorldLoad == -1) return;
-            if (System.currentTimeMillis() - lastWorldLoad > 2000 || System.currentTimeMillis() - lastPositionUpdate > 20000) {
-                if (!newLoad) return;
-                EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-                if (player != null) {
-                    player.sendChatMessage("/locraw");
-                    ChatTextUtil.cancelLocRawMessage = true;
+            tickCounter++;
+            if (lastWorldLoad == -1 || tickCounter % 20 != 0) return;
+            tickCounter = 0;
+            // Temporarily set newLoad to true when we want to update our locraw (updating is likely not necessary but it ensures we are working with the most recent data and does little harm)
+            if (System.currentTimeMillis() - lastPositionUpdate > 30000) newLoad = true;
+            if (System.currentTimeMillis() - lastWorldLoad > 2000 || System.currentTimeMillis() - lastPositionUpdate > 30000) {
+                if (BingoBrewers.onHypixel && newLoad) {
+                    EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
+                    if (player != null) {
+                        player.sendChatMessage("/locraw");
+                        ChatTextUtil.cancelLocRawMessage = true;
 
-                    lastPositionUpdate = System.currentTimeMillis();
-                    newLoad = false;
+                        lastPositionUpdate = System.currentTimeMillis();
+                        newLoad = false;
+                    }
                 }
             }
+            ServerData serverData = Minecraft.getMinecraft().getCurrentServerData();
+            System.out.println(serverData);
+            if (serverData != null) {
+                currentServer = serverData.serverIP;
+                if (currentServer != null) {
+                    String[] serverDomain = currentServer.split("\\.");
+                    for (String domain : serverDomain) {
+                        if (domain.equalsIgnoreCase("hypixel")) {
+                            BingoBrewers.onHypixel = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
         }
     }
+
 
     public void setPlayerCount(int playercount) {
         int currentCount = playerCount;
