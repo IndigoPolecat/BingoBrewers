@@ -237,11 +237,12 @@ public class ServerConnection extends Listener implements Runnable {
 
         mapList.add(splashInfo);
         if (sendNotif) {
-            notification(hub, notif.dungeonHub);
+            PlayerInfo.setReadyToNotify(hub, notif.dungeonHub);
         }
     }
 
-    public void notification(String hub, boolean dungeonHub) {
+    // This is called onTickEvent in PlayerInfo when the player is not null
+    public synchronized void notification(String hub, boolean dungeonHub) {
         EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
         if (!dungeonHub) {
             TitleHud titleHud = new TitleHud("Splash in Hub " + hub, 0x8BAFE0, 4000);

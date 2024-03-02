@@ -24,6 +24,9 @@ public class PlayerInfo {
     public static HashMap<String, String> hubServerMap = new HashMap<>();
     public static HashMap<String, String> dungeonHubServerMap = new HashMap<>();
     public static int tickCounter = 0;
+    public volatile static boolean readyToNotify = false;
+    public volatile static String splashHubNumberForNotification = null;
+    public volatile static boolean readyToNotifyDungeon = false;
 
     @SubscribeEvent
     public void onWorldJoin(WorldEvent event) {
@@ -72,7 +75,11 @@ public class PlayerInfo {
                     }
                 }
             }
-
+            if (readyToNotify && Minecraft.getMinecraft().thePlayer != null) {
+                readyToNotify = false;
+                ServerConnection serverConnection = new ServerConnection();
+                serverConnection.notification(splashHubNumberForNotification, readyToNotifyDungeon);
+            }
         }
     }
 
@@ -93,5 +100,11 @@ public class PlayerInfo {
             ServerConnection serverConnection = new ServerConnection();
             serverConnection.sendPlayerCount(count);
         }
+    }
+
+    public static void setReadyToNotify(String hub, boolean dungeonHub) {
+        readyToNotify = true;
+        splashHubNumberForNotification = hub;
+        readyToNotifyDungeon = dungeonHub;
     }
 }
