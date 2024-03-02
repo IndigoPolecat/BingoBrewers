@@ -43,7 +43,6 @@ public class ChestInventories {
         if (event.gui instanceof GuiChest) {
             guiChest = (GuiChest) event.gui;
             Container gui = guiChest.inventorySlots;
-
             if (gui instanceof ContainerChest) {
                 containerChest = (ContainerChest) gui;
                 String name = containerChest.getLowerChestInventory().getDisplayName().getUnformattedText();
