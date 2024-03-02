@@ -73,7 +73,7 @@ public class ServerConnection extends Listener implements Runnable {
         BingoBrewers.client.addListener(new Listener() {
             @Override
             public void received(Connection connection, Object object) {
-                if(!ScoreBoard.isBingo()) return;
+                if(!ScoreBoard.isBingo() && !BingoBrewersConfig.splashNotificationsInBingo) return;
                 if (object instanceof ConnectionIgn) {
                     ConnectionIgn request = (ConnectionIgn) object;
                     LoggerUtil.LOGGER.info(request.hello);
