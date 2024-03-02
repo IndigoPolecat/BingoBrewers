@@ -27,6 +27,7 @@ public class PlayerInfo {
     public volatile static boolean readyToNotify = false;
     public volatile static String splashHubNumberForNotification = null;
     public volatile static boolean readyToNotifyDungeon = false;
+    public volatile static long lastNotification = 0;
 
     @SubscribeEvent
     public void onWorldJoin(WorldEvent event) {
@@ -75,6 +76,8 @@ public class PlayerInfo {
                     }
                 }
             }
+            // Expire notification after 5s
+            if (System.currentTimeMillis() - lastNotification > 5000) readyToNotify = false;
             if (readyToNotify && Minecraft.getMinecraft().thePlayer != null) {
                 readyToNotify = false;
                 ServerConnection serverConnection = new ServerConnection();
@@ -106,5 +109,6 @@ public class PlayerInfo {
         readyToNotify = true;
         splashHubNumberForNotification = hub;
         readyToNotifyDungeon = dungeonHub;
+        lastNotification = System.currentTimeMillis();
     }
 }
