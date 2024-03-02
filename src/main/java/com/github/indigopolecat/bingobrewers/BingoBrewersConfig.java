@@ -1,6 +1,7 @@
 package com.github.indigopolecat.bingobrewers;
 
 import cc.polyfrost.oneconfig.config.Config;
+import cc.polyfrost.oneconfig.config.annotations.Slider;
 import cc.polyfrost.oneconfig.config.annotations.Switch;
 import cc.polyfrost.oneconfig.config.data.Mod;
 import cc.polyfrost.oneconfig.config.data.ModType;
@@ -14,16 +15,24 @@ public class BingoBrewersConfig extends Config {
 
     @Switch(
             name = "Splash Notifications",
-            category = "Hud",
+            category = "Splash Notifications",
             description = "Enable or disable splash notifications"
     )
     public static boolean splashNotificationsEnabled = true;
 
     @HUD(
-            name = "Splash Hud",
-            category = "Hud"
+            name = "Splash HUD",
+            category = "Splash Notifications"
     )
     public HudRendering hud = new HudRendering();
+
+    @Slider(
+            name = "Notification Volume (%)",
+            category = "Splash Notifications",
+            description = "Set the volume of the splash notification",
+            min = 0f, max = 200f
+    )
+    public static float splashNotificationVolume = 100f;
 
     @Switch(
             name = "Show Coins/Bingo Point",

@@ -253,7 +253,7 @@ public class ServerConnection extends Listener implements Runnable {
             setActiveHud(titleHud);
         }
 
-        player.playSound("bingobrewers:splash_notification", 1.0f, 1.0f);
+        player.playSound("bingobrewers:splash_notification", BingoBrewersConfig.splashNotificationVolume/100f, 1.0f);
     }
 
     public synchronized void sendPlayerCount(KryoNetwork.PlayerCount count) {
