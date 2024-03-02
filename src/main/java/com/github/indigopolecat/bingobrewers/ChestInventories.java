@@ -49,6 +49,7 @@ public class ChestInventories {
                 String name = containerChest.getLowerChestInventory().getDisplayName().getUnformattedText();
                 switch (name) {
                     case "Bingo Shop":
+                        if (!BingoBrewersConfig.showCoinsPerBingoPoint) return;
                         // If everything has been calculated within the last 60 seconds, don't bother recalculating
                         if (System.currentTimeMillis() - lastRan < 120000) {
                             calculationsReady = true;

@@ -27,9 +27,6 @@ public class HudRendering extends Hud {
     float longestWidth = 0;
     float fontSize = 0.2F;
 
-
-
-
     public HudRendering() {
         super(true);
         EventManager.INSTANCE.register(this);
@@ -39,12 +36,12 @@ public class HudRendering extends Hud {
     @Override
     protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
         ArrayList<HashMap<String, ArrayList<String>>> infoPanel = new ArrayList<>();
-        if (example && ServerConnection.mapList.isEmpty()) {
+        if (example && (ServerConnection.mapList.isEmpty() || !BingoBrewersConfig.splashNotificationsEnabled)) {
             // Example splash displayed in settings if none is active
             HashMap<String, ArrayList<String>> infoMap = getExampleHud();
 
             infoPanel.add(infoMap);
-        } else {
+        } else if (BingoBrewersConfig.splashNotificationsEnabled) {
             renderCounter++;
             // The list containing each hashmap of info to be displayed
             infoPanel = ServerConnection.mapList;

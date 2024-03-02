@@ -243,6 +243,7 @@ public class ServerConnection extends Listener implements Runnable {
 
     // This is called onTickEvent in PlayerInfo when the player is not null
     public synchronized void notification(String hub, boolean dungeonHub) {
+        if (!BingoBrewersConfig.splashNotificationsEnabled) return;
         EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
         if (!dungeonHub) {
             TitleHud titleHud = new TitleHud("Splash in Hub " + hub, 0x8BAFE0, 4000);
@@ -256,6 +257,7 @@ public class ServerConnection extends Listener implements Runnable {
     }
 
     public synchronized void sendPlayerCount(KryoNetwork.PlayerCount count) {
+        if (!BingoBrewersConfig.splashNotificationsEnabled) return;
         Client currentClient = getClient();
         if (currentClient == null) {
             LoggerUtil.LOGGER.info("Client is null");

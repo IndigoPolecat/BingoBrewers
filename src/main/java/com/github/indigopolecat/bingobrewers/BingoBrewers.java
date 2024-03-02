@@ -14,7 +14,7 @@ public class BingoBrewers {
     public static volatile TitleHud activeTitle;
     public static volatile Client client;
     // controls which server is connected to
-    public static final boolean TEST_INSTANCE = false;
+    public static final boolean TEST_INSTANCE = true;
     public static boolean onHypixel = false;
 
     @Mod.EventHandler
