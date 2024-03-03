@@ -12,7 +12,6 @@ import com.github.indigopolecat.kryo.KryoNetwork.ConnectionIgn;
 import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.util.ChatComponentText;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -247,13 +246,13 @@ public class ServerConnection extends Listener implements Runnable {
     public synchronized void notification(String hub, boolean dungeonHub) {
         if (!BingoBrewersConfig.splashNotificationsEnabled) return;
         EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-        TitleHud titleHud;
         if (!dungeonHub) {
-            titleHud = new TitleHud("Splash in Hub " + hub, Integer.parseInt(BingoBrewersConfig.splashNotificationColor.getHex(), 16), 4000);
+            TitleHud titleHud = new TitleHud("Splash in Hub " + hub, 0x8BAFE0, 4000);
+            setActiveHud(titleHud);
         } else {
-            titleHud = new TitleHud("Splash in Dungeon Hub " + hub, Integer.parseInt(BingoBrewersConfig.splashNotificationColor.getHex(), 16), 4000);
+            TitleHud titleHud = new TitleHud("Splash in Dungeon Hub " + hub, 0x8BAFE0, 4000);
+            setActiveHud(titleHud);
         }
-        setActiveHud(titleHud);
 
         player.playSound("bingobrewers:splash_notification", BingoBrewersConfig.splashNotificationVolume/100f, 1.0f);
     }

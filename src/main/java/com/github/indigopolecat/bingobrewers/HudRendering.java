@@ -19,13 +19,17 @@ import java.util.List;
 
 public class HudRendering extends Hud {
     float lastLineRenderedAtY = 0;
-    int lineCount = 0;
+    int totalLines = 0;
     boolean listTooLong = false;
     long renderCounter = 0;
-    ArrayList<Long> latestSplash = new ArrayList<>(2);
+    // For some reason, latestSplash becomes bloated because it is stored in a config class, don't know how to fix but it's not a massive issue immediately, though it will inflate file size.
+    public static ArrayList<Long> latestSplash = new ArrayList<>(2);
     float totalHeight = 0;
     float longestWidth = 0;
     float fontSize = 0.2F;
+    // This is in this class so it is stored between game instances
+    public static boolean onBingo = false;
+    public static boolean inSkyblockorPTLobby = false;
 
     public HudRendering() {
         super(true);
@@ -36,6 +40,8 @@ public class HudRendering extends Hud {
     @Override
     protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
         ArrayList<HashMap<String, ArrayList<String>>> infoPanel = new ArrayList<>();
+        if(!onBingo && !BingoBrewersConfig.splashNotificationsInBingo && !example) return;
+        if(!HudRendering.inSkyblockorPTLobby && !BingoBrewersConfig.splashNotificationsOutsideSkyblock && !example) return;
         if (example && (ServerConnection.mapList.isEmpty() || !BingoBrewersConfig.splashNotificationsEnabled)) {
             // Example splash displayed in settings if none is active
             HashMap<String, ArrayList<String>> infoMap = getExampleHud();
@@ -62,7 +68,7 @@ public class HudRendering extends Hud {
                         ServerConnection.hubList.remove(hubNumber);
                         ServerConnection.hubList.remove("DH" + hubNumber);
                         ServerConnection.mapList.remove(infoMap);
-                        latestSplash.remove(Long.parseLong(infoMap.get("Time").get(0)));
+                        latestSplash.remove(time);
                         if (PlayerInfo.playerHubNumber == null) {
                             PlayerInfo.inSplashHub = false;
                             continue;
@@ -100,7 +106,7 @@ public class HudRendering extends Hud {
         renderSplashHud(infoPanel, x + 1, y, scale);
 
         // Set height of background
-        totalHeight = lineCount * 10 + 3;
+        totalHeight = totalLines * 10 - 7;
 
         // Reset at the end
         lastLineRenderedAtY = y + 3;
@@ -116,7 +122,7 @@ public class HudRendering extends Hud {
             longestWidth = 200;
         }
 
-        return longestWidth * scale;
+        return (longestWidth * scale) + 3;
     }
 
     @Override
@@ -133,6 +139,7 @@ public class HudRendering extends Hud {
 
         fontSize = scale;
         longestWidth = 0;
+        totalLines = 0;
 
         // set font size
         GL11.glPushMatrix();
@@ -150,7 +157,7 @@ public class HudRendering extends Hud {
             Color colorText = new Color(255, 255, 255);
             // Yellow
             Color colorPrefix = new Color(255, 255, 85);
-            lineCount = 0;
+            int lineCount = 0;
             listTooLong = false;
             // loop through the hashmap of the splash
             for (int k = 0; k < ServerConnection.keyOrder.size(); k++) {
@@ -207,6 +214,7 @@ public class HudRendering extends Hud {
                     }
                 }
             }
+            totalLines += lineCount + 1;
             // add a buffer between parts
             lastLineRenderedAtY += 10;
         }

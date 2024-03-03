@@ -1,10 +1,8 @@
 package com.github.indigopolecat.bingobrewers;
 
 import cc.polyfrost.oneconfig.config.Config;
-import cc.polyfrost.oneconfig.config.annotations.Color;
 import cc.polyfrost.oneconfig.config.annotations.Slider;
 import cc.polyfrost.oneconfig.config.annotations.Switch;
-import cc.polyfrost.oneconfig.config.core.OneColor;
 import cc.polyfrost.oneconfig.config.data.Mod;
 import cc.polyfrost.oneconfig.config.data.ModType;
 import cc.polyfrost.oneconfig.config.annotations.HUD;
@@ -28,13 +26,6 @@ public class BingoBrewersConfig extends Config {
             description = "Whether to show splash notifications in all profiles or just bingo."
     )
     public static boolean splashNotificationsInBingo = true;
-
-    @Color(
-            name = "Splash Notification Color",
-            category = "Splash Notifications",
-            description = "Set the color of the splash notification title"
-    )
-    public static OneColor splashNotificationColor = new OneColor(139,175,224);
 
     @HUD(
             name = "Splash HUD",
