@@ -163,6 +163,9 @@ public class ServerConnection extends Listener implements Runnable {
 
     public void updateMapList(SplashNotification notif, boolean sendNotif) {
         String hub = notif.message;
+        if (hub == null) {
+            hub = "Unknown Hub";
+        }
         String splasher = notif.splasher;
         String partyHost = notif.partyHost;
         if (!partyHost.equals("No Party")) {
@@ -236,10 +239,20 @@ public class ServerConnection extends Listener implements Runnable {
         if(!HudRendering.inSkyblockorPTLobby && !BingoBrewersConfig.splashNotificationsOutsideSkyblock) return;
         EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
         if (!dungeonHub) {
-            TitleHud titleHud = new TitleHud("Splash in Hub " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000);
+            if (hub.equalsIgnoreCase("Unknown Hub")) {
+                hub = "Unknown Hub";
+            } else {
+                hub = "Hub " + hub;
+            }
+            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000);
             setActiveHud(titleHud);
         } else {
-            TitleHud titleHud = new TitleHud("Splash in Dungeon Hub " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000);
+            if (hub.equalsIgnoreCase("Unknown Hub")) {
+                hub = "Unknown Dungeon Hub";
+            } else {
+                hub = "Dungeon Hub " + hub;
+            }
+            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000);
             setActiveHud(titleHud);
         }
 
