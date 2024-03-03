@@ -10,7 +10,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.common.MinecraftForge;
 import com.github.indigopolecat.events.PacketListener;
 
-@Mod(modid = "bingobrewers", version = "0.1", useMetadata = true)
+@Mod(modid = "bingobrewers", version = "0.2", useMetadata = true)
 public class BingoBrewers {
     public static BingoBrewersConfig config;
 

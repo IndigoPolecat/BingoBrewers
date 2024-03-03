@@ -130,7 +130,7 @@ public class ServerConnection extends Listener implements Runnable {
         // send server player ign and version
         ConnectionIgn response = new ConnectionIgn();
         String ign = Minecraft.getMinecraft().getSession().getUsername();
-        response.hello = ign + "|v0.1|Beta";
+        response.hello = ign + "|v0.2|Beta";
         LoggerUtil.LOGGER.info("sending " + response.hello);
         BingoBrewers.client.sendTCP(response);
         LoggerUtil.LOGGER.info("sent");
@@ -237,6 +237,7 @@ public class ServerConnection extends Listener implements Runnable {
         if (!BingoBrewersConfig.splashNotificationsEnabled) return;
         if(!HudRendering.onBingo && !BingoBrewersConfig.splashNotificationsInBingo) return;
         if(!HudRendering.inSkyblockorPTLobby && !BingoBrewersConfig.splashNotificationsOutsideSkyblock) return;
+        if(!BingoBrewers.onHypixel) return;
         EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
         if (!dungeonHub) {
             if (hub.equalsIgnoreCase("Unknown Hub")) {
