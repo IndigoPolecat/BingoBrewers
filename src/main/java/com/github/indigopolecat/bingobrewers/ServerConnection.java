@@ -247,7 +247,6 @@ public class ServerConnection extends Listener implements Runnable {
     public synchronized void notification(String hub, boolean dungeonHub) {
         if (!BingoBrewersConfig.splashNotificationsEnabled) return;
         EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-        Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(BingoBrewersConfig.splashNotificationColor.getHex()));
         TitleHud titleHud;
         if (!dungeonHub) {
             titleHud = new TitleHud("Splash in Hub " + hub, Integer.parseInt(BingoBrewersConfig.splashNotificationColor.getHex(), 16), 4000);
