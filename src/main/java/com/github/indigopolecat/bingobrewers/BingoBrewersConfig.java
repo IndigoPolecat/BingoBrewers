@@ -20,6 +20,13 @@ public class BingoBrewersConfig extends Config {
     )
     public static boolean splashNotificationsEnabled = true;
 
+    @Switch(
+            name = "Show Splash Notifications in All Profiles",
+            category = "Splash Notifications",
+            description = "Whether to show splash notifications in all profiles or just bingo."
+    )
+    public static boolean splashNotificationsInBingo = true;
+
     @HUD(
             name = "Splash HUD",
             category = "Splash Notifications"
