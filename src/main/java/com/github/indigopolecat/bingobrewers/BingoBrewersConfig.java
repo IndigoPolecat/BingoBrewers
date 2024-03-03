@@ -39,6 +39,13 @@ public class BingoBrewersConfig extends Config {
     )
     public static boolean splashNotificationsInBingo = true;
 
+    @Switch(
+            name = "Show Splash Notifications outside of Skyblock",
+            category = "Splash Notifications",
+            description = "Whether to show splash notifications outside of skyblock AND the prototype lobby."
+    )
+    public static boolean splashNotificationsOutsideSkyblock = true;
+
 
     @HUD(
             name = "Splash Notification HUD",

@@ -29,6 +29,7 @@ public class HudRendering extends Hud {
     float fontSize = 0.2F;
     // This is in this class so it is stored between game instances
     public static boolean onBingo = false;
+    public static boolean inSkyblockorPTLobby = false;
 
     public HudRendering() {
         super(true);
@@ -40,6 +41,7 @@ public class HudRendering extends Hud {
     protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
         ArrayList<HashMap<String, ArrayList<String>>> infoPanel = new ArrayList<>();
         if(!onBingo && !BingoBrewersConfig.splashNotificationsInBingo) return;
+        if(!HudRendering.inSkyblockorPTLobby && !BingoBrewersConfig.splashNotificationsOutsideSkyblock) return;
         if (example && (ServerConnection.mapList.isEmpty() || !BingoBrewersConfig.splashNotificationsEnabled)) {
             // Example splash displayed in settings if none is active
             HashMap<String, ArrayList<String>> infoMap = getExampleHud();
