@@ -45,24 +45,11 @@ public class ServerConnection extends Listener implements Runnable {
         if (BingoBrewers.client == null) {
             LoggerUtil.LOGGER.info("Client is null");
         }
-        waitTime = 5000;
-        LoggerUtil.LOGGER.info("Disconnected from server. Reconnecting in " + waitTime / 1000 + " seconds.");
-        repeat = true;
-        while (repeat) {
-            try {
-                connection();
-            } catch (Exception e) {
-                LoggerUtil.LOGGER.info("Server Connection Error: " + e.getMessage());
-                BingoBrewers.client.close();
-                try {
-                    Thread.sleep(waitTime);
-                } catch (InterruptedException ex) {
-                    throw new RuntimeException(ex);
-                }
-                if (waitTime < 60000) {
-                    waitTime *= Math.random();
-                }
-            }
+        try {
+            connection();
+        } catch (Exception e) {
+            LoggerUtil.LOGGER.info("Server Connection Error: " + e.getMessage());
+            reconnect();
         }
 
     }
@@ -73,6 +60,7 @@ public class ServerConnection extends Listener implements Runnable {
         BingoBrewers.client.addListener(new Listener() {
             @Override
             public void received(Connection connection, Object object) {
+
                 if (object instanceof ConnectionIgn) {
                     ConnectionIgn request = (ConnectionIgn) object;
                     LoggerUtil.LOGGER.info(request.hello);
@@ -248,10 +236,10 @@ public class ServerConnection extends Listener implements Runnable {
         if(!HudRendering.inSkyblockorPTLobby && !BingoBrewersConfig.splashNotificationsOutsideSkyblock) return;
         EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
         if (!dungeonHub) {
-            TitleHud titleHud = new TitleHud("Splash in Hub " + hub, 0x8BAFE0, 4000);
+            TitleHud titleHud = new TitleHud("Splash in Hub " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000);
             setActiveHud(titleHud);
         } else {
-            TitleHud titleHud = new TitleHud("Splash in Dungeon Hub " + hub, 0x8BAFE0, 4000);
+            TitleHud titleHud = new TitleHud("Splash in Dungeon Hub " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000);
             setActiveHud(titleHud);
         }
 
@@ -270,6 +258,7 @@ public class ServerConnection extends Listener implements Runnable {
 
     public void reconnect() {
         BingoBrewers.client.close();
+        BingoBrewers.client.removeListener(this);
         if (waitTime == 0) {
             waitTime = (int) (5000 * Math.random());
         }
@@ -281,6 +270,8 @@ public class ServerConnection extends Listener implements Runnable {
                 connection();
             } catch (Exception e) {
                 LoggerUtil.LOGGER.info("Server Connection Error: " + e.getMessage());
+                BingoBrewers.client.close();
+                BingoBrewers.client.removeListener(this);
                 try {
                     Thread.sleep(waitTime);
                 } catch (InterruptedException ex) {

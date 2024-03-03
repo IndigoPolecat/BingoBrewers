@@ -1,13 +1,11 @@
 package com.github.indigopolecat.bingobrewers;
 
 import cc.polyfrost.oneconfig.config.Config;
-import cc.polyfrost.oneconfig.config.annotations.Info;
-import cc.polyfrost.oneconfig.config.annotations.Slider;
-import cc.polyfrost.oneconfig.config.annotations.Switch;
+import cc.polyfrost.oneconfig.config.annotations.*;
+import cc.polyfrost.oneconfig.config.core.OneColor;
 import cc.polyfrost.oneconfig.config.data.InfoType;
 import cc.polyfrost.oneconfig.config.data.Mod;
 import cc.polyfrost.oneconfig.config.data.ModType;
-import cc.polyfrost.oneconfig.config.annotations.HUD;
 import cc.polyfrost.oneconfig.config.data.OptionSize;
 
 public class BingoBrewersConfig extends Config {
@@ -33,16 +31,16 @@ public class BingoBrewersConfig extends Config {
     public static boolean ignored;
 
     @Switch(
-            name = "Show Splash Notifications on All Profiles",
+            name = "Show Splash Notifications on Non-Bingo Profiles",
             category = "Splash Notifications",
-            description = "Whether to show splash notifications on all profiles or just bingo."
+            description = "Whether to show splash notifications regardless of your last active profile."
     )
     public static boolean splashNotificationsInBingo = true;
 
     @Switch(
             name = "Show Splash Notifications outside of Skyblock",
             category = "Splash Notifications",
-            description = "Whether to show splash notifications outside of skyblock AND the prototype lobby."
+            description = "Whether to show splash notifications outside of Skyblock AND the Prototype Lobby."
     )
     public static boolean splashNotificationsOutsideSkyblock = true;
 
@@ -54,12 +52,19 @@ public class BingoBrewersConfig extends Config {
     public HudRendering hud = new HudRendering();
 
     @Slider(
-            name = "Notification Volume (%)",
+            name = "Notification Volume",
             category = "Splash Notifications",
             description = "Set the volume of the splash notification",
             min = 0f, max = 200f
     )
     public static float splashNotificationVolume = 100f;
+
+    @Color(
+            name = "Alert Text Color",
+            category = "Splash Notifications",
+            description = "Set the color of the alert text (i.e. \"Splash in Hub 14\")"
+    )
+    public static OneColor alertTextColor = new OneColor(0xFF8BAFE0);
 
     @Switch(
             name = "Show Coins/Bingo Point",
