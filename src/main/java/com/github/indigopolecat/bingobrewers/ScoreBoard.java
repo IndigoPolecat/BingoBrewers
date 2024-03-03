@@ -41,13 +41,12 @@ public class ScoreBoard {
     }
 
     public static boolean isBingo() {
-        boolean bingo = false;
         List<String> scoreBoardLines = getScoreboard();
         int size = scoreBoardLines.size() - 1;
         for (int i = 0; i < scoreBoardLines.size(); i++) {
             String line = EnumChatFormatting.getTextWithoutFormattingCodes(scoreBoardLines.get(size - i).toLowerCase());
-            if(line.contains("bingo")) bingo = true;
+            if(line.contains("bingo")) return true;
         }
-        return bingo;
+        return false;
     }
 }
