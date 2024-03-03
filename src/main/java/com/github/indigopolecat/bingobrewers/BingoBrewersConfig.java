@@ -1,11 +1,14 @@
 package com.github.indigopolecat.bingobrewers;
 
 import cc.polyfrost.oneconfig.config.Config;
+import cc.polyfrost.oneconfig.config.annotations.Info;
 import cc.polyfrost.oneconfig.config.annotations.Slider;
 import cc.polyfrost.oneconfig.config.annotations.Switch;
+import cc.polyfrost.oneconfig.config.data.InfoType;
 import cc.polyfrost.oneconfig.config.data.Mod;
 import cc.polyfrost.oneconfig.config.data.ModType;
 import cc.polyfrost.oneconfig.config.annotations.HUD;
+import cc.polyfrost.oneconfig.config.data.OptionSize;
 
 public class BingoBrewersConfig extends Config {
     public BingoBrewersConfig() {
@@ -16,19 +19,29 @@ public class BingoBrewersConfig extends Config {
     @Switch(
             name = "Splash Notifications",
             category = "Splash Notifications",
-            description = "Enable or disable splash notifications"
+            description = "Enable or disable splash notifications",
+            size = OptionSize.DUAL
     )
     public static boolean splashNotificationsEnabled = true;
 
-    @Switch(
-            name = "Show Splash Notifications in All Profiles",
+    @Info(
+            text = "Leeching splashes on high level profiles is not allowed!",
+            type = InfoType.ERROR,
             category = "Splash Notifications",
-            description = "Whether to show splash notifications in all profiles or just bingo."
+            size = OptionSize.DUAL
+    )
+    public static boolean ignored;
+
+    @Switch(
+            name = "Show Splash Notifications on All Profiles",
+            category = "Splash Notifications",
+            description = "Whether to show splash notifications on all profiles or just bingo."
     )
     public static boolean splashNotificationsInBingo = true;
 
+
     @HUD(
-            name = "Splash HUD",
+            name = "Splash Notification HUD",
             category = "Splash Notifications"
     )
     public HudRendering hud = new HudRendering();

@@ -73,7 +73,6 @@ public class ServerConnection extends Listener implements Runnable {
         BingoBrewers.client.addListener(new Listener() {
             @Override
             public void received(Connection connection, Object object) {
-                if(!ScoreBoard.isBingo() && !BingoBrewersConfig.splashNotificationsInBingo) return;
                 if (object instanceof ConnectionIgn) {
                     ConnectionIgn request = (ConnectionIgn) object;
                     LoggerUtil.LOGGER.info(request.hello);
@@ -245,6 +244,7 @@ public class ServerConnection extends Listener implements Runnable {
     // This is called onTickEvent in PlayerInfo when the player is not null
     public synchronized void notification(String hub, boolean dungeonHub) {
         if (!BingoBrewersConfig.splashNotificationsEnabled) return;
+        if(!HudRendering.onBingo && !BingoBrewersConfig.splashNotificationsInBingo) return;
         EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
         if (!dungeonHub) {
             TitleHud titleHud = new TitleHud("Splash in Hub " + hub, 0x8BAFE0, 4000);

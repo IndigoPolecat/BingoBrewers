@@ -64,8 +64,10 @@ public class Packets {
 
                 PlayerInfo.playerGameType = locrawMap.get("gametype");
                 if (PlayerInfo.playerGameType == null) return;
-                if (PlayerInfo.playerGameType.equals("SKYBLOCK")) {
+                if (PlayerInfo.playerGameType.equalsIgnoreCase("skyblock")) {
                     PlayerInfo.playerLocation = locrawMap.get("mode");
+                    // Check if the scoreboard contains "bingo" and set the onBingo flag once we know if we're on skyblock
+                    HudRendering.onBingo = ScoreBoard.isBingo();
                 }
                 PlayerInfo.currentServer = locrawMap.get("server");
                 if (PlayerInfo.currentServer != null) {

@@ -22,10 +22,13 @@ public class HudRendering extends Hud {
     int lineCount = 0;
     boolean listTooLong = false;
     long renderCounter = 0;
-    ArrayList<Long> latestSplash = new ArrayList<>(2);
+    // For some reason, latestSplash becomes bloated because it is stored in a config class, don't know how to fix but it's not a massive issue immediately, though it will inflate file size.
+    public static ArrayList<Long> latestSplash = new ArrayList<>(2);
     float totalHeight = 0;
     float longestWidth = 0;
     float fontSize = 0.2F;
+    // This is in this class so it is stored between game instances
+    public static boolean onBingo = false;
 
     public HudRendering() {
         super(true);
@@ -36,6 +39,7 @@ public class HudRendering extends Hud {
     @Override
     protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
         ArrayList<HashMap<String, ArrayList<String>>> infoPanel = new ArrayList<>();
+        if(!onBingo && !BingoBrewersConfig.splashNotificationsInBingo) return;
         if (example && (ServerConnection.mapList.isEmpty() || !BingoBrewersConfig.splashNotificationsEnabled)) {
             // Example splash displayed in settings if none is active
             HashMap<String, ArrayList<String>> infoMap = getExampleHud();
@@ -62,7 +66,7 @@ public class HudRendering extends Hud {
                         ServerConnection.hubList.remove(hubNumber);
                         ServerConnection.hubList.remove("DH" + hubNumber);
                         ServerConnection.mapList.remove(infoMap);
-                        latestSplash.remove(Long.parseLong(infoMap.get("Time").get(0)));
+                        latestSplash.remove(time);
                         if (PlayerInfo.playerHubNumber == null) {
                             PlayerInfo.inSplashHub = false;
                             continue;
