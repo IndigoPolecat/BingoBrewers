@@ -42,6 +42,7 @@ public class HudRendering extends Hud {
         ArrayList<HashMap<String, ArrayList<String>>> infoPanel = new ArrayList<>();
         if(!onBingo && !BingoBrewersConfig.splashNotificationsInBingo && !example) return;
         if(!HudRendering.inSkyblockorPTLobby && !BingoBrewersConfig.splashNotificationsOutsideSkyblock && !example) return;
+        if(!BingoBrewers.onHypixel) return;
         if (example && (ServerConnection.mapList.isEmpty() || !BingoBrewersConfig.splashNotificationsEnabled)) {
             // Example splash displayed in settings if none is active
             HashMap<String, ArrayList<String>> infoMap = getExampleHud();

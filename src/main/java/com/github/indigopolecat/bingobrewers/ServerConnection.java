@@ -130,7 +130,7 @@ public class ServerConnection extends Listener implements Runnable {
         // send server player ign and version
         ConnectionIgn response = new ConnectionIgn();
         String ign = Minecraft.getMinecraft().getSession().getUsername();
-        response.hello = ign + "|v0.1|Beta";
+        response.hello = ign + "|v0.2|Beta";
         LoggerUtil.LOGGER.info("sending " + response.hello);
         BingoBrewers.client.sendTCP(response);
         LoggerUtil.LOGGER.info("sent");
@@ -163,6 +163,9 @@ public class ServerConnection extends Listener implements Runnable {
 
     public void updateMapList(SplashNotification notif, boolean sendNotif) {
         String hub = notif.message;
+        if (hub == null) {
+            hub = "Unknown Hub";
+        }
         String splasher = notif.splasher;
         String partyHost = notif.partyHost;
         if (!partyHost.equals("No Party")) {
@@ -234,12 +237,23 @@ public class ServerConnection extends Listener implements Runnable {
         if (!BingoBrewersConfig.splashNotificationsEnabled) return;
         if(!HudRendering.onBingo && !BingoBrewersConfig.splashNotificationsInBingo) return;
         if(!HudRendering.inSkyblockorPTLobby && !BingoBrewersConfig.splashNotificationsOutsideSkyblock) return;
+        if(!BingoBrewers.onHypixel) return;
         EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
         if (!dungeonHub) {
-            TitleHud titleHud = new TitleHud("Splash in Hub " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000);
+            if (hub.equalsIgnoreCase("Unknown Hub")) {
+                hub = "Unknown Hub";
+            } else {
+                hub = "Hub " + hub;
+            }
+            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000);
             setActiveHud(titleHud);
         } else {
-            TitleHud titleHud = new TitleHud("Splash in Dungeon Hub " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000);
+            if (hub.equalsIgnoreCase("Unknown Hub")) {
+                hub = "Unknown Dungeon Hub";
+            } else {
+                hub = "Dungeon Hub " + hub;
+            }
+            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000);
             setActiveHud(titleHud);
         }
 
