@@ -81,6 +81,7 @@ repositories {
     maven("https://repo.spongepowered.org/maven/")
     // If you don't want to log in with your real minecraft account, remove this line
     maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
+    maven("https://repo.nea.moe/releases")
 }
 
 val shadowImpl: Configuration by configurations.creating {
@@ -106,6 +107,7 @@ dependencies {
     modCompileOnly("cc.polyfrost:oneconfig-1.8.9-forge:0.2.2-alpha+") // Should not be included in jar
     // include should be replaced with a configuration that includes this in the jar
     shadowImpl("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+") // Should be included in jar
+    shadowImpl("moe.nea:libautoupdate:1.2.0") // Should be included in jar
 }
 
 // Tasks:

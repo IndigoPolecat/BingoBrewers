@@ -3,6 +3,8 @@ package com.github.indigopolecat.bingobrewers;
 import cc.polyfrost.oneconfig.hud.Hud;
 import com.esotericsoftware.kryonet.Client;
 import com.github.indigopolecat.bingobrewers.commands.ConfigCommand;
+import com.github.indigopolecat.bingobrewers.commands.UpdateCommand;
+import com.github.indigopolecat.bingobrewers.util.AutoUpdater;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.fml.common.Mod;
@@ -14,11 +16,15 @@ import com.github.indigopolecat.events.PacketListener;
 public class BingoBrewers {
     public static BingoBrewersConfig config;
 
+    public static final String version = "v0.3-beta";
+
     public static volatile TitleHud activeTitle;
     public static volatile Client client;
     // controls which server is connected to
     public static final boolean TEST_INSTANCE = false;
     public static boolean onHypixel = false;
+
+    public static AutoUpdater autoUpdater = new AutoUpdater();
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
@@ -30,9 +36,11 @@ public class BingoBrewers {
         MinecraftForge.EVENT_BUS.register(new PlayerInfo());
         MinecraftForge.EVENT_BUS.register(new HudRendering());
         MinecraftForge.EVENT_BUS.register(new ChatTextUtil());
+        MinecraftForge.EVENT_BUS.register(autoUpdater);
         config = new BingoBrewersConfig();
         createServerThread();
         ClientCommandHandler.instance.registerCommand(new ConfigCommand());
+        ClientCommandHandler.instance.registerCommand(new UpdateCommand());
     }
 
     public static void createServerThread() {

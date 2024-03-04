@@ -73,5 +73,13 @@ public class BingoBrewersConfig extends Config {
     )
     public static boolean showCoinsPerBingoPoint = true;
 
+    @Dropdown(
+            name = "Auto Updater Versions",
+            category = "Misc",
+            description = "Choose which updates should the auto-updater look for",
+            options = {"Stable", "Beta", "None"}
+    )
+    public static int autoUpdaterType = 0;
+
 
 }
