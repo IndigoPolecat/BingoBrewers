@@ -20,8 +20,8 @@ public class UpdateScreen extends GuiScreen {
     @Override
     public void initGui() {
         buttonList.clear();
-        updateNowButton = new GuiButton(0, width / 2 - 100, height - 50, "Update Now");
-        updateLaterButton = new GuiButton(0, width / 2 - 100, height - 25, "Update Later");
+        updateNowButton = new GuiButton(0, width / 2 - 100, height - 50, "Update and Restart");
+        updateLaterButton = new GuiButton(0, width / 2 - 100, height - 25, "Update on Next Launch");
         buttonList.add(updateNowButton);
         buttonList.add(updateLaterButton);
     }
