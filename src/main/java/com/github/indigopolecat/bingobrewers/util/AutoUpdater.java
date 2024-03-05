@@ -2,6 +2,8 @@ package com.github.indigopolecat.bingobrewers.util;
 
 import com.github.indigopolecat.bingobrewers.BingoBrewers;
 import com.github.indigopolecat.bingobrewers.BingoBrewersConfig;
+import com.github.indigopolecat.bingobrewers.gui.UpdateScreen;
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import moe.nea.libautoupdate.*;
 import net.minecraft.client.Minecraft;
@@ -13,6 +15,13 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.versioning.DefaultArtifactVersion;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -60,6 +69,8 @@ public class AutoUpdater {
     }
 
     static boolean updateChecked = false;
+
+    public static boolean isThereUpdate = false;
     @SubscribeEvent
     public void updateCheck(EntityJoinWorldEvent event) {
         if(!(event.entity instanceof EntityPlayer)) return;
@@ -70,11 +81,35 @@ public class AutoUpdater {
             System.out.println("Checking for updates...");
             checkUpdate().thenAccept(updateAvailable -> {
                 if(updateAvailable) {
-                    ChatComponentText update = new ChatComponentText(EnumChatFormatting.GREEN + "" + EnumChatFormatting.BOLD + "  [UPDATE]  ");
-                    update.setChatStyle(update.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/bingobrewersupdate")));
-                    player.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "Bingo Brewers is outdated. Click the button below to auto update after you turn off the game next time.").appendSibling(update));
+                    isThereUpdate = true;
+                    Minecraft.getMinecraft().displayGuiScreen(new UpdateScreen());
                 }
             });
         }
+    }
+
+    public String getChangelog() {
+        try {
+            URL url = new URL("https://api.github.com/repos/IndigoPolecat/BingoBrewers/releases/latest");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            if(conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                String input;
+                StringBuilder response = new StringBuilder();
+
+                while ((input = in.readLine()) != null) {
+                    response.append(input);
+                }
+                in.close();
+
+                Gson gson = new Gson();
+
+                return gson.fromJson(response.toString(), JsonObject.class).get("body").getAsString();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return "Could not fetch changelog";
     }
 }

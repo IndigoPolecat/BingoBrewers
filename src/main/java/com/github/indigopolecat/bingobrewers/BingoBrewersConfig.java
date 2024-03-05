@@ -81,5 +81,13 @@ public class BingoBrewersConfig extends Config {
     )
     public static int autoUpdaterType = 0;
 
+    @Info(
+            text = "Running version " + BingoBrewers.version,
+            type = InfoType.INFO,
+            category = "Misc",
+            size = OptionSize.DUAL
+    )
+    public static boolean ignoredL;
+
 
 }

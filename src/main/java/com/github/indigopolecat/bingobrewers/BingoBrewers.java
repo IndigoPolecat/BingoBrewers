@@ -1,9 +1,7 @@
 package com.github.indigopolecat.bingobrewers;
 
-import cc.polyfrost.oneconfig.hud.Hud;
 import com.esotericsoftware.kryonet.Client;
 import com.github.indigopolecat.bingobrewers.commands.ConfigCommand;
-import com.github.indigopolecat.bingobrewers.commands.UpdateCommand;
 import com.github.indigopolecat.bingobrewers.util.AutoUpdater;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -40,7 +38,6 @@ public class BingoBrewers {
         config = new BingoBrewersConfig();
         createServerThread();
         ClientCommandHandler.instance.registerCommand(new ConfigCommand());
-        ClientCommandHandler.instance.registerCommand(new UpdateCommand());
     }
 
     public static void createServerThread() {
