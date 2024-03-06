@@ -2,27 +2,23 @@ package com.github.indigopolecat.bingobrewers.util;
 
 import com.github.indigopolecat.bingobrewers.BingoBrewers;
 import com.github.indigopolecat.bingobrewers.BingoBrewersConfig;
+import com.github.indigopolecat.bingobrewers.TitleHud;
 import com.github.indigopolecat.bingobrewers.gui.UpdateScreen;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import moe.nea.libautoupdate.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.event.ClickEvent;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.versioning.DefaultArtifactVersion;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
@@ -49,23 +45,19 @@ public class AutoUpdater {
         }, Executors.newSingleThreadExecutor());
     }
 
-    public void update() {
-        new Thread(() -> {
+    public CompletableFuture<Boolean> update() {
             String updaterType = "none";
             if(BingoBrewersConfig.autoUpdaterType == 0) updaterType = "full";
             if(BingoBrewersConfig.autoUpdaterType == 1) updaterType = "pre";
-            context.checkUpdate(updaterType).thenAcceptAsync(potentialUpdate -> {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                if(potentialUpdate.isUpdateAvailable()) {
-                    potentialUpdate.launchUpdate();
+        return context.checkUpdate(updaterType).thenComposeAsync(potentialUpdate -> {
+            if(potentialUpdate.isUpdateAvailable()) {
+                return potentialUpdate.launchUpdate().thenApply((ignored) -> {
                     Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Bingo Brewers has been updated to the latest version! Please restart your game to apply the update."));
-                }
-            }, Executors.newSingleThreadExecutor());
-        }).start();
+                    return true;
+                });
+            }
+            return CompletableFuture.completedFuture(false);
+        });
     }
 
     static boolean updateChecked = false;
@@ -81,8 +73,13 @@ public class AutoUpdater {
             System.out.println("Checking for updates...");
             checkUpdate().thenAccept(updateAvailable -> {
                 if(updateAvailable) {
-                    isThereUpdate = true;
-                    Minecraft.getMinecraft().displayGuiScreen(new UpdateScreen());
+                    if(BingoBrewersConfig.autoDownload) {
+                        BingoBrewers.autoUpdater.update();
+                        BingoBrewers.activeTitle = new TitleHud("Update will be installed on game close.", 0x47EB62, 4000);
+                    } else {
+                        isThereUpdate = true;
+                        Minecraft.getMinecraft().displayGuiScreen(new UpdateScreen());
+                    }
                 }
             });
         }

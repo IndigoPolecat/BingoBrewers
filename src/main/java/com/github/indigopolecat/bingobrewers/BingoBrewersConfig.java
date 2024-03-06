@@ -7,6 +7,8 @@ import cc.polyfrost.oneconfig.config.data.InfoType;
 import cc.polyfrost.oneconfig.config.data.Mod;
 import cc.polyfrost.oneconfig.config.data.ModType;
 import cc.polyfrost.oneconfig.config.data.OptionSize;
+import com.github.indigopolecat.bingobrewers.gui.UpdateScreen;
+import net.minecraft.client.Minecraft;
 
 public class BingoBrewersConfig extends Config {
     public BingoBrewersConfig() {
@@ -80,6 +82,23 @@ public class BingoBrewersConfig extends Config {
             options = {"Stable", "Beta", "None"}
     )
     public static int autoUpdaterType = 0;
+
+    @Switch(
+            name = "Auto Download",
+            category = "Misc",
+            description = "Auto download updates when available. Requires restart."
+    )
+    public static boolean autoDownload = false;
+
+    @Button(
+            name = "Check for Updates",
+            category = "Misc",
+            description = "Check for updates",
+            text = "Click"
+    )
+    public void checkForUpdates() {
+        Minecraft.getMinecraft().displayGuiScreen(new UpdateScreen());
+    }
 
     @Info(
             text = "Running version " + BingoBrewers.version,

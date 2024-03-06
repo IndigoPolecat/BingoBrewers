@@ -10,6 +10,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
+import org.lwjgl.input.Mouse;
 
 public class UpdateScreen extends GuiScreen {
     private GuiButton updateNowButton;
@@ -24,20 +25,19 @@ public class UpdateScreen extends GuiScreen {
         updateLaterButton = new GuiButton(0, width / 2 - 100, height - 25, "Update on Next Launch");
         buttonList.add(updateNowButton);
         buttonList.add(updateLaterButton);
+        Mouse.setGrabbed(false);
+    }
+
+    @Override
+    public void onGuiClosed() {
+        Mouse.setGrabbed(true);
     }
 
     @Override
     protected void actionPerformed(GuiButton button) {
         if (button == updateNowButton) {
             // Do something when myButton is pressed
-            BingoBrewers.autoUpdater.checkUpdate().thenAccept(updateAvailable -> {
-                if(updateAvailable) {
-                    BingoBrewers.autoUpdater.update();
-                    Minecraft.getMinecraft().shutdownMinecraftApplet();
-                } else {
-                    Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Bingo Brewers is up to date!"));
-                }
-            });
+            BingoBrewers.autoUpdater.update().thenRunAsync(() -> Minecraft.getMinecraft().shutdown());
         } else if(button == updateLaterButton) {
             BingoBrewers.autoUpdater.checkUpdate().thenAccept(updateAvailable -> {
                 if(updateAvailable) {
@@ -53,14 +53,18 @@ public class UpdateScreen extends GuiScreen {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        drawDefaultBackground();
+        if (this.mc != null) {
+            drawDefaultBackground();
+        }
         super.drawScreen(mouseX, mouseY, partialTicks);
-        String text = EnumChatFormatting.GOLD + "" +  EnumChatFormatting.BOLD  + EnumChatFormatting.OBFUSCATED + "KK" + EnumChatFormatting.RESET + EnumChatFormatting.GOLD + "" +  EnumChatFormatting.BOLD + "A new version of Bingo Brewers is available! " + EnumChatFormatting.OBFUSCATED + "KK";
+        String text = EnumChatFormatting.GOLD + "" +  EnumChatFormatting.BOLD  + EnumChatFormatting.OBFUSCATED + "KK" + EnumChatFormatting.RESET + EnumChatFormatting.GOLD + "" +  EnumChatFormatting.BOLD + " A new version of Bingo Brewers is available! " + EnumChatFormatting.OBFUSCATED + "KK";
         int textWidth = fontRendererObj.getStringWidth(text);
 
             // Convert markdown to Minecraft formatting codes
             changelog = changelog.replaceAll("###", "§l"); // Bold
             changelog = changelog.replaceAll("\r", ""); // Remove carriage returns
+            changelog = changelog.replaceAll("-\\s+", "• "); // Remove carriage returns
+        changelog = changelog.replaceAll("\\s+-\\s+", "○ "); // Remove carriage returns
 
             // Split by new lines
             String[] lines = changelog.split("\n");
