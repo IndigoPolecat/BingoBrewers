@@ -39,8 +39,8 @@ public class HudRendering extends Hud {
 
     @Override
     protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
-        if (scale == 0) {
-            scale = 1;
+        if (scale < 0.3) {
+            scale = 0.3f;
         }
         ArrayList<HashMap<String, ArrayList<String>>> infoPanel = new ArrayList<>();
         if(!onBingo && !BingoBrewersConfig.splashNotificationsInBingo && !example) return;
