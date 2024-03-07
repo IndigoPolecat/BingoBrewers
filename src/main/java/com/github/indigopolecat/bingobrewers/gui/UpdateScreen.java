@@ -42,7 +42,7 @@ public class UpdateScreen extends GuiScreen {
             BingoBrewers.autoUpdater.checkUpdate().thenAccept(updateAvailable -> {
                 if(updateAvailable) {
                     BingoBrewers.autoUpdater.update();
-                    BingoBrewers.activeTitle = new TitleHud("Update will be installed on game close.", BingoBrewersConfig.alertTextColor.getRGB(), 4000);
+                    BingoBrewers.activeTitle = new TitleHud("Bingo Brewers will update on game close.", 0x47EB62, 4000);
                 } else {
                     Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Bingo Brewers is up to date!"));
                 }
