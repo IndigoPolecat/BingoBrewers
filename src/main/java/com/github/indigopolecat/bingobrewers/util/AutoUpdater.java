@@ -12,7 +12,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,6 +25,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
 public class AutoUpdater {
+    public static boolean updateScreen = false;
+
     private final UpdateContext context = new UpdateContext(
             UpdateSource.githubUpdateSource("IndigoPolecat", "BingoBrewers"),
             UpdateTarget.deleteAndSaveInTheSameFolder(AutoUpdater.class),
@@ -46,9 +50,9 @@ public class AutoUpdater {
     }
 
     public CompletableFuture<Boolean> update() {
-            String updaterType = "none";
-            if(BingoBrewersConfig.autoUpdaterType == 0) updaterType = "full";
-            if(BingoBrewersConfig.autoUpdaterType == 1) updaterType = "pre";
+        String updaterType = "none";
+        if(BingoBrewersConfig.autoUpdaterType == 0) updaterType = "full";
+        if(BingoBrewersConfig.autoUpdaterType == 1) updaterType = "pre";
         return context.checkUpdate(updaterType).thenComposeAsync(potentialUpdate -> {
             if(potentialUpdate.isUpdateAvailable()) {
                 return potentialUpdate.launchUpdate().thenApply((ignored) -> {
@@ -64,8 +68,8 @@ public class AutoUpdater {
 
     public static boolean isThereUpdate = false;
     @SubscribeEvent
-    public void updateCheck(EntityJoinWorldEvent event) {
-        if(!(event.entity instanceof EntityPlayer)) return;
+    public void updateCheck(WorldEvent event) {
+        if(!(event instanceof WorldEvent.Load)) return;
         if (!updateChecked) {
             updateChecked = true;
             EntityPlayer player = Minecraft.getMinecraft().thePlayer;
@@ -78,10 +82,18 @@ public class AutoUpdater {
                         BingoBrewers.activeTitle = new TitleHud("Update will be installed on game close.", 0x47EB62, 4000);
                     } else {
                         isThereUpdate = true;
-                        Minecraft.getMinecraft().displayGuiScreen(new UpdateScreen());
+                        updateScreen = true;
                     }
                 }
             });
+        }
+    }
+
+    @SubscribeEvent
+    public void onTick(TickEvent.ClientTickEvent event) {
+        if (updateScreen) {
+            Minecraft.getMinecraft().displayGuiScreen(new UpdateScreen());
+            updateScreen = false;
         }
     }
 
