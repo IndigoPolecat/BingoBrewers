@@ -91,7 +91,7 @@ public class AutoUpdater {
 
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
-        if (updateScreen && event.phase = TickEvent.Phase.END) {
+        if (updateScreen && event.phase == TickEvent.Phase.END) {
             updateScreen = false;
             Minecraft.getMinecraft().displayGuiScreen(new UpdateScreen());
         }
