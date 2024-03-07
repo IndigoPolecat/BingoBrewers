@@ -20,7 +20,7 @@ import net.minecraft.nbt.NBTTagList;
 import java.text.DecimalFormat;
 
 public class ChestInventories {
-    public static final int POINTS_PER_BINGO = 100;
+    public static final int POINTS_PER_BINGO = 85;
     boolean bingoShopOpen = false;
     boolean calculationsReady = false;
     ContainerChest containerChest;
