@@ -20,8 +20,7 @@ import net.minecraft.nbt.NBTTagList;
 import java.text.DecimalFormat;
 
 public class ChestInventories {
-
-    // TODO: Add points left to afford item and how many bingoes are required for those points
+    public static final int POINTS_PER_BINGO = 100;
     boolean bingoShopOpen = false;
     boolean calculationsReady = false;
     ContainerChest containerChest;
@@ -34,6 +33,7 @@ public class ChestInventories {
     long lastRan;
     boolean hubSelectorOpen = false;
     boolean dungeonHubSelectorOpen = false;
+    private int currentBingoPoints;
 
     @SubscribeEvent
     public void onShopOpen(GuiOpenEvent event) {
@@ -88,6 +88,9 @@ public class ChestInventories {
 
             for (ItemStack item : chestInventory) {
                 if (item != null) {
+                    if (item.getDisplayName().contains("Upgrade Bingo Rank")) {
+                        this.currentBingoPoints = gatherBingoPoints(item);
+                    }
 
                     List<String> itemLore = item.getTooltip(Minecraft.getMinecraft().thePlayer, false);
                     boolean costFound = false;
@@ -214,7 +217,7 @@ public class ChestInventories {
                                             }
                                             finalExtraCost2 = finalExtraCost;
                                             calculationsReady = true;
-                                            TooltipInfo tooltipInfo = new TooltipInfo(itemName, coinsPerPoint, finalExtraCost2, finalCostLineIndex, finalExtraCostIndex);
+                                            TooltipInfo tooltipInfo = new TooltipInfo(itemName, coinsPerPoint, finalExtraCost2, finalCostLineIndex, finalExtraCostIndex, bingoCost);
                                             tooltipInfoList.add(tooltipInfo);
                                         }
                                     }
@@ -267,6 +270,22 @@ public class ChestInventories {
         }
     }
 
+    private int gatherBingoPoints(ItemStack item) {
+        List<String> itemLore = item.getTooltip(Minecraft.getMinecraft().thePlayer, false);
+        for (String s : itemLore) {
+            if (s.contains("Available Bingo Points: ")) {
+                return extractAvailableBingoPoints(s);
+            }
+        }
+        return -1;
+    }
+
+    public static int extractAvailableBingoPoints(String s) {
+        // If your Bingo Points are above 1000 the number will be formatted with a comma, so we remove it
+        String bingoPointsString = s.replace("Available Bingo Points: ", "").replace(",", "");
+        return Integer.parseInt(bingoPointsString.replaceAll("§.", ""));
+    }
+
     @SubscribeEvent
     public void onItemTooltip(ItemTooltipEvent event) {
         if (calculationsReady) {
@@ -274,6 +293,7 @@ public class ChestInventories {
                 ItemStack eventItem = event.itemStack;
                 if (eventItem.getDisplayName().equals(item.getName())) {
                     event.toolTip.add(item.getCostIndex() + 1, "§6" + item.getCost() + " Coins/Point");
+                    appendPointsAndBingoLeft(event, item);
                 }
                 if (item.getExtraCostIndex() != -1 && item.getExtraCost() != null && eventItem.getDisplayName().equals(item.getName())) {
                     String extraCostLine = event.toolTip.get(item.getExtraCostIndex());
@@ -283,6 +303,22 @@ public class ChestInventories {
         }
     }
 
+    private void appendPointsAndBingoLeft(ItemTooltipEvent event, TooltipInfo item) {
+        if(this.currentBingoPoints == -1 || !BingoBrewersConfig.displayMissingBingoPoints || !BingoBrewersConfig.displayMissingBingoes) {
+            return;
+        }
+        int itemCostInBingoPoints = item.getBingoPointsPrice();
+        int pointsLeftToAffordItem = itemCostInBingoPoints - this.currentBingoPoints;
+        int bingoesRequired = (int) Math.ceil((double) pointsLeftToAffordItem / POINTS_PER_BINGO);
+
+        if (pointsLeftToAffordItem > 0 && BingoBrewersConfig.displayMissingBingoPoints) {
+            event.toolTip.add("§6Points left to afford item: " + pointsLeftToAffordItem);
+        }
+
+        if (bingoesRequired > 0 && BingoBrewersConfig.displayMissingBingoes) {
+            event.toolTip.add("§6Bingoes required: " + bingoesRequired);
+        }
+    }
 
     private static String removeFormatting(String s) {
         String news = s.replaceAll("§.", "");
