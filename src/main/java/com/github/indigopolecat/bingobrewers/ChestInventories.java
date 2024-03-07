@@ -316,7 +316,7 @@ public class ChestInventories {
         }
 
         if (bingoesRequired > 0 && BingoBrewersConfig.displayMissingBingoes) {
-            event.toolTip.add("§6Bingoes required: " + bingoesRequired);
+            event.toolTip.add("§Completed Bingoes required: " + bingoesRequired);
         }
     }
 
