@@ -310,13 +310,15 @@ public class ChestInventories {
         int itemCostInBingoPoints = item.getBingoPointsPrice();
         int pointsLeftToAffordItem = itemCostInBingoPoints - this.currentBingoPoints;
         int bingoesRequired = (int) Math.ceil((double) pointsLeftToAffordItem / POINTS_PER_BINGO);
+        int toolTipIndex = item.getCostIndex() + 2;
 
         if (pointsLeftToAffordItem > 0 && BingoBrewersConfig.displayMissingBingoPoints) {
-            event.toolTip.add("§6Points left to afford item: " + pointsLeftToAffordItem);
+            event.toolTip.add(toolTipIndex,"§6Points left to afford item: " + pointsLeftToAffordItem);
+            toolTipIndex++;
         }
 
         if (bingoesRequired > 0 && BingoBrewersConfig.displayMissingBingoes) {
-            event.toolTip.add("§Completed Bingoes required: " + bingoesRequired);
+            event.toolTip.add(toolTipIndex,"§6Completed Bingoes required: " + bingoesRequired);
         }
     }
 
