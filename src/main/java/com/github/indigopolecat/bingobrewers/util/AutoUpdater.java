@@ -79,7 +79,7 @@ public class AutoUpdater {
                 if(updateAvailable) {
                     if(BingoBrewersConfig.autoDownload) {
                         BingoBrewers.autoUpdater.update();
-                        BingoBrewers.activeTitle = new TitleHud("Update will be installed on game close.", 0x47EB62, 4000);
+                        BingoBrewers.activeTitle = new TitleHud("Bingo Brewers will update on game cloase.", 0x47EB62, 4000);
                     } else {
                         isThereUpdate = true;
                         updateScreen = true;
@@ -91,9 +91,9 @@ public class AutoUpdater {
 
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
-        if (updateScreen) {
-            Minecraft.getMinecraft().displayGuiScreen(new UpdateScreen());
+        if (updateScreen && event.phase = TickEvent.Phase.END) {
             updateScreen = false;
+            Minecraft.getMinecraft().displayGuiScreen(new UpdateScreen());
         }
     }
 
