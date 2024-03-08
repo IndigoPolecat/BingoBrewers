@@ -39,6 +39,7 @@ public class HudRendering extends Hud {
 
     @Override
     protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
+        // don't divide by 0
         if (scale < 0.3) {
             scale = 0.3f;
         }

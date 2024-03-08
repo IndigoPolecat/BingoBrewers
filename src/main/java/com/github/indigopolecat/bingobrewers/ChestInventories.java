@@ -23,6 +23,8 @@ import net.minecraftforge.fml.common.gameevent.InputEvent;
 import org.lwjgl.input.Keyboard;
 
 import java.text.DecimalFormat;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ChestInventories {
     public static final int POINTS_PER_BINGO = 85;
@@ -41,6 +43,7 @@ public class ChestInventories {
     private int currentBingoPoints;
     public static boolean shiftPressed = false;
     public static HashMap<Integer, Integer> rankPriceMap = new HashMap<>();
+    public static int bingoRank;
 
     @SubscribeEvent
     public void onShopOpen(GuiOpenEvent event) {
@@ -96,7 +99,7 @@ public class ChestInventories {
                 if (item != null) {
                     if (item.getDisplayName().contains("Upgrade Bingo Rank")) {
                         this.currentBingoPoints = gatherBingoPoints(item);
-                        int bingoRank = extractRankAsInt(item);
+                        bingoRank = extractRankAsInt(item);
                     }
 
                     List<String> itemLore = item.getTooltip(Minecraft.getMinecraft().thePlayer, false);
@@ -156,10 +159,6 @@ public class ChestInventories {
                         String extraName = null;
                         Double extraCoinCost = null;
                         tooltipInfoList.clear();
-                        System.out.println(itemCosts);
-                        System.out.println(coinCosts);
-                        System.out.println(itemNames);
-                        System.out.println(extraItems);
                         for (int i = 0; i < itemCosts.size(); i++) {
                             Double coinCost = coinCosts.get(i);
 
@@ -198,6 +197,7 @@ public class ChestInventories {
 
                                             int costLineIndex = -1;
                                             int extraCostIndex = -1;
+                                            int bingoRankRequired = extractRankAsInt(item);
                                             for (int j = 0; j < loreList.tagCount(); j++) {
                                                 // Compare the current line without formatting to the cost in bingo points
                                                 // removeFormatting method removes " Bingo Points" from the end of the string
@@ -224,7 +224,7 @@ public class ChestInventories {
                                             }
                                             finalExtraCost2 = finalExtraCost;
                                             calculationsReady = true;
-                                            TooltipInfo tooltipInfo = new TooltipInfo(itemName, coinsPerPoint, finalExtraCost2, finalCostLineIndex, finalExtraCostIndex, bingoCost);
+                                            TooltipInfo tooltipInfo = new TooltipInfo(itemName, coinsPerPoint, finalExtraCost2, finalCostLineIndex, finalExtraCostIndex, bingoCost, bingoRankRequired);
                                             tooltipInfoList.add(tooltipInfo);
                                         }
                                     }
@@ -295,13 +295,12 @@ public class ChestInventories {
 
     public static int extractRankAsInt(ItemStack item) {
         List<String> itemLore = item.getTooltip(Minecraft.getMinecraft().thePlayer, false);
+        Pattern pattern = Pattern.compile("(Bingo Rank [IV]+)");
         for (String s : itemLore) {
-            if (s.contains("Your Rank: ")) {
-                s = s.replaceAll("§.", "");
-                String rankString = s.replace("Your Rank: ", "");
-                switch (rankString) {
-                    case "None":
-                        return 0;
+            Matcher matcher = pattern.matcher(s);
+            if (matcher.find()) {
+                s = matcher.group(1).replaceAll("§.", "");
+                switch (s) {
                     case "Bingo Rank I":
                         return 1;
                     case "Bingo Rank II":
@@ -351,7 +350,15 @@ public class ChestInventories {
         } else {
             pointsPerBingo = POINTS_PER_BINGO;
         }
-        int itemCostInBingoPoints = item.getBingoPointsPrice();
+        int i = bingoRank;
+        int rankCost = 0;
+        while (i < item.getBingoRankRequired()) {
+            i++;
+            if (rankPriceMap.containsKey(i)) {
+                 rankCost += rankPriceMap.get(i);
+            }
+        }
+        int itemCostInBingoPoints = item.getBingoPointsPrice() + rankCost;
         int pointsLeftToAffordItem = itemCostInBingoPoints - this.currentBingoPoints;
         int bingoesRequired = (int) Math.ceil((double) pointsLeftToAffordItem / pointsPerBingo);
         int toolTipIndex = item.getCostIndex() + 2;

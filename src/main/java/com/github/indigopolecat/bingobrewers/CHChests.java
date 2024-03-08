@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 public class CHChests {
 
     public static List<String> RecentChatMessages = new ArrayList<>();
-    public static Map<Long, String> ChestBlacklist = new HashMap<>();
+    public static Map<String, Long> ChestBlacklist = new HashMap<>();
     static HashMap<String, Long> listeningChests = new HashMap<>();
     static long lastMessageTime = 0;
     static boolean addMessages = false;

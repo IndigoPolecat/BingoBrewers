@@ -108,6 +108,9 @@ public class ServerConnection extends Listener implements Runnable {
                             }
                         }
                     }
+                } else if (object instanceof KryoNetwork.receiveConstantsOnStartup) {
+                    KryoNetwork.receiveConstantsOnStartup request = (KryoNetwork.receiveConstantsOnStartup) object;
+                    ChestInventories.rankPriceMap = request.bingoRankCosts;
                 }
             }
 
@@ -130,7 +133,7 @@ public class ServerConnection extends Listener implements Runnable {
         // send server player ign and version
         ConnectionIgn response = new ConnectionIgn();
         String ign = Minecraft.getMinecraft().getSession().getUsername();
-        response.hello = ign + "|v0.2|Beta";
+        response.hello = ign + "|v0.3|Beta";
         LoggerUtil.LOGGER.info("sending " + response.hello);
         BingoBrewers.client.sendTCP(response);
         LoggerUtil.LOGGER.info("sent");

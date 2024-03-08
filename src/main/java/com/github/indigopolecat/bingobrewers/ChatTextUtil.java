@@ -12,6 +12,7 @@ public class ChatTextUtil {
         if (message.startsWith("{") && message.endsWith("}") && cancelLocRawMessage) {
             event.setCanceled(true);
             cancelLocRawMessage = false;
+            PlayerInfo.lastPositionUpdate = System.currentTimeMillis();
         }
     }
 }

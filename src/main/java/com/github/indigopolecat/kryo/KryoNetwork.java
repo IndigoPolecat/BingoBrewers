@@ -16,6 +16,7 @@ public class KryoNetwork {
         kryo.register(PlayerCount.class);
         kryo.register(PlayerCountBroadcast.class);
         kryo.register(HashMap.class);
+        kryo.register(receiveConstantsOnStartup.class);
     }
 
     public static class ConnectionIgn {
@@ -40,5 +41,10 @@ public class KryoNetwork {
 
     public static class PlayerCountBroadcast {
         public HashMap<String, String> playerCounts;
+    }
+
+    public static class receiveConstantsOnStartup {
+        public HashMap<Integer, Integer> bingoRankCosts;
+
     }
 }

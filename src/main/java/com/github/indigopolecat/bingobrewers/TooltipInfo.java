@@ -8,6 +8,7 @@ public class TooltipInfo {
     private final int extraCostIndex;
     private final int costIndex;
     private final int bingoPointsPrice;
+    private final int bingoRankRequired;
 
     /**
      * Constructs a TooltipInfo object with the given parameters.
@@ -19,13 +20,14 @@ public class TooltipInfo {
      * @param extraCostIndex The index in the tooltip where the extra cost should be inserted.
      * @param bingoPointsPrice The price of the item in Bingo Points.
      */
-    public TooltipInfo(String name, String cost, String extraCost, int costIndex, int extraCostIndex, int bingoPointsPrice) {
+    public TooltipInfo(String name, String cost, String extraCost, int costIndex, int extraCostIndex, int bingoPointsPrice, int bingoRankRequired) {
         this.name = name;
         this.costPerPoint = cost;
         this.extraCost = extraCost;
         this.costIndex = costIndex;
         this.extraCostIndex = extraCostIndex;
         this.bingoPointsPrice = bingoPointsPrice;
+        this.bingoRankRequired = bingoRankRequired;
     }
 
     public String getName() {
@@ -50,5 +52,8 @@ public class TooltipInfo {
 
     public int getBingoPointsPrice() {
         return bingoPointsPrice;
+    }
+    public int getBingoRankRequired() {
+        return bingoRankRequired;
     }
 }
