@@ -4,25 +4,29 @@ import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerChest;
 import net.minecraftforge.client.event.GuiOpenEvent;
+import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 
+import java.awt.event.KeyEvent;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraftforge.fml.common.gameevent.InputEvent;
+import org.lwjgl.input.Keyboard;
 
 import java.text.DecimalFormat;
 
 public class ChestInventories {
-
-    // TODO: Add points left to afford item and how many bingoes are required for those points
-    boolean bingoShopOpen = false;
+    public static final int POINTS_PER_BINGO = 85;
+    public static boolean bingoShopOpen = false;
     boolean calculationsReady = false;
     ContainerChest containerChest;
     String itemName = null;
@@ -34,11 +38,15 @@ public class ChestInventories {
     long lastRan;
     boolean hubSelectorOpen = false;
     boolean dungeonHubSelectorOpen = false;
+    private int currentBingoPoints;
+    public static boolean shiftPressed = false;
+    public static HashMap<Integer, Integer> rankPriceMap = new HashMap<>();
 
     @SubscribeEvent
     public void onShopOpen(GuiOpenEvent event) {
         calculationsReady = false;
         bingoShopOpen = false;
+        shiftPressed = false;
         GuiChest guiChest;
         if (event.gui instanceof GuiChest) {
             guiChest = (GuiChest) event.gui;
@@ -70,9 +78,8 @@ public class ChestInventories {
         }
     }
 
-
-    @SubscribeEvent
     // Event that occurs once a packet from your inventory instead of the chest is sent, meaning the chest is loaded
+    @SubscribeEvent
     public void onInitGuiPost(Packets.InventoryLoadingDoneEvent event) {
         if (bingoShopOpen) {
             // set variables in correct scope
@@ -87,6 +94,10 @@ public class ChestInventories {
 
             for (ItemStack item : chestInventory) {
                 if (item != null) {
+                    if (item.getDisplayName().contains("Upgrade Bingo Rank")) {
+                        this.currentBingoPoints = gatherBingoPoints(item);
+                        int bingoRank = extractRankAsInt(item);
+                    }
 
                     List<String> itemLore = item.getTooltip(Minecraft.getMinecraft().thePlayer, false);
                     boolean costFound = false;
@@ -213,7 +224,7 @@ public class ChestInventories {
                                             }
                                             finalExtraCost2 = finalExtraCost;
                                             calculationsReady = true;
-                                            TooltipInfo tooltipInfo = new TooltipInfo(itemName, coinsPerPoint, finalExtraCost2, finalCostLineIndex, finalExtraCostIndex);
+                                            TooltipInfo tooltipInfo = new TooltipInfo(itemName, coinsPerPoint, finalExtraCost2, finalCostLineIndex, finalExtraCostIndex, bingoCost);
                                             tooltipInfoList.add(tooltipInfo);
                                         }
                                     }
@@ -266,6 +277,48 @@ public class ChestInventories {
         }
     }
 
+    private int gatherBingoPoints(ItemStack item) {
+        List<String> itemLore = item.getTooltip(Minecraft.getMinecraft().thePlayer, false);
+        for (String s : itemLore) {
+            if (s.contains("Available Bingo Points: ")) {
+                return extractAvailableBingoPoints(s);
+            }
+        }
+        return -1;
+    }
+
+    public static int extractAvailableBingoPoints(String s) {
+        // If your Bingo Points are above 1000 the number will be formatted with a comma, so we remove it
+        String bingoPointsString = s.replace("Available Bingo Points: ", "").replace(",", "");
+        return Integer.parseInt(bingoPointsString.replaceAll("§.", ""));
+    }
+
+    public static int extractRankAsInt(ItemStack item) {
+        List<String> itemLore = item.getTooltip(Minecraft.getMinecraft().thePlayer, false);
+        for (String s : itemLore) {
+            if (s.contains("Your Rank: ")) {
+                s = s.replaceAll("§.", "");
+                String rankString = s.replace("Your Rank: ", "");
+                switch (rankString) {
+                    case "None":
+                        return 0;
+                    case "Bingo Rank I":
+                        return 1;
+                    case "Bingo Rank II":
+                        return 2;
+                    case "Bingo Rank III":
+                        return 3;
+                    case "Bingo Rank IV":
+                        return 4;
+                    case "Bingo Rank V":
+                        return 5;
+                }
+            }
+        }
+
+        return 0;
+    }
+
     @SubscribeEvent
     public void onItemTooltip(ItemTooltipEvent event) {
         if (calculationsReady) {
@@ -273,6 +326,7 @@ public class ChestInventories {
                 ItemStack eventItem = event.itemStack;
                 if (eventItem.getDisplayName().equals(item.getName())) {
                     event.toolTip.add(item.getCostIndex() + 1, "§6" + item.getCost() + " Coins/Point");
+                    appendPointsAndBingoLeft(event, item);
                 }
                 if (item.getExtraCostIndex() != -1 && item.getExtraCost() != null && eventItem.getDisplayName().equals(item.getName())) {
                     String extraCostLine = event.toolTip.get(item.getExtraCostIndex());
@@ -282,6 +336,37 @@ public class ChestInventories {
         }
     }
 
+    private void appendPointsAndBingoLeft(ItemTooltipEvent event, TooltipInfo item) {
+        if(this.currentBingoPoints == -1 || !BingoBrewersConfig.displayMissingBingoPoints || !BingoBrewersConfig.displayMissingBingoes) {
+            return;
+        }
+        int pointsPerBingo;
+        // controls the text in the toggle to switch
+        String withOrWithout = "";
+        String withOrWithout2 = "160";
+        if (shiftPressed) {
+            withOrWithout = " (Communities)";
+            pointsPerBingo = 160;
+            withOrWithout2 = "85";
+        } else {
+            pointsPerBingo = POINTS_PER_BINGO;
+        }
+        int itemCostInBingoPoints = item.getBingoPointsPrice();
+        int pointsLeftToAffordItem = itemCostInBingoPoints - this.currentBingoPoints;
+        int bingoesRequired = (int) Math.ceil((double) pointsLeftToAffordItem / pointsPerBingo);
+        int toolTipIndex = item.getCostIndex() + 2;
+
+        if (pointsLeftToAffordItem > 0 && BingoBrewersConfig.displayMissingBingoPoints) {
+            event.toolTip.add(toolTipIndex, "");
+            event.toolTip.add(toolTipIndex + 1,"§7Points Missing: §c" + pointsLeftToAffordItem);
+            toolTipIndex++;
+        }
+
+        if (bingoesRequired > 0 && BingoBrewersConfig.displayMissingBingoes) {
+            event.toolTip.add(toolTipIndex + 1,"§7Events Remaining" + withOrWithout + ": §c" + bingoesRequired);
+            event.toolTip.add(toolTipIndex, "§8[SHIFT FOR " + withOrWithout2 + " POINTS/BINGO]");
+        }
+    }
 
     private static String removeFormatting(String s) {
         String news = s.replaceAll("§.", "");
@@ -309,6 +394,13 @@ public class ChestInventories {
             DecimalFormat decimalFormat = new DecimalFormat(pattern);
             return decimalFormat.format(value);
         }
+    }
+    @SubscribeEvent
+    public void onKeyPress(GuiScreenEvent.KeyboardInputEvent.Pre event) {
+        if((Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))  && ChestInventories.bingoShopOpen ) {
+            shiftPressed = !shiftPressed;
+        }
+
     }
 }
 
