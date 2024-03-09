@@ -93,7 +93,7 @@ public class Packets {
                     }
                 }
 
-            } else if (message.contains("You received") && PlayerInfo.playerLocation.equals("crystal_hollows")) {
+            } else if (message.contains("You received") && PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
                 CHChests.addChatMessage(message);
             }
 
@@ -108,33 +108,42 @@ public class Packets {
             for (int i = 0; i < blockUpdateData.length; i++) {
                 BlockPos coords = blockUpdateData[i].getPos();
                 Block block = Minecraft.getMinecraft().theWorld.getBlockState(coords).getBlock();
-                if (block.toString().contains("air")) continue;
+                if (block.toString().contains("air") || block.toString().contains("water")) continue;
                 String key = coords.toString();
                 hardstone.put(key, System.currentTimeMillis());
             }
         }
 
         if (event.getPacket() instanceof S23PacketBlockChange) {
+            // coordinates of the block that changed
             BlockPos coords = ((S23PacketBlockChange) event.getPacket()).getBlockPosition();
+            // old block
             Block block = Minecraft.getMinecraft().theWorld.getBlockState(coords).getBlock();
+            // new block
+            String newBlockStr = ((S23PacketBlockChange) event.getPacket()).getBlockState().toString();
 
-            if (!((S23PacketBlockChange) event.getPacket()).getBlockState().toString().contains("air")) return;
+            // ignore if the new block is not air
+            if (!newBlockStr.contains("air")) return;
 
+            // if the old block is not a chest, add to hardstone list
             if (!block.toString().contains("chest")) {
                 String key = coords.toString();
                 hardstone.put(key, System.currentTimeMillis());
                 return;
             }
-            if (!hardstone.containsKey(coords.toString())) return;
-            LoggerUtil.LOGGER.info("Adding to blacklist " + coords);
 
-            CHChests.ChestBlacklist.put(System.currentTimeMillis(), coords.toString());
+            // if the old block is a chest, add to the chest blacklist because it isn't a natural chest
+            if (!hardstone.containsKey(coords.toString())) {
+                LoggerUtil.LOGGER.info("Adding to blacklist " + coords);
+                CHChests.ChestBlacklist.put(coords.toString(), System.currentTimeMillis());
+            }
 
             // Remove old entries
             Object[] keys = CHChests.ChestBlacklist.keySet().toArray();
             for (int i = 0; i < CHChests.ChestBlacklist.size(); i++) {
-                Long key = (Long) keys[i];
-                if (System.currentTimeMillis() - key > 60000) {
+                String key = (String) keys[i];
+                Long blackListTime = CHChests.ChestBlacklist.get(key);
+                if (System.currentTimeMillis() - blackListTime > 60000) {
                     CHChests.ChestBlacklist.remove(key);
                 }
             }

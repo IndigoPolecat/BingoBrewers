@@ -39,6 +39,10 @@ public class HudRendering extends Hud {
 
     @Override
     protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
+        // don't divide by 0
+        if (scale < 0.3) {
+            scale = 0.3f;
+        }
         ArrayList<HashMap<String, ArrayList<String>>> infoPanel = new ArrayList<>();
         if(!onBingo && !BingoBrewersConfig.splashNotificationsInBingo && !example) return;
         if(!HudRendering.inSkyblockorPTLobby && !BingoBrewersConfig.splashNotificationsOutsideSkyblock && !example) return;
@@ -118,6 +122,9 @@ public class HudRendering extends Hud {
 
     @Override
     protected float getWidth(float scale, boolean example) {
+        if (scale == 0) {
+            scale = 1;
+        }
         // the string wraps at 106
         if (longestWidth > 200 * scale) {
             longestWidth = 200;
@@ -128,6 +135,9 @@ public class HudRendering extends Hud {
 
     @Override
     protected float getHeight(float scale, boolean example) {
+        if (scale == 0) {
+            scale = 1;
+        }
         return totalHeight * scale;
 
     }
