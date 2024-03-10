@@ -17,6 +17,8 @@ public class KryoNetwork {
         kryo.register(PlayerCountBroadcast.class);
         kryo.register(HashMap.class);
         kryo.register(receiveConstantsOnStartup.class);
+        kryo.register(requestLbin.class);
+        kryo.register(sendLbin.class);
     }
 
     public static class ConnectionIgn {
@@ -46,5 +48,15 @@ public class KryoNetwork {
     public static class receiveConstantsOnStartup {
         public HashMap<Integer, Integer> bingoRankCosts;
 
+    }
+
+    // Request the lbin of any item on ah/bz by item id
+    // If they don't exist, they won't be included in the response
+    public static class requestLbin {
+        public ArrayList<String> items;
+    }
+
+    public static class sendLbin {
+        public HashMap<String, Integer> lbinMap;
     }
 }
