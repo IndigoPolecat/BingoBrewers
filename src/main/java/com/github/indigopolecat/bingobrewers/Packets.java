@@ -36,6 +36,7 @@ public class Packets {
             if (System.currentTimeMillis() - PlayerInfo.lastSplashHubUpdate > 120000) {
                 PlayerInfo.inSplashHub = false;
             }
+
             if (!PlayerInfo.inSplashHub) return;
             S38PacketPlayerListItem packet = (S38PacketPlayerListItem) event.getPacket();
             if (packet.getAction() != S38PacketPlayerListItem.Action.UPDATE_DISPLAY_NAME) return;

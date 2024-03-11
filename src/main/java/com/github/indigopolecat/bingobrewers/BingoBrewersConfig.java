@@ -75,6 +75,20 @@ public class BingoBrewersConfig extends Config {
     )
     public static boolean showCoinsPerBingoPoint = true;
 
+    @Switch(
+            name = "Display Missing Bingo Points",
+            category = "Misc",
+            description = "Display the amount of missing Bingo Points to buy the item."
+    )
+    public static boolean displayMissingBingoPoints = true;
+
+    @Switch(
+            name = "Display Missing Bingoes",
+            category = "Misc",
+            description = "Display how many Bingoes are required to buy the item."
+    )
+    public static boolean displayMissingBingoes = true;
+
     @Dropdown(
             name = "Auto Updater Versions",
             category = "Misc",
@@ -108,17 +122,5 @@ public class BingoBrewersConfig extends Config {
     )
     public static boolean ignoredL;
 
-    @Switch(
-            name = "Display Missing Bingo Points",
-            category = "Misc",
-            description = "Display the amount of missing Bingo Points to buy the item."
-    )
-    public static boolean displayMissingBingoPoints = true;
 
-    @Switch(
-            name = "Display Missing Bingoes",
-            category = "Misc",
-            description = "Display how many Bingoes are required to buy the item."
-    )
-    public static boolean displayMissingBingoes = true;
 }

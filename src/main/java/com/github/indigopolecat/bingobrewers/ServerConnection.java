@@ -55,7 +55,7 @@ public class ServerConnection extends Listener implements Runnable {
     }
 
     private void connection() throws IOException {
-        Log.set(LEVEL_ERROR);
+        Log.set(LEVEL_TRACE);
         KryoNetwork.register(BingoBrewers.client);
         BingoBrewers.client.addListener(new Listener() {
             @Override
@@ -111,6 +111,11 @@ public class ServerConnection extends Listener implements Runnable {
                 } else if (object instanceof KryoNetwork.receiveConstantsOnStartup) {
                     KryoNetwork.receiveConstantsOnStartup request = (KryoNetwork.receiveConstantsOnStartup) object;
                     ChestInventories.rankPriceMap = request.bingoRankCosts;
+                    ChestInventories.POINTS_PER_BINGO = request.POINTS_PER_BINGO;
+                    ChestInventories.POINTS_PER_BINGO_COMMUNITIES = request.POINTS_PER_BINGO_COMMUNITIES;
+                } else if (object instanceof KryoNetwork.sendLbin) {
+                    KryoNetwork.sendLbin request = (KryoNetwork.sendLbin) object;
+                    ChestInventories.lbinMap = request.lbinMap;
                 }
             }
 
@@ -133,7 +138,7 @@ public class ServerConnection extends Listener implements Runnable {
         // send server player ign and version
         ConnectionIgn response = new ConnectionIgn();
         String ign = Minecraft.getMinecraft().getSession().getUsername();
-        response.hello = ign + "|v0.3|Beta";
+        response.hello = ign + "|v0.2|Beta";
         LoggerUtil.LOGGER.info("sending " + response.hello);
         BingoBrewers.client.sendTCP(response);
         LoggerUtil.LOGGER.info("sent");
@@ -151,7 +156,7 @@ public class ServerConnection extends Listener implements Runnable {
         BingoBrewers.client = client;
     }
 
-    public synchronized Client getClient() {
+    public static synchronized Client getClient() {
         return BingoBrewers.client;
 
     }
@@ -271,6 +276,17 @@ public class ServerConnection extends Listener implements Runnable {
             return;
         }
         currentClient.sendUDP(count);
+    }
+
+    public static synchronized void requestLbin(ArrayList<String> items) {
+        Client currentClient = getClient();
+        if (currentClient == null) {
+            LoggerUtil.LOGGER.info("Client is null");
+            return;
+        }
+        KryoNetwork.requestLbin request = new KryoNetwork.requestLbin();
+        request.items = items;
+        currentClient.sendTCP(request);
     }
 
     public void reconnect() {

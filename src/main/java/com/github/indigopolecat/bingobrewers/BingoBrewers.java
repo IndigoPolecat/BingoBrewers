@@ -10,7 +10,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.common.MinecraftForge;
 import com.github.indigopolecat.events.PacketListener;
 
-@Mod(modid = "bingobrewers", version = "0.2", useMetadata = true)
+@Mod(modid = "bingobrewers", version = "0.3", useMetadata = true)
 public class BingoBrewers {
     public static BingoBrewersConfig config;
 
@@ -19,7 +19,7 @@ public class BingoBrewers {
     public static volatile TitleHud activeTitle;
     public static volatile Client client;
     // controls which server is connected to
-    public static final boolean TEST_INSTANCE = false;
+    public static final boolean TEST_INSTANCE = true;
     public static boolean onHypixel = false;
 
     public static AutoUpdater autoUpdater = new AutoUpdater();
