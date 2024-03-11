@@ -1,5 +1,10 @@
 package com.github.indigopolecat.bingobrewers;
 
+import com.esotericsoftware.kryonet.Server;
+import net.minecraft.nbt.NBTTagString;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+
+import java.util.HashMap;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerChest;
@@ -10,6 +15,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
+import com.github.indigopolecat.bingobrewers.util.BingoShopItem;
 
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
@@ -20,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.input.Keyboard;
 
 import java.text.DecimalFormat;
@@ -27,216 +34,80 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ChestInventories {
-    public static final int POINTS_PER_BINGO = 85;
-    public static boolean bingoShopOpen = false;
-    boolean calculationsReady = false;
-    ContainerChest containerChest;
-    String itemName = null;
-    String coinsPerPoint = null;
-    int finalCostLineIndex;
-    int finalExtraCostIndex;
-    String finalExtraCost2;
-    ArrayList<TooltipInfo> tooltipInfoList = new ArrayList<>();
-    long lastRan;
-    boolean hubSelectorOpen = false;
-    boolean dungeonHubSelectorOpen = false;
-    private int currentBingoPoints;
-    public static boolean shiftPressed = false;
-    public static HashMap<Integer, Integer> rankPriceMap = new HashMap<>();
-    public static int bingoRank;
+    public static int POINTS_PER_BINGO = 85; // default value, defined from server
+    public static int POINTS_PER_BINGO_COMMUNITIES = 160; // default value, defined from server
+    public static HashMap<Integer, Integer> rankPriceMap = new HashMap<>(); // default value, defined from server
+    private static boolean calculationsReady = false;
+    private static boolean bingoShopOpen = false;
+    private static boolean hubSelectorOpen = false;
+    private static boolean dungeonHubSelectorOpen = false;
+    private static boolean shiftToggled = false;
+    private static boolean waitingForLbinMap = false;
+    private static long lastCalculated = 0;
+    private static ContainerChest containerChest = null;
+    private static int currentPoints = 0;
+    private static int currentRank = 0;
+    private static final ArrayList<BingoShopItem> shopItems = new ArrayList<>();
+    public static HashMap<String, Integer> lbinMap = new HashMap<>();
+
 
     @SubscribeEvent
-    public void onShopOpen(GuiOpenEvent event) {
-        calculationsReady = false;
+    public void onInventoryOpen(GuiOpenEvent event) {
         bingoShopOpen = false;
-        shiftPressed = false;
-        GuiChest guiChest;
+        hubSelectorOpen = false;
+        dungeonHubSelectorOpen = false;
+        shiftToggled = false;
+        waitingForLbinMap = false;
+        calculationsReady = false;
         if (event.gui instanceof GuiChest) {
-            guiChest = (GuiChest) event.gui;
-            Container gui = guiChest.inventorySlots;
-            if (gui instanceof ContainerChest) {
-                containerChest = (ContainerChest) gui;
-                String name = containerChest.getLowerChestInventory().getDisplayName().getUnformattedText();
-                switch (name) {
-                    case "Bingo Shop":
-                        if (!BingoBrewersConfig.showCoinsPerBingoPoint) return;
-                        // If everything has been calculated within the last 60 seconds, don't bother recalculating
-                        if (System.currentTimeMillis() - lastRan < 120000) {
-                            calculationsReady = true;
-                            return;
-                        }
-                        tooltipInfoList.clear();
-                        bingoShopOpen = true;
+            GuiChest chest = (GuiChest) event.gui;
+            String inventoryName = getInventoryName(chest);
+            containerChest = (ContainerChest) chest.inventorySlots;
+            switch (inventoryName) {
+                case "Bingo Shop":
+                    if (System.currentTimeMillis() - lastCalculated < 300000) {
+                        //calculationsReady = true;
                         break;
-                    case "SkyBlock Hub Selector":
-                        LoggerUtil.LOGGER.info("Hub Selector Open");
-                        hubSelectorOpen = true;
-                        break;
-                    case "Dungeon Hub Selector":
-                        LoggerUtil.LOGGER.info("Dungeon Hub Selector Open");
-                        dungeonHubSelectorOpen = true;
-                        break;
-                }
+                    }
+                    bingoShopOpen = true;
+                    break;
+                case "SkyBlock Hub Selector":
+                    hubSelectorOpen = true;
+                    break;
+                case "Dungeon Hub Selector":
+                    dungeonHubSelectorOpen = true;
+                    break;
             }
         }
+
     }
 
-    // Event that occurs once a packet from your inventory instead of the chest is sent, meaning the chest is loaded
     @SubscribeEvent
-    public void onInitGuiPost(Packets.InventoryLoadingDoneEvent event) {
+    public void onInventoryDoneLoading(Packets.InventoryLoadingDoneEvent event) {
         if (bingoShopOpen) {
-            // set variables in correct scope
-            String cost;
-            int costInt = 0;
-            ArrayList<String> itemNames = new ArrayList<>();
-            ArrayList<Integer> itemCosts = new ArrayList<>();
-            ArrayList<String> extraItems = new ArrayList<>();
+            shopItems.clear();
             List<ItemStack> chestInventory = containerChest.getInventory();
-            // Remove the last 36 slots in the chest inventory, which are the player inventory
-            chestInventory.subList(chestInventory.size() - 36, chestInventory.size()).clear();
-
+            chestInventory.subList(0, chestInventory.size() - 36);
             for (ItemStack item : chestInventory) {
                 if (item != null) {
-                    if (item.getDisplayName().contains("Upgrade Bingo Rank")) {
-                        this.currentBingoPoints = gatherBingoPoints(item);
-                        bingoRank = extractRankAsInt(item);
-                    }
-
                     List<String> itemLore = item.getTooltip(Minecraft.getMinecraft().thePlayer, false);
-                    boolean costFound = false;
-                    for (int i = 0; i < itemLore.size(); i++) {
-                        String extraItem = null;
-                        // if the previous lore line was "Cost", set this line to the cost variable and break the loop
-                        if (costFound) {
-                            cost = itemLore.get(i);
-                            String unformattedCost = removeFormatting(cost);
-
-                            // if the next lore line is not empty, set it to the extra item variable, doesn't work for multiple extra items in the cost
-                            if (!itemLore.get(i + 1).equals("")) {
-                                extraItem = itemLore.get(i + 1);
-                            }
-                            try {
-                                costInt = Integer.parseInt(unformattedCost);
-                            } catch (NumberFormatException e) {
-                                System.out.println("Cost is not a number!");
-                            }
-                            itemCosts.add(costInt);
-                            extraItems.add(extraItem);
-                            String displayName = item.getDisplayName();
-                            itemNames.add(displayName);
-                            break;
-                        } else {
-                            // if lore line is "§5§o§7Cost"
-                            if (removeFormatting(itemLore.get(i)).equals("Cost")) {
-                                costFound = true;
+                    if (item.getDisplayName().contains("Bingo Rank")) {
+                        currentRank = getCurrentBingoRank(item);
+                        currentPoints = getCurrentBingoPoints(item);
+                    } else {
+                        for (String s : itemLore) {
+                            if (removeFormatting(s).equals("Cost")) {
+                                BingoShopItem shopItem = new BingoShopItem(item);
+                                shopItems.add(shopItem);
                             }
                         }
                     }
+
                 }
             }
-            if (costInt == 0) {
-                LoggerUtil.LOGGER.info("Something went wrong: Bingo Point Cost not found in inventory named Bingo Shop!");
-            }
-            ArrayList<String> itemNamesFormatless = new ArrayList<>();
-            for (String itemName : itemNames) {
-                itemNamesFormatless.add(removeFormatting(itemName));
-            }
-            ArrayList<String> extraItemsFormatless = new ArrayList<>();
-            for (String extraItem : extraItems) {
-                extraItemsFormatless.add(removeFormatting(extraItem));
-            }
-
-            // Fetch the price map for all items in the chest with a cost, execute the rest of the code after
-            CompletableFuture<ArrayList<Double>> costFuture = AuctionAPI.fetchPriceMap(itemNamesFormatless).whenComplete((lbinMap, throwable) -> {
-            });
-            costFuture.thenAccept(coinCosts -> {
-                CompletableFuture<ArrayList<Double>> extraItemFuture = AuctionAPI.fetchPriceMap(extraItemsFormatless).whenComplete((lbinMap, throwable) -> {
-                });
-                extraItemFuture.thenAccept(extraCoinCosts -> {
-
-                    if (itemCosts.size() == coinCosts.size() && itemCosts.size() == itemNames.size()) {
-                        DecimalFormat decimalFormat = new DecimalFormat("#,###");
-                        String extraName = null;
-                        Double extraCoinCost = null;
-                        tooltipInfoList.clear();
-                        for (int i = 0; i < itemCosts.size(); i++) {
-                            Double coinCost = coinCosts.get(i);
-
-                            // Skip the item if coin cost is null (item not found in auction house b/c soulbound or other reasons.)
-                            if (coinCost == (null)) {
-                                continue;
-                            }
-
-                            // If there is an extra item, subtract the cost of the extra item from the total cost
-                            if (extraCoinCosts.get(i) != null) {
-                                extraCoinCost = extraCoinCosts.get(i);
-                                coinCost = coinCost - extraCoinCost;
-                                extraName = extraItemsFormatless.get(i);
-                            }
-                            int bingoCost = itemCosts.get(i);
-                            itemName = itemNames.get(i);
-
-                            if (coinCost == 0) {
-                                LoggerUtil.LOGGER.info("Item not found in auction house or price is somehow 0: " + itemName);
-                            } else if (bingoCost == 0) {
-                                LoggerUtil.LOGGER.info("Failed to get Bingo Point cost of item: " + itemName);
-                            } else {
-                                double coinsPerPointdouble = coinCost / bingoCost;
-                                long coinsPerPointLong = Math.round(coinsPerPointdouble);
-                                coinsPerPoint = decimalFormat.format(coinsPerPointLong);
-
-                                for (ItemStack item : chestInventory) {
-                                    if (item != null) {
-                                        String displayName = item.getDisplayName();
-
-                                        // compare the display name of the item in the chest loop to the item name in the name array (aka the current one we are calculating for)
-                                        if (displayName.equals(itemName)) {
-                                            NBTTagCompound nbt = item.getTagCompound();
-                                            NBTTagCompound displayTag = nbt.getCompoundTag("display");
-                                            NBTTagList loreList = displayTag.getTagList("Lore", 8);
-
-                                            int costLineIndex = -1;
-                                            int extraCostIndex = -1;
-                                            int bingoRankRequired = extractRankAsInt(item);
-                                            for (int j = 0; j < loreList.tagCount(); j++) {
-                                                // Compare the current line without formatting to the cost in bingo points
-                                                // removeFormatting method removes " Bingo Points" from the end of the string
-                                                if (removeFormatting(loreList.getStringTagAt(j)).equals(Integer.toString(bingoCost))) {
-                                                    costLineIndex = j + 1;
-
-                                                    if (extraName != null && extraName.equals(removeFormatting(loreList.getStringTagAt(j + 1)))) {
-                                                        extraCostIndex = j + 2;
-                                                        costLineIndex += 1;
-                                                    }
-                                                }
-                                            }
-                                            // If no empty line is found after the cost line, set the cost line index to the end of the lore list
-                                            if (costLineIndex == -1) {
-                                                // Add one because the tooltip list used to add the line includes the display name and is 1 longer as a result
-                                                costLineIndex = loreList.tagCount() + 1;
-                                            }
-
-                                            finalCostLineIndex = costLineIndex;
-                                            finalExtraCostIndex = extraCostIndex;
-                                            String finalExtraCost = null;
-                                            if (extraCoinCost != null) {
-                                                finalExtraCost = formatNumber(Math.round(extraCoinCost));
-                                            }
-                                            finalExtraCost2 = finalExtraCost;
-                                            calculationsReady = true;
-                                            TooltipInfo tooltipInfo = new TooltipInfo(itemName, coinsPerPoint, finalExtraCost2, finalCostLineIndex, finalExtraCostIndex, bingoCost, bingoRankRequired);
-                                            tooltipInfoList.add(tooltipInfo);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        lastRan = System.currentTimeMillis();
-                    } else {
-                        LoggerUtil.LOGGER.info("Something went wrong: itemCosts, coinCosts, and itemNames are not the same size!");
-                    }
-                });
-            });
+            ArrayList<String> itemPriceQuery = getItemPriceQuery();
+            ServerConnection.requestLbin(itemPriceQuery);
+            waitingForLbinMap = true;
 
         } else if (hubSelectorOpen || dungeonHubSelectorOpen) {
             List<ItemStack> chestInventory = containerChest.getInventory();
@@ -277,91 +148,58 @@ public class ChestInventories {
         }
     }
 
-    private int gatherBingoPoints(ItemStack item) {
-        List<String> itemLore = item.getTooltip(Minecraft.getMinecraft().thePlayer, false);
-        for (String s : itemLore) {
-            if (s.contains("Available Bingo Points: ")) {
-                return extractAvailableBingoPoints(s);
-            }
+    private static ArrayList<String> getItemPriceQuery() {
+        ArrayList<String> itemPriceQuery = new ArrayList<>();
+        HashMap<String, String> itemMap = new HashMap<>();
+        // map item names to ids
+        for (BingoShopItem item : shopItems) {
+            if (item.soulbound) continue;
+            itemMap.put(item.itemName, item.itemID);
         }
-        return -1;
-    }
-
-    public static int extractAvailableBingoPoints(String s) {
-        // If your Bingo Points are above 1000 the number will be formatted with a comma, so we remove it
-        String bingoPointsString = s.replace("Available Bingo Points: ", "").replace(",", "");
-        return Integer.parseInt(bingoPointsString.replaceAll("§.", ""));
-    }
-
-    public static int extractRankAsInt(ItemStack item) {
-        List<String> itemLore = item.getTooltip(Minecraft.getMinecraft().thePlayer, false);
-        Pattern pattern = Pattern.compile("(Bingo Rank [IV]+)");
-        for (String s : itemLore) {
-            Matcher matcher = pattern.matcher(s);
-            if (matcher.find()) {
-                s = matcher.group(1).replaceAll("§.", "");
-                switch (s) {
-                    case "Bingo Rank I":
-                        return 1;
-                    case "Bingo Rank II":
-                        return 2;
-                    case "Bingo Rank III":
-                        return 3;
-                    case "Bingo Rank IV":
-                        return 4;
-                    case "Bingo Rank V":
-                        return 5;
+        for (BingoShopItem item : shopItems) {
+            if (item.soulbound) continue;
+            if (!item.extraCost.isEmpty()) {
+                for (String s : item.extraCost) {
+                    if (itemMap.containsKey(s)) {
+                        itemPriceQuery.add(itemMap.get(s));
+                    }
                 }
             }
+            itemPriceQuery.add(item.itemID);
         }
-
-        return 0;
+        return itemPriceQuery;
     }
 
-    @SubscribeEvent
-    public void onItemTooltip(ItemTooltipEvent event) {
-        if (calculationsReady) {
-            for (TooltipInfo item : tooltipInfoList) {
-                ItemStack eventItem = event.itemStack;
-                if (eventItem.getDisplayName().equals(item.getName())) {
-                    event.toolTip.add(item.getCostIndex() + 1, "§6" + item.getCost() + " Coins/Point");
-                    appendPointsAndBingoLeft(event, item);
-                }
-                if (item.getExtraCostIndex() != -1 && item.getExtraCost() != null && eventItem.getDisplayName().equals(item.getName())) {
-                    String extraCostLine = event.toolTip.get(item.getExtraCostIndex());
-                    event.toolTip.set(item.getExtraCostIndex(), extraCostLine + " §6(" + item.getExtraCost() + " Coins)");
-                }
-            }
-        }
-    }
 
-    private void appendPointsAndBingoLeft(ItemTooltipEvent event, TooltipInfo item) {
-        if(this.currentBingoPoints == -1 || !BingoBrewersConfig.displayMissingBingoPoints || !BingoBrewersConfig.displayMissingBingoes) {
+    public static void appendRemainingLore(ItemTooltipEvent event, BingoShopItem item) {
+        if(currentPoints == -1 || !BingoBrewersConfig.displayMissingBingoPoints || !BingoBrewersConfig.displayMissingBingoes) {
             return;
         }
+        int toolTipIndex = item.itemStack.getTagCompound().getCompoundTag("display").getTagList("Lore", 8).tagCount() - 2;
         int pointsPerBingo;
         // controls the text in the toggle to switch
         String withOrWithout = "";
-        String withOrWithout2 = "160";
-        if (shiftPressed) {
+        String withOrWithout2 = POINTS_PER_BINGO_COMMUNITIES + "";
+        if (shiftToggled) {
             withOrWithout = " (Communities)";
-            pointsPerBingo = 160;
-            withOrWithout2 = "85";
+            pointsPerBingo = POINTS_PER_BINGO_COMMUNITIES;
+            withOrWithout2 = POINTS_PER_BINGO + "";
         } else {
             pointsPerBingo = POINTS_PER_BINGO;
         }
-        int i = bingoRank;
+        int i = currentRank;
         int rankCost = 0;
-        while (i < item.getBingoRankRequired()) {
+        while (i < item.bingoRankRequired) {
             i++;
             if (rankPriceMap.containsKey(i)) {
-                 rankCost += rankPriceMap.get(i);
+                rankCost += rankPriceMap.get(i);
             }
         }
-        int itemCostInBingoPoints = item.getBingoPointsPrice() + rankCost;
-        int pointsLeftToAffordItem = itemCostInBingoPoints - this.currentBingoPoints;
-        int bingoesRequired = (int) Math.ceil((double) pointsLeftToAffordItem / pointsPerBingo);
-        int toolTipIndex = item.getCostIndex() + 2;
+        DecimalFormat df = new DecimalFormat("#.##");
+
+        int itemCostInBingoPoints = item.costInPoints + rankCost;
+        int pointsLeftToAffordItem = itemCostInBingoPoints - currentPoints;
+        String bingoesRequired = df.format( pointsLeftToAffordItem / pointsPerBingo);
 
         if (pointsLeftToAffordItem > 0 && BingoBrewersConfig.displayMissingBingoPoints) {
             event.toolTip.add(toolTipIndex, "");
@@ -369,10 +207,108 @@ public class ChestInventories {
             toolTipIndex++;
         }
 
-        if (bingoesRequired > 0 && BingoBrewersConfig.displayMissingBingoes) {
+        if (Double.parseDouble(bingoesRequired) > 0 && BingoBrewersConfig.displayMissingBingoes) {
             event.toolTip.add(toolTipIndex + 1,"§7Events Remaining" + withOrWithout + ": §c" + bingoesRequired);
             event.toolTip.add(toolTipIndex, "§8[SHIFT FOR " + withOrWithout2 + " POINTS/BINGO]");
         }
+
+    }
+
+    @SubscribeEvent
+    public void onItemTooltip(ItemTooltipEvent event) {
+        if (!waitingForLbinMap) return;
+        DecimalFormat decimalFormat = new DecimalFormat("#,###");
+        for (BingoShopItem item : shopItems) {
+            if (!item.itemName.equals(removeFormatting(event.itemStack.getDisplayName()))) continue;
+            if (!item.soulbound) {
+                if (!item.extraCost.isEmpty()) {
+                    int totalCost = 0;
+                    for (String s : item.extraCost) {
+                        if (lbinMap.containsKey(s)) {
+                            totalCost += lbinMap.get(s);
+                            item.extraCostMap.put(s, lbinMap.get(s));
+                        }
+                    }
+                    item.costInCoins = totalCost;
+                }
+                if (lbinMap.containsKey(item.itemID)) {
+                    item.costInCoins += lbinMap.get(item.itemID);
+                }
+
+                ItemStack itemStack = item.itemStack;
+                NBTTagCompound nbt = itemStack.getTagCompound();
+                NBTTagCompound displayTag = nbt.getCompoundTag("display");
+                NBTTagList loreList = displayTag.getTagList("Lore", 8);
+
+                for (int i = 0; i < item.extraCostIndex.size(); i++) {
+                    String lore = loreList.getStringTagAt(item.extraCostIndex.get(i));
+                    System.out.println("lore " + lore);
+                    System.out.println("extraCostIndex " + item.extraCostIndex.get(i));
+                    System.out.println("extraCost " + item.extraCost.get(i));
+                    System.out.println("extraCostMap " + item.extraCostMap.get(item.extraCost.get(i)));
+                    System.out.println("extraCostIndex " + item.extraCostIndex.get(i) + 1);
+                    System.out.println(event.toolTip);
+                    event.toolTip.add(item.extraCostIndex.get(i) + 1, lore + "§6(" + formatNumber(item.extraCostMap.get(item.extraCost.get(i))) + ")");
+                    if (i == item.extraCostIndex.size() - 1) {
+                        event.toolTip.add(item.extraCostIndex.get(i) + 2, "§6" + decimalFormat.format(item.costInCoins / item.costInPoints) + " Coins/Point");
+                    }
+                }
+            }
+            appendRemainingLore(event, item);
+        }
+    }
+
+    public static String getInventoryName (GuiChest chest) {
+        ContainerChest containerChest = (ContainerChest) chest.inventorySlots;
+        return containerChest.getLowerChestInventory().getDisplayName().getUnformattedText();
+
+    }
+
+    public static int getCurrentBingoPoints(ItemStack item) {
+        List<String> itemLore = item.getTooltip(Minecraft.getMinecraft().thePlayer, false);
+        Pattern pointPattern = Pattern.compile("Available Bingo Points: §.([0-9]+)");
+        for (String s : itemLore) {
+            s = s.replaceAll(",", "");
+            Matcher pointMatcher = pointPattern.matcher(s);
+            if (pointMatcher.find()) {
+                return Integer.parseInt(pointMatcher.group(1));
+            }
+        }
+        return -1;
+    }
+
+    public static int getCurrentBingoRank(ItemStack item) {
+        List<String> itemLore = item.getTooltip(Minecraft.getMinecraft().thePlayer, false);
+        Pattern rankPattern = Pattern.compile("Your Rank: §.* (Bingo Rank ([IVXLCDM]+))");
+        for (String s : itemLore) {
+            Matcher rankMatcher = rankPattern.matcher(s);
+            if (rankMatcher.find()) {
+                String rank = rankMatcher.group(1);
+                switch (rank) {
+                    case "I":
+                        return 1;
+                    case "II":
+                        return 2;
+                    case "III":
+                        return 3;
+                    case "IV":
+                        return 4;
+                    case "V":
+                        return 5;
+                    case "VI":
+                        return 6;
+                    case "VII":
+                        return 7;
+                    case "VIII":
+                        return 8;
+                    case "IX":
+                        return 9;
+                    case "X":
+                        return 10;
+                }
+            }
+        }
+        return 0;
     }
 
     private static String removeFormatting(String s) {
@@ -402,13 +338,18 @@ public class ChestInventories {
             return decimalFormat.format(value);
         }
     }
+
     @SubscribeEvent
     public void onKeyPress(GuiScreenEvent.KeyboardInputEvent.Pre event) {
         if((Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))  && ChestInventories.bingoShopOpen ) {
-            shiftPressed = !shiftPressed;
+            shiftToggled = !shiftToggled;
         }
 
     }
+
+
+
+
+
+
 }
-
-
