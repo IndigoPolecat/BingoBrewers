@@ -27,7 +27,7 @@ public class Packets {
     boolean alreadyFired = false;
 
     // The key is the time in milliseconds the value was added plus a random 8 digit unique identifier
-    HashMap<String, Long> hardstone = new HashMap<>();
+    public static HashMap<String, Long> hardstone = new HashMap<>();
 
     @SubscribeEvent
     public void onPacketReceived(PacketEvent.Received event) {
@@ -107,7 +107,10 @@ public class Packets {
 
             for (int i = 0; i < blockUpdateData.length; i++) {
                 BlockPos coords = blockUpdateData[i].getPos();
+                //System.out.println("coords: " + coords.toString() + " current block: " + Minecraft.getMinecraft().theWorld.getBlockState(coords).getBlock().toString() + " new block: " + blockUpdateData[i].getBlockState().getBlock().toString());
+                // get old block
                 Block block = Minecraft.getMinecraft().theWorld.getBlockState(coords).getBlock();
+                // ignore if the old block is air or water because we are looking for stone blocks (or anything else)
                 if (block.toString().contains("air") || block.toString().contains("water")) continue;
                 String key = coords.toString();
                 hardstone.put(key, System.currentTimeMillis());
@@ -122,18 +125,24 @@ public class Packets {
             // new block
             String newBlockStr = ((S23PacketBlockChange) event.getPacket()).getBlockState().toString();
 
+            if (block.toString().contains("air") || block.toString().contains("water")) return;
+            String key = coords.toString();
+            //System.out.println("coords: " + coords + " current block: " + Minecraft.getMinecraft().theWorld.getBlockState(coords).getBlock().toString() + " new block: " + newBlockStr);
+            hardstone.put(key, System.currentTimeMillis());
+
             // ignore if the new block is not air
-            if (!newBlockStr.contains("air")) return;
+            //if (!newBlockStr.contains("air")) return;
 
             // if the old block is not a chest, add to hardstone list
-            if (!block.toString().contains("chest")) {
+            /*if (!block.toString().contains("chest")) {
                 String key = coords.toString();
                 hardstone.put(key, System.currentTimeMillis());
                 return;
             }
+            */
 
             // if the old block is a chest, add to the chest blacklist because it isn't a natural chest
-            if (!hardstone.containsKey(coords.toString())) {
+            /*if (!hardstone.containsKey(coords.toString())) {
                 LoggerUtil.LOGGER.info("Adding to blacklist " + coords);
                 CHChests.ChestBlacklist.put(coords.toString(), System.currentTimeMillis());
             }
@@ -147,6 +156,7 @@ public class Packets {
                     CHChests.ChestBlacklist.remove(key);
                 }
             }
+             */
 
         }
         if (event.getPacket() instanceof S2DPacketOpenWindow) {
