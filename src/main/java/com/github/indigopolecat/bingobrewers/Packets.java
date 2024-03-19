@@ -111,7 +111,7 @@ public class Packets {
                 // get old block
                 Block block = Minecraft.getMinecraft().theWorld.getBlockState(coords).getBlock();
                 // ignore if the old block is air or water because we are looking for stone blocks (or anything else)
-                if (block.toString().contains("air") || block.toString().contains("water")) continue;
+                if (block.toString().contains("air") || block.toString().contains("water") || block.equals(blockUpdateData[i].getBlockState())) continue;
                 String key = coords.toString();
                 hardstone.put(key, System.currentTimeMillis());
             }
@@ -125,7 +125,7 @@ public class Packets {
             // new block
             String newBlockStr = ((S23PacketBlockChange) event.getPacket()).getBlockState().toString();
 
-            if (block.toString().contains("air") || block.toString().contains("water")) return;
+            if (block.toString().contains("air") || block.toString().contains("water") || block.toString().equals(newBlockStr)) return;
             String key = coords.toString();
             //System.out.println("coords: " + coords + " current block: " + Minecraft.getMinecraft().theWorld.getBlockState(coords).getBlock().toString() + " new block: " + newBlockStr);
             hardstone.put(key, System.currentTimeMillis());

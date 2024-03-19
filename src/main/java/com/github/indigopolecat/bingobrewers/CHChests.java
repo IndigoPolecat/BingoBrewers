@@ -26,10 +26,12 @@ public class CHChests {
         if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) return;
         if (!event.world.getBlockState(event.pos).getBlock().getUnlocalizedName().contains("chest")) return;
         System.out.println(event.pos.toString());
-        System.out.println(Packets.hardstone);
+        //System.out.println(Packets.hardstone);
         // Add the chest to the list of chests to listen for
         if (!Packets.hardstone.containsKey(event.pos.toString())) {
             listeningChests.put(event.pos.toString(), System.currentTimeMillis());
+        } else {
+            Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("hardstone chest detected"));
         }
 
     }
@@ -51,14 +53,14 @@ public class CHChests {
 
     public static void parseChat() {
 
-        listeningChests.entrySet().removeIf(entry -> System.currentTimeMillis() - entry.getValue() > 9000);
+        //listeningChests.entrySet().removeIf(entry -> System.currentTimeMillis() - entry.getValue() > 9000);
 
         // Create a copy we'll remove entries too new to be valid from, and then use for calculations
         HashMap<String, Long> listeningChestsCopy = new HashMap<>();
         listeningChestsCopy.putAll(listeningChests);
         System.out.println(listeningChestsCopy);
 
-        listeningChestsCopy.values().removeIf(entry -> System.currentTimeMillis() - entry < 3000);
+        //listeningChestsCopy.values().removeIf(entry -> System.currentTimeMillis() - entry < 3000);
         System.out.println(listeningChestsCopy);
         if (listeningChestsCopy.isEmpty()) {
             RecentChatMessages.clear();
@@ -77,7 +79,8 @@ public class CHChests {
         }
         System.out.println("oldest: " + (System.currentTimeMillis() - oldest));
         System.out.println("coords: " + coords);
-        LoggerUtil.LOGGER.info("going");
+        LoggerUtil.LOGGER.info("structure chest detected");
+        Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("structure chest detected"));
 
         // Once a "You received" message is received, set the time remaining to 1 second for messages to come in
         long newTime = oldest + 8500;
