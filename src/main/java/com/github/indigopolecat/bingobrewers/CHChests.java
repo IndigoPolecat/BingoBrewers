@@ -6,6 +6,7 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -15,10 +16,11 @@ import java.util.regex.Pattern;
 public class CHChests {
 
     public static List<String> RecentChatMessages = new ArrayList<>();
-    public static Map<String, Long> ChestBlacklist = new HashMap<>();
     static HashMap<String, Long> listeningChests = new HashMap<>();
     static long lastMessageTime = 0;
     static boolean addMessages = false;
+    private static long lastHardstoneChest = 0;
+    private static boolean expectingHardstoneLoot;
 
 
     @SubscribeEvent
@@ -26,25 +28,34 @@ public class CHChests {
         if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) return;
         if (!event.world.getBlockState(event.pos).getBlock().getUnlocalizedName().contains("chest")) return;
         System.out.println(event.pos.toString());
-        //System.out.println(Packets.hardstone);
+        System.out.println(Packets.hardstone);
         // Add the chest to the list of chests to listen for
         if (!Packets.hardstone.containsKey(event.pos.toString())) {
             listeningChests.put(event.pos.toString(), System.currentTimeMillis());
         } else {
             Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("hardstone chest detected"));
+            lastHardstoneChest = System.currentTimeMillis();
+            expectingHardstoneLoot = true;
         }
 
     }
 
-    public static void addChatMessage(String message) {
-        if (System.currentTimeMillis() - lastMessageTime > 45 && addMessages) {
+    @SubscribeEvent
+    public void clientTick(TickEvent.ClientTickEvent event) {
+        if (System.currentTimeMillis() - lastHardstoneChest > 500) expectingHardstoneLoot = false;
+        if (System.currentTimeMillis() - lastMessageTime > 100 && addMessages) {
             parseChat();
             addMessages = false;
-            return;
+            expectingHardstoneLoot = false;
         }
+    }
+
+    public static void addChatMessage(String message) {
         if (message.contains("You received")) {
-            addMessages = true;
-            RecentChatMessages.add(message);
+            if (!expectingHardstoneLoot) {
+                addMessages = true;
+                RecentChatMessages.add(message);
+            }
             lastMessageTime = System.currentTimeMillis();
         }
 
@@ -91,15 +102,16 @@ public class CHChests {
         for (String message : RecentChatMessages) {
             message = message.replaceAll("§.", "");
             System.out.println("message: " + message);
-            Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("item found"));
-            Pattern itemPattern = Pattern.compile("^You received +?(\\d+)(\\w*\\s*)*");
+            //Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("item found"));
+            Pattern itemPattern = Pattern.compile("^You received \\+*([\\d,]+) .?\\s?\\b([\\w*\\s]*)");
             Matcher matcher = itemPattern.matcher(message);
 
             while (matcher.find()) {
                 String item = matcher.group(2);
+                String amount = matcher.group(1).replaceAll(",", "");
                 LoggerUtil.LOGGER.info(item);
                 LoggerUtil.LOGGER.info("item found: " + item);
-                //Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("item found: " + item));
+                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("item found: " + amount + " " + item));
             }
         }
         RecentChatMessages.clear();
