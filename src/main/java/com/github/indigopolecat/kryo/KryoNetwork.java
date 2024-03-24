@@ -19,6 +19,9 @@ public class KryoNetwork {
         kryo.register(receiveConstantsOnStartup.class);
         kryo.register(requestLbin.class);
         kryo.register(sendLbin.class);
+        kryo.register(sendCHItems.class);
+        kryo.register(receiveCHItems.class);
+        kryo.register(requestItemsForServer.class);
     }
 
     public static class ConnectionIgn {
@@ -58,5 +61,25 @@ public class KryoNetwork {
 
     public static class sendLbin {
         public HashMap<String, Integer> lbinMap;
+    }
+
+    public static class sendCHItems {
+        public ArrayList<String> items;
+        public int x;
+        public int y;
+        public int z;
+        public String server;
+    }
+
+    public static class requestItemsForServer {
+        public String server;
+        public int day;
+    }
+
+    public static class receiveCHItems {
+        public HashMap<String, ArrayList<String>> chestMap;
+        public String server; // used to confirm that the server is correct
+        public int day; // server's last known day
+        public Long lastReceivedDayInfo;
     }
 }

@@ -24,6 +24,7 @@ public class PlayerInfo {
     public static HashMap<String, String> hubServerMap = new HashMap<>();
     public static HashMap<String, String> dungeonHubServerMap = new HashMap<>();
     public static int tickCounter = 0;
+    public static int day;
     public volatile static boolean readyToNotify = false;
     public volatile static String splashHubNumberForNotification = null;
     public volatile static boolean readyToNotifyDungeon = false;
@@ -60,6 +61,9 @@ public class PlayerInfo {
 
                         lastPositionUpdate = System.currentTimeMillis();
                         newLoad = false;
+
+
+                        day = (int) Math.floor(Minecraft.getMinecraft().theWorld.getTotalWorldTime() / 24000f);
                     }
                 }
             }

@@ -111,6 +111,12 @@ public class ServerConnection extends Listener implements Runnable {
                 } else if (object instanceof KryoNetwork.receiveConstantsOnStartup) {
                     KryoNetwork.receiveConstantsOnStartup request = (KryoNetwork.receiveConstantsOnStartup) object;
                     ChestInventories.rankPriceMap = request.bingoRankCosts;
+                } else if (object instanceof KryoNetwork.receiveCHItems) {
+                    KryoNetwork.receiveCHItems CHItems = (KryoNetwork.receiveCHItems) object;
+                    if (CHItems.server.equals(PlayerInfo.currentServer)) {
+                        if (CHItems.day > PlayerInfo.day || System.currentTimeMillis() - CHItems.lastReceivedDayInfo > 25_200_000) return; // ignore if the server is younger than last known, or it's been more than 7 hours since info was received
+
+                    }
                 }
             }
 
@@ -271,6 +277,24 @@ public class ServerConnection extends Listener implements Runnable {
             return;
         }
         currentClient.sendUDP(count);
+    }
+
+    public synchronized void sendCHItems(KryoNetwork.sendCHItems items) {
+        Client currentClient = getClient();
+        if (currentClient == null) {
+            LoggerUtil.LOGGER.info("Client is null");
+            return;
+        }
+        //currentClient.sendTCP(items);
+    }
+
+    public synchronized void requestCHItems(KryoNetwork.requestItemsForServer server) {
+        Client currentClient = getClient();
+        if (currentClient == null) {
+            LoggerUtil.LOGGER.info("Client is null");
+            return;
+        }
+        //fcurrentClient.sendTCP(server);
     }
 
     public void reconnect() {

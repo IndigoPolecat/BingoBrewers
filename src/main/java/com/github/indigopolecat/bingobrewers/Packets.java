@@ -1,6 +1,7 @@
 package com.github.indigopolecat.bingobrewers;
 
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
+import com.github.indigopolecat.kryo.KryoNetwork;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -74,6 +75,8 @@ public class Packets {
                 } else {
                     HudRendering.inSkyblockorPTLobby = false;
                 }
+
+
                 PlayerInfo.currentServer = locrawMap.get("server");
                 if (PlayerInfo.currentServer != null) {
                     PlayerInfo.playerHubNumber = PlayerInfo.hubServerMap.get(PlayerInfo.currentServer);
@@ -91,6 +94,13 @@ public class Packets {
                             PlayerInfo.lastSplashHubUpdate = System.currentTimeMillis();
                         }
                     }
+                }
+
+                if (PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
+                    KryoNetwork.requestItemsForServer CHRequest = new KryoNetwork.requestItemsForServer();
+                    CHRequest.server = PlayerInfo.currentServer;
+                    System.out.println(PlayerInfo.day);
+                    CHRequest.day = PlayerInfo.day;
                 }
 
             } else if (message.contains("You received") && PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
