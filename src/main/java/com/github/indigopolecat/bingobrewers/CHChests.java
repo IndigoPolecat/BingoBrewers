@@ -128,6 +128,9 @@ public class CHChests {
             while (matcher.find()) {
                 String item = matcher.group(2);
                 String amount = matcher.group(1).replaceAll(",", "");
+                System.out.println(item);
+                System.out.println(amount);
+                System.out.println(chestLoot.items.size());
                 LoggerUtil.LOGGER.info("item found: " + item);
                 Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("item found: " + amount + " " + item));
                 if (!amount.equals("1")) {

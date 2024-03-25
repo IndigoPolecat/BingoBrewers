@@ -64,7 +64,7 @@ public class KryoNetwork {
     }
 
     public static class sendCHItems {
-        public ArrayList<String> items;
+        public ArrayList<String> items = new ArrayList<>();
         public int x;
         public int y;
         public int z;
