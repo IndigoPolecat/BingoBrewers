@@ -7,9 +7,15 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.Matrix4f;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.vector.Vector4f;
 
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -22,7 +28,7 @@ public class CHWaypoints {
     @SubscribeEvent
     public void onRender(RenderWorldLastEvent event) {
         // Render the waypoints
-        renderPointLabel("test", new BlockPos(512, 70, 512), event.partialTicks);
+        renderPointLabel("test", new BlockPos(244, 140, 811), event.partialTicks);
 
     }
 
@@ -35,9 +41,11 @@ public class CHWaypoints {
         ScaledResolution scaledResolution = new ScaledResolution(mc);
         int screenWidth = scaledResolution.getScaledWidth();
         int screenHeight = scaledResolution.getScaledHeight();
-        int threshold = 50;
 
-        int width = fontRenderer.getStringWidth(label) / 2;
+        float fovY = 360f;
+        float aspectRatio = (float) screenWidth / screenHeight;
+        float nearPlane = 0.1f;
+        float farPlane = 50000.0f;
 
         // Get viewer positions
         double viewerX = viewer.lastTickPosX + (viewer.posX - viewer.lastTickPosX) * partialTicks;
@@ -52,13 +60,57 @@ public class CHWaypoints {
         double z = thisPoint.getZ() - viewerZ + 0.5f;
         double dist = Math.sqrt(x * x + y * y + z * z);
 
-        double scale = (dist * 0.0466666688F) / 10;
-        if (scale < 0.0266666688F) {
-            scale = 0.0266666688F;
+        double scale = (dist * 0.0366666688F) / 10;
+        if (scale < 0.0366666688F) {
+            scale = 0.0366666688F;
         }
 
+        // Get the modelview and projection matrices
+        FloatBuffer modelview = BufferUtils.createFloatBuffer(16);
+        FloatBuffer projection = BufferUtils.createFloatBuffer(16);
+        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelview);
+        GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projection);
 
-            int color = 0x8BAFE0;
+// Combine modelview and projection matrices
+        Matrix4f modelviewMatrix = new Matrix4f();
+        modelviewMatrix.load(modelview);
+        Matrix4f projectionMatrix = CHWaypoints.perspective(fovY, aspectRatio, nearPlane, farPlane);
+        projectionMatrix.load(projection);
+
+        // Construct a Vector4f with text position
+        Vector4f textPosition = new Vector4f((float) x, (float) y, (float) z, 1.0f);
+
+// Create a Matrix4f to hold the combined MVP matrix
+        Matrix4f MVP = new Matrix4f();
+        Matrix4f.mul(projectionMatrix, modelviewMatrix, MVP);
+
+// Transform text position to clip space
+        Matrix4f.transform(MVP, textPosition, textPosition);
+
+// Normalize clip space coordinates
+        float clipW = textPosition.w;
+        textPosition.x /= clipW;
+        textPosition.y /= clipW;
+        textPosition.z /= clipW;
+
+// Convert clip space coordinates to screen coordinates
+        float screenX = (textPosition.x + 1) * screenWidth / 2;
+        float screenY = (1 - textPosition.y) * screenHeight / 2;
+
+// Check if the text is near the center of  the screen
+        float centerThreshold = 30; // Adjust this value as needed
+        float centerX = (float) screenWidth / 2;
+        float centerY = (float) screenHeight / 2;
+        boolean nearCenter = Math.abs(screenX - centerX) < centerThreshold && Math.abs(screenY - centerY) < centerThreshold;
+
+        if (nearCenter) {
+            label = "looking at (" + (int) dist + "M)";
+        }
+
+        int width = fontRenderer.getStringWidth(label) / 2;
+
+
+        int color = 0x8BAFE0;
 
         // Set rendering location and environment, then draw the text
         GlStateManager.pushMatrix();
@@ -74,6 +126,19 @@ public class CHWaypoints {
         GlStateManager.disableBlend();
         GlStateManager.popMatrix();
 
+    }
+
+    public static Matrix4f perspective(float fovY, float aspectRatio, float near, float far) {
+        Matrix4f matrix = new Matrix4f();
+        float f = 1.0f / (float) Math.tan(Math.toRadians(fovY / 2.0f));
+
+        matrix.m00 = f / aspectRatio;
+        matrix.m11 = f;
+        matrix.m22 = (far + near) / (near - far);
+        matrix.m23 = -1.0f;
+        matrix.m32 = (2.0f * far * near) / (near - far);
+
+        return matrix;
     }
 }
 
