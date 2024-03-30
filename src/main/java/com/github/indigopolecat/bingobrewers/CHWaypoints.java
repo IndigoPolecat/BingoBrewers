@@ -3,6 +3,7 @@ package com.github.indigopolecat.bingobrewers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
@@ -111,6 +112,22 @@ public class CHWaypoints {
 
 
         int color = 0x8BAFE0;
+
+        // adjust the position so it's actually around 10 blocks away so that it is always rendered
+        if (dist > 30) {
+            int waypointX = thisPoint.getX();
+            int waypointY = thisPoint.getY();
+            int waypointZ = thisPoint.getZ();
+            System.out.println("WaypointX: " + waypointX + " WaypointY: " + waypointY + " WaypointZ: " + waypointZ);
+            double fractionOfDistance = 30d / Math.sqrt(dist);
+
+            x = (viewerX + fractionOfDistance * (viewerX - waypointX)) - waypointX;
+            y = (viewerY + fractionOfDistance * (viewerY - waypointY) + viewer.getEyeHeight()) - waypointY;
+            z = (viewerZ + fractionOfDistance * (viewerZ - waypointZ)) - waypointZ;
+        }
+
+        System.out.println("x: " + x + " y: " + y + " z: " + z);
+        System.out.println("ViewerX: " + viewerX + " ViewerY: " + viewerY + " ViewerZ: " + viewerZ);
 
         // Set rendering location and environment, then draw the text
         GlStateManager.pushMatrix();
