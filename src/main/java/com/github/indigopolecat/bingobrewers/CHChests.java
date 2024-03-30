@@ -10,6 +10,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,7 +18,7 @@ import java.util.regex.Pattern;
 public class CHChests {
 
     public static List<String> RecentChatMessages = new ArrayList<>();
-    static HashMap<String, Long> listeningChests = new HashMap<>();
+    public static ConcurrentHashMap<String, Long> listeningChests = new ConcurrentHashMap<>();
     static long lastMessageTime = 0;
     static boolean addMessages = false;
     private static long lastHardstoneChest = 0;
@@ -94,7 +95,6 @@ public class CHChests {
         if (coords == null) return;
 
         LoggerUtil.LOGGER.info("structure chest detected");
-        Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("structure chest detected"));
 
         // don't need this anymore but idk what I can remove so it stays cuz it doesn't matter
         // Once a "You received" message is received, set the time remaining to 1 second for messages to come in
@@ -103,7 +103,6 @@ public class CHChests {
         listeningChests.put(coords, newTime);
         // add the opened chest to blacklist
         Packets.hardstone.put(coords, Long.MAX_VALUE);
-        System.out.println("recent chat messages: " + RecentChatMessages);
 
         KryoNetwork.sendCHItems chestLoot = new KryoNetwork.sendCHItems();
         chestLoot.server = PlayerInfo.currentServer;
@@ -127,16 +126,15 @@ public class CHChests {
 
             while (matcher.find()) {
                 String item = matcher.group(2);
-                String amount = matcher.group(1).replaceAll(",", "");
+                int amount = Integer.parseInt(matcher.group(1).replaceAll(",", ""));
                 System.out.println(item);
                 System.out.println(amount);
                 System.out.println(chestLoot.items.size());
                 LoggerUtil.LOGGER.info("item found: " + item);
-                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("item found: " + amount + " " + item));
-                if (!amount.equals("1")) {
-                    item = amount + "x" + item;
-                }
-                chestLoot.items.add(item);
+                //Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("item found: " + amount + " " + item));
+
+                chestLoot.items.merge(item, amount, Integer::sum);
+
             }
         }
         if (!chestLoot.items.isEmpty()) {

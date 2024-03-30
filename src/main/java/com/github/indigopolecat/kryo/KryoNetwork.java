@@ -5,6 +5,7 @@ import com.esotericsoftware.kryonet.EndPoint;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import com.github.indigopolecat.bingobrewers.util.*;
 
 public class KryoNetwork {
 
@@ -22,6 +23,7 @@ public class KryoNetwork {
         kryo.register(sendCHItems.class);
         kryo.register(receiveCHItems.class);
         kryo.register(requestItemsForServer.class);
+        kryo.register(Chest.class);
     }
 
     public static class ConnectionIgn {
@@ -50,8 +52,11 @@ public class KryoNetwork {
 
     public static class receiveConstantsOnStartup {
         public HashMap<Integer, Integer> bingoRankCosts;
+        public int POINTS_PER_BINGO;
+        public int POINTS_PER_BINGO_COMMUNITIES;
 
     }
+
 
     // Request the lbin of any item on ah/bz by item id
     // If they don't exist, they won't be included in the response
@@ -64,11 +69,12 @@ public class KryoNetwork {
     }
 
     public static class sendCHItems {
-        public ArrayList<String> items = new ArrayList<>();
+        public HashMap<String, Integer> items = new HashMap<>();
         public int x;
         public int y;
         public int z;
         public String server;
+        public int day;
     }
 
     public static class requestItemsForServer {
@@ -77,7 +83,7 @@ public class KryoNetwork {
     }
 
     public static class receiveCHItems {
-        public HashMap<String, ArrayList<String>> chestMap;
+        public ArrayList<Chest> chestMap;
         public String server; // used to confirm that the server is correct
         public int day; // server's last known day
         public Long lastReceivedDayInfo;

@@ -34,6 +34,7 @@ public class BingoBrewers {
         MinecraftForge.EVENT_BUS.register(new PlayerInfo());
         MinecraftForge.EVENT_BUS.register(new HudRendering());
         MinecraftForge.EVENT_BUS.register(new ChatTextUtil());
+        MinecraftForge.EVENT_BUS.register(new CHWaypoints());
         MinecraftForge.EVENT_BUS.register(autoUpdater);
         config = new BingoBrewersConfig();
         createServerThread();
