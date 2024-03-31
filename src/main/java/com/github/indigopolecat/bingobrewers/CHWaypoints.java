@@ -61,11 +61,6 @@ public class CHWaypoints {
         double z = thisPoint.getZ() - viewerZ + 0.5f;
         double dist = Math.sqrt(x * x + y * y + z * z);
 
-        double scale = (dist * 0.0366666688F) / 10;
-        if (scale < 0.0366666688F) {
-            scale = 0.0366666688F;
-        }
-
         // Get the modelview and projection matrices
         FloatBuffer modelview = BufferUtils.createFloatBuffer(16);
         FloatBuffer projection = BufferUtils.createFloatBuffer(16);
@@ -113,21 +108,31 @@ public class CHWaypoints {
 
         int color = 0x8BAFE0;
 
-        // adjust the position so it's actually around 10 blocks away so that it is always rendered
+        // adjust the position so it's actually around 30 blocks away so that it is always rendered
+        // this means the actual position of the waypoint is around 30 blocks away while the waypoint appears to be several hundred
         if (dist > 30) {
             int waypointX = thisPoint.getX();
             int waypointY = thisPoint.getY();
             int waypointZ = thisPoint.getZ();
-            System.out.println("WaypointX: " + waypointX + " WaypointY: " + waypointY + " WaypointZ: " + waypointZ);
-            double fractionOfDistance = 30d / Math.sqrt(dist);
 
-            x = (viewerX + fractionOfDistance * (viewerX - waypointX)) - waypointX;
-            y = (viewerY + fractionOfDistance * (viewerY - waypointY) + viewer.getEyeHeight()) - waypointY;
-            z = (viewerZ + fractionOfDistance * (viewerZ - waypointZ)) - waypointZ;
+            // Math by FyreDrakon
+            double vectorX = waypointX - viewerX;
+            double vectorY = waypointY - viewerY;
+            double vectorZ = waypointZ - viewerZ;
+            double multiplier = 30 / Math.sqrt(vectorX * vectorX + vectorY * vectorY + vectorZ * vectorZ);
+
+            x = vectorX * multiplier + 0.5;
+            y = vectorY * multiplier + viewer.getEyeHeight();
+            z = vectorZ * multiplier + 0.5;
+
         }
 
-        System.out.println("x: " + x + " y: " + y + " z: " + z);
-        System.out.println("ViewerX: " + viewerX + " ViewerY: " + viewerY + " ViewerZ: " + viewerZ);
+        dist = Math.sqrt(x * x + y * y + z * z);
+
+        double scale = (dist * 0.0266666688F) / 10;
+        if (scale < 0.0266666688F) {
+            scale = 0.0266666688F;
+        }
 
         // Set rendering location and environment, then draw the text
         GlStateManager.pushMatrix();
