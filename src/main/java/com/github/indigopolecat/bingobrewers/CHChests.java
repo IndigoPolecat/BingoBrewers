@@ -71,10 +71,8 @@ public class CHChests {
         // Create a copy we'll remove entries too new to be valid from, and then use for calculations
         HashMap<String, Long> listeningChestsCopy = new HashMap<>();
         listeningChestsCopy.putAll(listeningChests);
-        System.out.println(listeningChestsCopy);
 
         listeningChestsCopy.values().removeIf(entry -> System.currentTimeMillis() - entry < 4800);
-        System.out.println(listeningChestsCopy);
         if (listeningChestsCopy.isEmpty()) {
             RecentChatMessages.clear();
             return;
@@ -87,11 +85,8 @@ public class CHChests {
             if (listeningChestsCopy.get(key) < oldest) {
                 oldest = listeningChestsCopy.get(key);
                 coords = key;
-                System.out.println(System.currentTimeMillis() - oldest);
             }
         }
-        System.out.println("oldest: " + (System.currentTimeMillis() - oldest));
-        System.out.println("coords: " + coords);
         if (coords == null) return;
 
         LoggerUtil.LOGGER.info("structure chest detected");
@@ -118,24 +113,34 @@ public class CHChests {
             return;
         }
 
+        messageLoop:
         for (String message : RecentChatMessages) {
-            message = message.replaceAll("§.", "");
+            KryoNetwork.CHChestItem chestItem = new KryoNetwork.CHChestItem();
 
-            Pattern itemPattern = Pattern.compile("^You received \\+?([\\d,]+) .?\\s?\\b([\\w*\\s]*)");
+            Pattern itemPattern = Pattern.compile("^§r§aYou received §r?(§.)?\\+?([\\d,]+) §r?(§.)?.?\\s?\\b([\\w*\\s]*)");
             Matcher matcher = itemPattern.matcher(message);
 
             while (matcher.find()) {
-                String item = matcher.group(2);
-                int amount = Integer.parseInt(matcher.group(1).replaceAll(",", ""));
-                System.out.println(item);
-                System.out.println(amount);
-                System.out.println(chestLoot.items.size());
-                LoggerUtil.LOGGER.info("item found: " + item);
+                chestItem.name = matcher.group(4);
+                chestItem.count = Integer.parseInt(matcher.group(2).replaceAll(",", ""));
+
+                Optional<String> numberColorGroup = Optional.ofNullable(matcher.group(1));
+                Optional<String> itemColorGroup = Optional.ofNullable(matcher.group(3));
+                chestItem.numberColor = numberColorGroup.map(BingoBrewers.minecraftColors::get).orElse(null);
+                chestItem.itemColor = itemColorGroup.map(BingoBrewers.minecraftColors::get).orElse(chestItem.numberColor);
+                if (chestItem.itemColor == null) continue messageLoop;
+
                 //Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("item found: " + amount + " " + item));
-
-                chestLoot.items.merge(item, amount, Integer::sum);
-
             }
+
+            for (int i = 0; i < chestLoot.items.size(); i++) {
+                KryoNetwork.CHChestItem existingItem = chestLoot.items.get(i);
+                if (existingItem.name.equals(chestItem.name)) {
+                    existingItem.count += chestItem.count;
+                    continue messageLoop;
+                }
+            }
+            chestLoot.items.add(chestItem);
         }
         if (!chestLoot.items.isEmpty()) {
             ServerConnection serverConnection = new ServerConnection();

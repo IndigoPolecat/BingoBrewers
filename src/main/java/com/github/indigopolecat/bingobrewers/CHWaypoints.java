@@ -21,19 +21,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class CHWaypoints {
-    public static ArrayList<CHWaypoints> waypoints = new ArrayList<>();
     public BlockPos pos;
-    public String shortName;
+    public String shortName = "temp name";
     public HashMap<String, Integer> expandedName;
+    public String distance;
 
-    @SubscribeEvent
-    public void onRender(RenderWorldLastEvent event) {
-        // Render the waypoints
-        renderPointLabel("test", new BlockPos(244, 140, 811), event.partialTicks);
-
-    }
-
-    public static void renderPointLabel(String label, BlockPos thisPoint, Float partialTicks) {
+    public static void renderPointLabel(CHWaypoints label, BlockPos thisPoint, Float partialTicks) {
         // References to various instances
         Minecraft mc = Minecraft.getMinecraft();
         Entity viewer = mc.getRenderViewEntity();
@@ -42,6 +35,8 @@ public class CHWaypoints {
         ScaledResolution scaledResolution = new ScaledResolution(mc);
         int screenWidth = scaledResolution.getScaledWidth();
         int screenHeight = scaledResolution.getScaledHeight();
+
+        ArrayList<String> lines = new ArrayList<>();
 
         float fovY = 360f;
         float aspectRatio = (float) screenWidth / screenHeight;
@@ -99,12 +94,16 @@ public class CHWaypoints {
         float centerY = (float) screenHeight / 2;
         boolean nearCenter = Math.abs(screenX - centerX) < centerThreshold && Math.abs(screenY - centerY) < centerThreshold;
 
+        label.distance = " (" + (int) dist + "M)";
+        lines.add(label.shortName + label.distance);
         if (nearCenter) {
-            label = "looking at (" + (int) dist + "M)";
+            for (int i = 0; i < label.expandedName.entrySet().size(); i++) {
+                // this is missing the way to add a color
+                lines.add(label.expandedName.values().toArray()[i] + "" + label.expandedName.keySet().toArray()[i]);
+            }
         }
 
-        int width = fontRenderer.getStringWidth(label) / 2;
-
+        int width = fontRenderer.getStringWidth(lines.get(0)) / 2;
 
         int color = 0x8BAFE0;
 
@@ -119,15 +118,15 @@ public class CHWaypoints {
             double vectorX = waypointX - viewerX;
             double vectorY = waypointY - viewerY;
             double vectorZ = waypointZ - viewerZ;
-            double multiplier = 30 / Math.sqrt(vectorX * vectorX + vectorY * vectorY + vectorZ * vectorZ);
+            double thirtyBlocksToTotalDistanceRatio = 30 / Math.sqrt(vectorX * vectorX + vectorY * vectorY + vectorZ * vectorZ);
 
-            x = vectorX * multiplier + 0.5;
-            y = vectorY * multiplier + viewer.getEyeHeight();
-            z = vectorZ * multiplier + 0.5;
+            x = vectorX * thirtyBlocksToTotalDistanceRatio + 0.5;
+            y = vectorY * thirtyBlocksToTotalDistanceRatio + viewer.getEyeHeight();
+            z = vectorZ * thirtyBlocksToTotalDistanceRatio + 0.5;
+
+            dist = Math.sqrt(x * x + y * y + z * z);
 
         }
-
-        dist = Math.sqrt(x * x + y * y + z * z);
 
         double scale = (dist * 0.0266666688F) / 10;
         if (scale < 0.0266666688F) {
@@ -143,7 +142,7 @@ public class CHWaypoints {
         GlStateManager.disableDepth();
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-        fontRenderer.drawStringWithShadow(label, -width, 0, color);
+        fontRenderer.drawStringWithShadow(label.shortName, -width, 0, color);
         GlStateManager.enableDepth();
         GlStateManager.disableBlend();
         GlStateManager.popMatrix();

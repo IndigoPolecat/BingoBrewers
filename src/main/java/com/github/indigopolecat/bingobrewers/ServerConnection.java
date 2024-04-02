@@ -12,6 +12,8 @@ import com.github.indigopolecat.kryo.KryoNetwork.ConnectionIgn;
 import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +38,7 @@ public class ServerConnection extends Listener implements Runnable {
     boolean repeat;
     public static ArrayList<String> hubList = new ArrayList<>();
     long originalTime = -1;
+    public ArrayList<CHWaypoints> waypoints = new ArrayList<>();
 
 
     @Override
@@ -326,5 +329,16 @@ public class ServerConnection extends Listener implements Runnable {
                 LoggerUtil.LOGGER.info("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
             }
         }
+    }
+
+    @SubscribeEvent
+    public void onRender(RenderWorldLastEvent event) {
+        // Render the waypoints
+        for (int i = 0; i < waypoints.size(); i++) {
+            CHWaypoints waypoint = waypoints.get(i);
+            CHWaypoints.renderPointLabel(waypoint, waypoint.pos, event.partialTicks);
+        } {
+        }
+
     }
 }

@@ -10,6 +10,8 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.common.MinecraftForge;
 import com.github.indigopolecat.events.PacketListener;
 
+import java.util.HashMap;
+
 @Mod(modid = "bingobrewers", version = "0.3", useMetadata = true)
 public class BingoBrewers {
     public static BingoBrewersConfig config;
@@ -23,6 +25,8 @@ public class BingoBrewers {
     public static boolean onHypixel = false;
 
     public static AutoUpdater autoUpdater = new AutoUpdater();
+    public static HashMap<String, Integer> minecraftColors = new HashMap<>();
+
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
@@ -34,11 +38,27 @@ public class BingoBrewers {
         MinecraftForge.EVENT_BUS.register(new PlayerInfo());
         MinecraftForge.EVENT_BUS.register(new HudRendering());
         MinecraftForge.EVENT_BUS.register(new ChatTextUtil());
-        MinecraftForge.EVENT_BUS.register(new CHWaypoints());
         MinecraftForge.EVENT_BUS.register(autoUpdater);
         config = new BingoBrewersConfig();
         createServerThread();
         ClientCommandHandler.instance.registerCommand(new ConfigCommand());
+
+        minecraftColors.put("§0", 0x000000);  // Black
+        minecraftColors.put("§1", 0x0000AA);  // Dark Blue
+        minecraftColors.put("§2", 0x00AA00);  // Dark Green
+        minecraftColors.put("§3", 0x00AAAA);  // Dark Aqua
+        minecraftColors.put("§4", 0xAA0000);  // Dark Red
+        minecraftColors.put("§5", 0xAA00AA);  // Dark Purple
+        minecraftColors.put("§6", 0xFFAA00);  // Gold
+        minecraftColors.put("§7", 0xAAAAAA);  // Gray
+        minecraftColors.put("§8", 0x555555);  // Dark Gray
+        minecraftColors.put("§9", 0x5555FF);  // Blue
+        minecraftColors.put("§a", 0x55FF55);  // Green
+        minecraftColors.put("§b", 0x55FFFF);  // Aqua
+        minecraftColors.put("§c", 0xFF5555);  // Red
+        minecraftColors.put("§d", 0xFF55FF);  // Light Purple
+        minecraftColors.put("§e", 0xFFFF55);  // Yellow
+        minecraftColors.put("§f", 0xFFFFFF);  // White
     }
 
     public static void createServerThread() {

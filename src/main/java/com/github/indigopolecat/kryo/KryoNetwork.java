@@ -24,6 +24,7 @@ public class KryoNetwork {
         kryo.register(receiveCHItems.class);
         kryo.register(requestItemsForServer.class);
         kryo.register(Chest.class);
+        kryo.register(CHChestItem.class);
     }
 
     public static class ConnectionIgn {
@@ -69,12 +70,19 @@ public class KryoNetwork {
     }
 
     public static class sendCHItems {
-        public HashMap<String, Integer> items = new HashMap<>();
+        public ArrayList<CHChestItem> items = new ArrayList<>();
         public int x;
         public int y;
         public int z;
         public String server;
         public int day;
+    }
+
+    public static class CHChestItem {
+        public String name;
+        public int count;
+        public Integer numberColor;
+        public Integer itemColor;
     }
 
     public static class requestItemsForServer {
