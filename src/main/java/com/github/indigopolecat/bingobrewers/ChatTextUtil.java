@@ -23,11 +23,15 @@ public class ChatTextUtil {
             cancelLocRawMessage = false;
             PlayerInfo.lastPositionUpdate = System.currentTimeMillis();
         } else if (message.equals("You laid an egg!") && displayEggTimerReset) {
-            scheduler.schedule(() -> {
-                TitleHud titleHud = new TitleHud("You can lay an egg again", Color.WHITE.getRGB(), 1000);
-                ServerConnection serverConnection = new ServerConnection();
-                serverConnection.setActiveHud(titleHud);
-            }, 5, TimeUnit.SECONDS);
+            displayEggMessage();
         }
+    }
+
+    private static void displayEggMessage() {
+        scheduler.schedule(() -> {
+            TitleHud titleHud = new TitleHud("You can lay an egg again", Color.WHITE.getRGB(), 1000);
+            ServerConnection serverConnection = new ServerConnection();
+            serverConnection.setActiveHud(titleHud);
+        }, 5, TimeUnit.SECONDS);
     }
 }
