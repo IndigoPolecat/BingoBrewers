@@ -121,4 +121,11 @@ public class BingoBrewersConfig extends Config {
             description = "Display how many Bingoes are required to buy the item."
     )
     public static boolean displayMissingBingoes = true;
+
+    @Switch(
+            name = "Display Egg Reset Timer",
+            category = "Misc",
+            description = "Display a message if the Chicken Head cooldown is reset."
+    )
+    public static boolean displayEggTimerReset = false;
 }
