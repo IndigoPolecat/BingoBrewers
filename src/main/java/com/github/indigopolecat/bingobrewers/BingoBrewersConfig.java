@@ -123,7 +123,7 @@ public class BingoBrewersConfig extends Config {
     public static boolean displayMissingBingoes = true;
 
     @Switch(
-            name = "Display Egg Reset Timer",
+            name = "Chicken Head Reset Message",
             category = "Misc",
             description = "Display a message if the Chicken Head cooldown is reset."
     )
