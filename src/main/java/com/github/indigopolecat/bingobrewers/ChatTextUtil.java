@@ -29,7 +29,7 @@ public class ChatTextUtil {
 
     private static void displayEggMessage() {
         scheduler.schedule(() -> {
-            TitleHud titleHud = new TitleHud("You can lay an egg again", Color.WHITE.getRGB(), 1000);
+            TitleHud titleHud = new TitleHud("You can lay an egg again", Color.GREEN.getRGB(), 1000);
             ServerConnection serverConnection = new ServerConnection();
             serverConnection.setActiveHud(titleHud);
         }, 5, TimeUnit.SECONDS);
