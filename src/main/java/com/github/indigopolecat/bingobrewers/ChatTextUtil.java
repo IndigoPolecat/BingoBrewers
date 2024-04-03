@@ -26,11 +26,11 @@ public class ChatTextUtil {
             cancelLocRawMessage = false;
             PlayerInfo.lastPositionUpdate = System.currentTimeMillis();
         } else if (message.equals("You laid an egg!") && (displayEggTimerReset || playEggTimerResetSound)) {
-            displayEggMessage();
+            notifyEggLayingReady();
         }
     }
 
-    private static void displayEggMessage() {
+    private static void notifyEggLayingReady() {
         scheduler.schedule(() -> {
             if (displayEggTimerReset) {
                 TitleHud titleHud = new TitleHud("You can lay an egg again", Color.GREEN.getRGB(), 1000);
