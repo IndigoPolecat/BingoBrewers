@@ -5,5 +5,12 @@
       "stream": true
     }],
     "category": "master"
+  },
+  "skill_xp": {
+    "sounds": [{
+      "name":"SkillXP",
+      "stream": true
+    }],
+    "category": "master"
   }
 }
