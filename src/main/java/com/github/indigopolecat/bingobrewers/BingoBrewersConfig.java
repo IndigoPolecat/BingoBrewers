@@ -128,4 +128,11 @@ public class BingoBrewersConfig extends Config {
             description = "Display a message if the Chicken Head cooldown is reset."
     )
     public static boolean displayEggTimerReset = false;
+
+    @Switch(
+            name="Chicken Head Reset Sound",
+            category = "Misc",
+            description = "Play a sound if the Chicken Head cooldown is reset."
+    )
+    public static boolean playEggTimerResetSound = false;
 }
