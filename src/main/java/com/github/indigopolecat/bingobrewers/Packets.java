@@ -56,6 +56,7 @@ public class Packets {
         if (event.getPacket() instanceof S02PacketChat) {
             S02PacketChat packet = (S02PacketChat) event.getPacket();
             String message = packet.getChatComponent().getUnformattedText();
+            String formattedMessage = packet.getChatComponent().getFormattedText();
             if (message.startsWith("{") && message.endsWith("}")) {
 
                 JsonObject locraw = new JsonParser().parse(message).getAsJsonObject();
@@ -104,7 +105,7 @@ public class Packets {
                 }
 
             } else if (message.contains("You received") && PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
-                CHChests.addChatMessage(message);
+                CHChests.addChatMessage(formattedMessage);
             }
 
         }
@@ -117,12 +118,9 @@ public class Packets {
 
             for (int i = 0; i < blockUpdateData.length; i++) {
                 BlockPos coords = blockUpdateData[i].getPos();
-                //System.out.println("coords: " + coords.toString() + " current block: " + Minecraft.getMinecraft().theWorld.getBlockState(coords).getBlock().toString() + " new block: " + blockUpdateData[i].getBlockState().getBlock().toString());
                 // get old block
                 Block block = Minecraft.getMinecraft().theWorld.getBlockState(coords).getBlock();
                 // ignore if the old block is air or water because we are looking for stone blocks (or anything else)
-                //System.out.println(block + coords.toString());
-                //System.out.println(blockUpdateData[i].getBlockState() + coords.toString());
                 if (block.toString().contains("air") || block.toString().contains("water") || block.toString().contains("chest") || block.toString().equals(blockUpdateData[i].getBlockState().getBlock().toString())) continue;
                 String key = coords.toString();
                 hardstone.put(key, System.currentTimeMillis());
@@ -134,42 +132,13 @@ public class Packets {
             BlockPos coords = ((S23PacketBlockChange) event.getPacket()).getBlockPosition();
             // old block
             Block block = Minecraft.getMinecraft().theWorld.getBlockState(coords).getBlock();
-            //System.out.println(block.toString() + coords);
             // new block
             String newBlockStr = ((S23PacketBlockChange) event.getPacket()).getBlockState().getBlock().toString();
 
             if (block.toString().contains("air") || block.toString().contains("water") || block.toString().contains("chest") || block.toString().contains(newBlockStr)) return;
             String key = coords.toString();
-            //System.out.println("coords: " + coords + " current block: " + Minecraft.getMinecraft().theWorld.getBlockState(coords).getBlock().toString() + " new block: " + newBlockStr);
             hardstone.put(key, System.currentTimeMillis());
 
-            // ignore if the new block is not air
-            //if (!newBlockStr.contains("air")) return;
-
-            // if the old block is not a chest, add to hardstone list
-            /*if (!block.toString().contains("chest")) {
-                String key = coords.toString();
-                hardstone.put(key, System.currentTimeMillis());
-                return;
-            }
-            */
-
-            // if the old block is a chest, add to the chest blacklist because it isn't a natural chest
-            /*if (!hardstone.containsKey(coords.toString())) {
-                LoggerUtil.LOGGER.info("Adding to blacklist " + coords);
-                CHChests.ChestBlacklist.put(coords.toString(), System.currentTimeMillis());
-            }
-
-            // Remove old entries
-            Object[] keys = CHChests.ChestBlacklist.keySet().toArray();
-            for (int i = 0; i < CHChests.ChestBlacklist.size(); i++) {
-                String key = (String) keys[i];
-                Long blackListTime = CHChests.ChestBlacklist.get(key);
-                if (System.currentTimeMillis() - blackListTime > 60000) {
-                    CHChests.ChestBlacklist.remove(key);
-                }
-            }
-             */
 
         }
         if (event.getPacket() instanceof S2DPacketOpenWindow) {

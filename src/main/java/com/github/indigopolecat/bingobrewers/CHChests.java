@@ -23,14 +23,15 @@ public class CHChests {
     static boolean addMessages = false;
     private static long lastHardstoneChest = 0;
     private static boolean expectingHardstoneLoot;
+    // Regex made with the help of Aerh
+    public static Pattern ITEM_PATTERN = Pattern.compile("§[0-9a-fk-or]§[0-9a-fk-or]You received §[0-9a-fk-or](§[0-9a-fk-or])\\+?([\\d,]{1,5})\\s(?:§[0-9a-fk-or](§[0-9a-fk-or]))?(?:.\\s)?(.+?)?(?:§[0-9a-fk-or])*\\.", Pattern.CASE_INSENSITIVE);
+    // potentially store this as a constant in the server that is downloaded on launch
 
 
     @SubscribeEvent
     public void onRightClickChest(PlayerInteractEvent event) {
         if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) return;
         if (!event.world.getBlockState(event.pos).getBlock().getUnlocalizedName().contains("chest")) return;
-        System.out.println(event.pos.toString());
-        System.out.println(Packets.hardstone);
         // Add the chest to the list of chests to listen for
         if (!Packets.hardstone.containsKey(event.pos.toString())) {
             listeningChests.put(event.pos.toString(), System.currentTimeMillis());
@@ -117,30 +118,42 @@ public class CHChests {
         for (String message : RecentChatMessages) {
             KryoNetwork.CHChestItem chestItem = new KryoNetwork.CHChestItem();
 
-            Pattern itemPattern = Pattern.compile("^§r§aYou received §r?(§.)?\\+?([\\d,]+) §r?(§.)?.?\\s?\\b([\\w*\\s]*)");
-            Matcher matcher = itemPattern.matcher(message);
 
-            while (matcher.find()) {
-                chestItem.name = matcher.group(4);
-                chestItem.count = Integer.parseInt(matcher.group(2).replaceAll(",", ""));
+            Matcher matcher = ITEM_PATTERN.matcher(message);
+            System.out.println(message);
+            try {
+                while (matcher.find()) {
+                    System.out.println("match found");
+                    chestItem.name = matcher.group(4);
 
-                Optional<String> numberColorGroup = Optional.ofNullable(matcher.group(1));
-                Optional<String> itemColorGroup = Optional.ofNullable(matcher.group(3));
-                chestItem.numberColor = numberColorGroup.map(BingoBrewers.minecraftColors::get).orElse(null);
-                chestItem.itemColor = itemColorGroup.map(BingoBrewers.minecraftColors::get).orElse(chestItem.numberColor);
-                if (chestItem.itemColor == null) continue messageLoop;
+                    chestItem.count = Integer.parseInt(matcher.group(2).replaceAll(",", ""));
 
-                //Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("item found: " + amount + " " + item));
-            }
-
-            for (int i = 0; i < chestLoot.items.size(); i++) {
-                KryoNetwork.CHChestItem existingItem = chestLoot.items.get(i);
-                if (existingItem.name.equals(chestItem.name)) {
-                    existingItem.count += chestItem.count;
-                    continue messageLoop;
+                    Optional<String> numberColorGroup = Optional.ofNullable(matcher.group(1));
+                    Optional<String> itemColorGroup = Optional.ofNullable(matcher.group(3));
+                    chestItem.numberColor = numberColorGroup.map(BingoBrewers.minecraftColors::get).orElse(null);
+                    chestItem.itemColor = itemColorGroup.map(BingoBrewers.minecraftColors::get).orElse(chestItem.numberColor);
+                    System.out.println("number color: " + chestItem.numberColor);
+                    System.out.println("item color: " + chestItem.itemColor);
+                    if (chestItem.itemColor == null) continue messageLoop;
                 }
+
+                for (int i = 0; i < chestLoot.items.size(); i++) {
+                    KryoNetwork.CHChestItem existingItem = chestLoot.items.get(i);
+                    if (existingItem.name == null || chestItem.name == null) {
+                        System.out.println(existingItem.name);
+                        System.out.println(chestItem.name);
+                        System.out.println("null item in chest");
+                        continue;
+                    }
+                    if (existingItem.name.equals(chestItem.name)) {
+                        existingItem.count += chestItem.count;
+                        continue messageLoop;
+                    }
+                }
+                chestLoot.items.add(chestItem);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            chestLoot.items.add(chestItem);
         }
         if (!chestLoot.items.isEmpty()) {
             ServerConnection serverConnection = new ServerConnection();
