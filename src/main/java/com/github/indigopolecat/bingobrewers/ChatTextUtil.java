@@ -1,5 +1,7 @@
 package com.github.indigopolecat.bingobrewers;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -9,6 +11,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static com.github.indigopolecat.bingobrewers.BingoBrewersConfig.displayEggTimerReset;
+import static com.github.indigopolecat.bingobrewers.BingoBrewersConfig.playEggTimerResetSound;
 
 public class ChatTextUtil {
     public static boolean cancelLocRawMessage = false;
@@ -22,16 +25,22 @@ public class ChatTextUtil {
             event.setCanceled(true);
             cancelLocRawMessage = false;
             PlayerInfo.lastPositionUpdate = System.currentTimeMillis();
-        } else if (message.equals("You laid an egg!") && displayEggTimerReset) {
+        } else if (message.equals("You laid an egg!") && (displayEggTimerReset || playEggTimerResetSound)) {
             displayEggMessage();
         }
     }
 
     private static void displayEggMessage() {
         scheduler.schedule(() -> {
-            TitleHud titleHud = new TitleHud("You can lay an egg again", Color.GREEN.getRGB(), 1000);
-            ServerConnection serverConnection = new ServerConnection();
-            serverConnection.setActiveHud(titleHud);
+            if (displayEggTimerReset) {
+                TitleHud titleHud = new TitleHud("You can lay an egg again", Color.GREEN.getRGB(), 1000);
+                ServerConnection serverConnection = new ServerConnection();
+                serverConnection.setActiveHud(titleHud);
+            }
+            if (playEggTimerResetSound) {
+                EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
+                player.playSound("bingobrewers:skill_xp", BingoBrewersConfig.splashNotificationVolume / 100f, 1.0f);
+            }
         }, 5, TimeUnit.SECONDS);
     }
 }
