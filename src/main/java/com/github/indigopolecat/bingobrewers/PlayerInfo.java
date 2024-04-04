@@ -76,6 +76,9 @@ public class PlayerInfo {
                         if (domain.equalsIgnoreCase("hypixel")) {
                             BingoBrewers.onHypixel = true;
                             break;
+                        } else {
+                            BingoBrewers.onHypixel = false;
+                            break;
                         }
                     }
                 }
