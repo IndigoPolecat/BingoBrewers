@@ -19,6 +19,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.esotericsoftware.minlog.Log.*;
 import static java.lang.String.valueOf;
@@ -39,7 +40,7 @@ public class ServerConnection extends Listener implements Runnable {
     boolean repeat;
     public static ArrayList<String> hubList = new ArrayList<>();
     long originalTime = -1;
-    public static ArrayList<CHWaypoints> waypoints = new ArrayList<>();
+    public static CopyOnWriteArrayList<CHWaypoints> waypoints = new CopyOnWriteArrayList<>();
 
 
     @Override
