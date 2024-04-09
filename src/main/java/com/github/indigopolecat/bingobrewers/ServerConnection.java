@@ -8,6 +8,7 @@ import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.minlog.Log;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.github.indigopolecat.kryo.KryoNetwork;
+import com.github.indigopolecat.kryo.KryoNetwork.*;
 import com.github.indigopolecat.kryo.KryoNetwork.ConnectionIgn;
 import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import net.minecraft.client.Minecraft;
@@ -38,7 +39,7 @@ public class ServerConnection extends Listener implements Runnable {
     boolean repeat;
     public static ArrayList<String> hubList = new ArrayList<>();
     long originalTime = -1;
-    public ArrayList<CHWaypoints> waypoints = new ArrayList<>();
+    public static ArrayList<CHWaypoints> waypoints = new ArrayList<>();
 
 
     @Override
@@ -96,8 +97,8 @@ public class ServerConnection extends Listener implements Runnable {
                         }
                     }
                     updateMapList(notif, sendNotif);
-                } else if (object instanceof KryoNetwork.PlayerCountBroadcast) {
-                    KryoNetwork.PlayerCountBroadcast request = (KryoNetwork.PlayerCountBroadcast) object;
+                } else if (object instanceof PlayerCountBroadcast) {
+                    PlayerCountBroadcast request = (PlayerCountBroadcast) object;
                     for (HashMap<String, ArrayList<String>> map : mapList) {
                         if (map.containsKey(HUB)) {
                             String hub = map.get(HUB).get(1).replaceAll(": (\\d+).*", "$1");
@@ -111,13 +112,22 @@ public class ServerConnection extends Listener implements Runnable {
                             }
                         }
                     }
-                } else if (object instanceof KryoNetwork.receiveConstantsOnStartup) {
-                    KryoNetwork.receiveConstantsOnStartup request = (KryoNetwork.receiveConstantsOnStartup) object;
+                } else if (object instanceof receiveConstantsOnStartup) {
+                    receiveConstantsOnStartup request = (receiveConstantsOnStartup) object;
                     ChestInventories.rankPriceMap = request.bingoRankCosts;
-                } else if (object instanceof KryoNetwork.receiveCHItems) {
-                    KryoNetwork.receiveCHItems CHItems = (KryoNetwork.receiveCHItems) object;
+                } else if (object instanceof receiveCHItems) {
+                    receiveCHItems CHItems = (receiveCHItems) object;
+                    System.out.println("Received CH Chests for " + CHItems.server);
+                    ArrayList<ChestInfo> chests = CHItems.chestMap;
                     if (CHItems.server.equals(PlayerInfo.currentServer)) {
                         if (CHItems.day > PlayerInfo.day || System.currentTimeMillis() - CHItems.lastReceivedDayInfo > 25_200_000) return; // ignore if the server is younger than last known, or it's been more than 7 hours since info was received
+                        waypoints.clear();
+                        System.out.println("chests size: " + CHItems.chestMap.size());
+                        for (ChestInfo chest : chests) {
+                            System.out.println("Adding chest " + chest.x + chest.y + chest.z);
+                            CHWaypoints chWaypoints = new CHWaypoints(chest.x, chest.y, chest.z, chest.items);
+                            waypoints.add(chWaypoints);
+                        }
 
                     }
                 }
@@ -160,7 +170,7 @@ public class ServerConnection extends Listener implements Runnable {
         BingoBrewers.client = client;
     }
 
-    public synchronized Client getClient() {
+    public static synchronized Client getClient() {
         return BingoBrewers.client;
 
     }
@@ -288,16 +298,16 @@ public class ServerConnection extends Listener implements Runnable {
             LoggerUtil.LOGGER.info("Client is null");
             return;
         }
-        //currentClient.sendTCP(items);
+        currentClient.sendTCP(items);
     }
 
-    public synchronized void requestCHItems(KryoNetwork.requestItemsForServer server) {
+    public static synchronized void requestCHItems(KryoNetwork.requestItemsForServer server) {
         Client currentClient = getClient();
         if (currentClient == null) {
             LoggerUtil.LOGGER.info("Client is null");
             return;
         }
-        //fcurrentClient.sendTCP(server);
+        currentClient.sendTCP(server);
     }
 
     public void reconnect() {
@@ -331,14 +341,4 @@ public class ServerConnection extends Listener implements Runnable {
         }
     }
 
-    @SubscribeEvent
-    public void onRender(RenderWorldLastEvent event) {
-        // Render the waypoints
-        for (int i = 0; i < waypoints.size(); i++) {
-            CHWaypoints waypoint = waypoints.get(i);
-            CHWaypoints.renderPointLabel(waypoint, waypoint.pos, event.partialTicks);
-        } {
-        }
-
-    }
 }

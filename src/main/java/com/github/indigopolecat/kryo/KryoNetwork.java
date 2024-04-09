@@ -23,7 +23,7 @@ public class KryoNetwork {
         kryo.register(sendCHItems.class);
         kryo.register(receiveCHItems.class);
         kryo.register(requestItemsForServer.class);
-        kryo.register(Chest.class);
+        kryo.register(ChestInfo.class);
         kryo.register(CHChestItem.class);
     }
 
@@ -91,9 +91,15 @@ public class KryoNetwork {
     }
 
     public static class receiveCHItems {
-        public ArrayList<Chest> chestMap;
+        public ArrayList<ChestInfo> chestMap;
         public String server; // used to confirm that the server is correct
         public int day; // server's last known day
         public Long lastReceivedDayInfo;
+    }
+    public static class ChestInfo {
+        public int x;
+        public int y;
+        public int z;
+        public ArrayList<CHChestItem> items;
     }
 }

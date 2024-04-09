@@ -21,6 +21,7 @@ public class PlayerInfo {
     public static long lastSplashHubUpdate = -1;
     public static int playerCount;
     public static String currentServer = "";
+    public static String currentNetwork = "";
     public static HashMap<String, String> hubServerMap = new HashMap<>();
     public static HashMap<String, String> dungeonHubServerMap = new HashMap<>();
     public static int tickCounter = 0;
@@ -69,9 +70,9 @@ public class PlayerInfo {
             }
             ServerData serverData = Minecraft.getMinecraft().getCurrentServerData();
             if (serverData != null) {
-                currentServer = serverData.serverIP;
-                if (currentServer != null) {
-                    String[] serverDomain = currentServer.split("\\.");
+                currentNetwork = serverData.serverIP;
+                if (currentNetwork != null) {
+                    String[] serverDomain = currentNetwork.split("\\.");
                     for (String domain : serverDomain) {
                         if (domain.equalsIgnoreCase("hypixel")) {
                             BingoBrewers.onHypixel = true;

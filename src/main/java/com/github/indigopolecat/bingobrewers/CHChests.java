@@ -2,6 +2,7 @@ package com.github.indigopolecat.bingobrewers;
 
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.github.indigopolecat.kryo.KryoNetwork;
+import com.github.indigopolecat.kryo.KryoNetwork.CHChestItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
@@ -36,7 +37,6 @@ public class CHChests {
         if (!Packets.hardstone.containsKey(event.pos.toString())) {
             listeningChests.put(event.pos.toString(), System.currentTimeMillis());
         } else {
-            Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText("hardstone chest detected"));
             lastHardstoneChest = System.currentTimeMillis();
             expectingHardstoneLoot = true;
         }
@@ -109,6 +109,7 @@ public class CHChests {
             chestLoot.x = Integer.parseInt(coordMatcher.group(1));
             chestLoot.y = Integer.parseInt(coordMatcher.group(2));
             chestLoot.z = Integer.parseInt(coordMatcher.group(3));
+            System.out.println("Detected chest at " + chestLoot.x + ", " + chestLoot.y + ", " + chestLoot.z);
         } else {
             RecentChatMessages.clear();
             return;
@@ -127,6 +128,7 @@ public class CHChests {
                     chestItem.name = matcher.group(4);
 
                     chestItem.count = Integer.parseInt(matcher.group(2).replaceAll(",", ""));
+                    System.out.println(chestItem.count);
 
                     Optional<String> numberColorGroup = Optional.ofNullable(matcher.group(1));
                     Optional<String> itemColorGroup = Optional.ofNullable(matcher.group(3));
@@ -138,7 +140,7 @@ public class CHChests {
                 }
 
                 for (int i = 0; i < chestLoot.items.size(); i++) {
-                    KryoNetwork.CHChestItem existingItem = chestLoot.items.get(i);
+                    CHChestItem existingItem = chestLoot.items.get(i);
                     if (existingItem.name == null || chestItem.name == null) {
                         System.out.println(existingItem.name);
                         System.out.println(chestItem.name);

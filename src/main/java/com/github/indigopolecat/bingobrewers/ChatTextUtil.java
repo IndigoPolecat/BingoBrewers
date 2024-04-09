@@ -3,6 +3,8 @@ package com.github.indigopolecat.bingobrewers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.awt.*;
@@ -42,5 +44,15 @@ public class ChatTextUtil {
                 player.playSound("bingobrewers:skill_xp", BingoBrewersConfig.splashNotificationVolume / 100f, 1.0f);
             }
         }, 5, TimeUnit.SECONDS);
+    }
+
+    @SubscribeEvent
+    public void onRender(RenderWorldLastEvent event) {
+        // Render the waypoints
+        System.out.println("rendering");
+        for (CHWaypoints waypoint : ServerConnection.waypoints) {
+            System.out.println("rendering waypiont: " + waypoint.shortName);
+            CHWaypoints.renderPointLabel(waypoint, waypoint.pos, event.partialTicks);
+        }
     }
 }

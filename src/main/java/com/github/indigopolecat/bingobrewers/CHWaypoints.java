@@ -1,5 +1,7 @@
 package com.github.indigopolecat.bingobrewers;
 
+import com.github.indigopolecat.kryo.KryoNetwork;
+import com.github.indigopolecat.kryo.KryoNetwork.CHChestItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
@@ -22,11 +24,44 @@ import java.util.HashMap;
 
 public class CHWaypoints {
     public BlockPos pos;
-    public String shortName = "temp name";
-    public HashMap<String, Integer> expandedName;
-    public String distance;
+    public String shortName = "Crystal Hollows";
+    public int shortNameColor = 0xAA00AA;
+    public ArrayList<CHChestItem> expandedName;
+    public CHWaypoints(int x, int y, int z, ArrayList<CHChestItem> chest) {
+        this.pos = new BlockPos(x, y, z);
+        this.expandedName = chest;
+
+        for (KryoNetwork.CHChestItem chChestItem : chest) {
+            String item = chChestItem.name;
+            if (item.contains("Jasper")) {
+                this.shortName = "Fairy Grotto";
+                this.shortNameColor = 0xff55ff;
+                break;
+            }
+        }
+        if (this.shortName.equals("Crystal Hollows")) {
+            if (y <= 63) {
+                this.shortName = "Magma Fields";
+                this.shortNameColor = 0xff5555;
+            } else if (x >= 512 && z < 512) {
+                this.shortName = "Mithril Deposits";
+                this.shortNameColor = 0x00AA00;
+            } else if (x < 512 && z < 512) {
+                this.shortName = "Jungle";
+                this.shortNameColor = 0x00AA00;
+            } else if (x < 512 && z > 512) {
+                this.shortName = "Goblin Holdout";
+                this.shortNameColor = 0xFFAA00;
+            } else if (x >= 512 && z > 512) {
+                this.shortName = "Precursor Remnants";
+                this.shortNameColor = 0x55FFFF;
+            }
+            // if none of these apply then it will be named Crystal Hollows (which is a valid region at z512 or so)
+        }
+    }
 
     public static void renderPointLabel(CHWaypoints label, BlockPos thisPoint, Float partialTicks) {
+        System.out.println("rendering");
         // References to various instances
         Minecraft mc = Minecraft.getMinecraft();
         Entity viewer = mc.getRenderViewEntity();
@@ -35,8 +70,6 @@ public class CHWaypoints {
         ScaledResolution scaledResolution = new ScaledResolution(mc);
         int screenWidth = scaledResolution.getScaledWidth();
         int screenHeight = scaledResolution.getScaledHeight();
-
-        ArrayList<String> lines = new ArrayList<>();
 
         float fovY = 360f;
         float aspectRatio = (float) screenWidth / screenHeight;
@@ -94,18 +127,16 @@ public class CHWaypoints {
         float centerY = (float) screenHeight / 2;
         boolean nearCenter = Math.abs(screenX - centerX) < centerThreshold && Math.abs(screenY - centerY) < centerThreshold;
 
-        label.distance = " (" + (int) dist + "M)";
-        lines.add(label.shortName + label.distance);
-        if (nearCenter) {
-            for (int i = 0; i < label.expandedName.entrySet().size(); i++) {
-                // this is missing the way to add a color
-                lines.add(label.expandedName.values().toArray()[i] + "" + label.expandedName.keySet().toArray()[i]);
-            }
+        String distance = " (" + (int) dist + "M)";
+        int distanceColor = 0xFFFFFF;
+
+        if (dist > 300) {
+            distanceColor = 0xFF5555;
+        } else if (dist > 100) {
+            distanceColor = 0xFFFF55;
+        } else {
+            distanceColor = 0x55FF55;
         }
-
-        int width = fontRenderer.getStringWidth(lines.get(0)) / 2;
-
-        int color = 0x8BAFE0;
 
         // adjust the position so it's actually around 30 blocks away so that it is always rendered
         // this means the actual position of the waypoint is around 30 blocks away while the waypoint appears to be several hundred
@@ -142,7 +173,20 @@ public class CHWaypoints {
         GlStateManager.disableDepth();
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-        fontRenderer.drawStringWithShadow(label.shortName, -width, 0, color);
+        int height = 0;
+        int width = fontRenderer.getStringWidth(label.shortName);
+
+        fontRenderer.drawStringWithShadow(label.shortName, -((float) width / 2), height, label.shortNameColor);
+        fontRenderer.drawStringWithShadow(distance, -((float) width / 2) + width, height, distanceColor);
+        if (nearCenter) {
+            for (CHChestItem item : label.expandedName) {
+                height += 10;
+                width = fontRenderer.getStringWidth(item.count + " " + item.name);
+                int countWidth = fontRenderer.getStringWidth(item.count + " ");
+                fontRenderer.drawStringWithShadow(item.count + " ", ((float) -width / 2), height, item.numberColor);
+                fontRenderer.drawStringWithShadow(item.name,  ((float) -width / 2) + countWidth, height, item.itemColor);
+            }
+        }
         GlStateManager.enableDepth();
         GlStateManager.disableBlend();
         GlStateManager.popMatrix();
@@ -161,5 +205,6 @@ public class CHWaypoints {
 
         return matrix;
     }
+
 }
 

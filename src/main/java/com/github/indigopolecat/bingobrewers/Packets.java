@@ -1,5 +1,6 @@
 package com.github.indigopolecat.bingobrewers;
 
+import com.esotericsoftware.kryonet.Server;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.google.gson.Gson;
@@ -102,6 +103,7 @@ public class Packets {
                     CHRequest.server = PlayerInfo.currentServer;
                     System.out.println(PlayerInfo.day);
                     CHRequest.day = PlayerInfo.day;
+                    ServerConnection.requestCHItems(CHRequest);
                 }
 
             } else if (message.contains("You received") && PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
