@@ -49,9 +49,8 @@ public class ChatTextUtil {
     @SubscribeEvent
     public void onRender(RenderWorldLastEvent event) {
         // Render the waypoints
-        System.out.println("rendering");
+
         for (CHWaypoints waypoint : ServerConnection.waypoints) {
-            System.out.println("rendering waypiont: " + waypoint.shortName);
             CHWaypoints.renderPointLabel(waypoint, waypoint.pos, event.partialTicks);
         }
     }

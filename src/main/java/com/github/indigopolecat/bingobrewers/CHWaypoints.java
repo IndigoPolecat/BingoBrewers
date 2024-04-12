@@ -61,7 +61,6 @@ public class CHWaypoints {
     }
 
     public static void renderPointLabel(CHWaypoints label, BlockPos thisPoint, Float partialTicks) {
-        System.out.println("rendering");
         // References to various instances
         Minecraft mc = Minecraft.getMinecraft();
         Entity viewer = mc.getRenderViewEntity();
