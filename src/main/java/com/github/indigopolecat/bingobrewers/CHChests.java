@@ -67,7 +67,7 @@ public class CHChests {
 
     public static void parseChat() {
 
-        listeningChests.entrySet().removeIf(entry -> System.currentTimeMillis() - entry.getValue() > 7000);
+        listeningChests.entrySet().removeIf(entry -> System.currentTimeMillis() - entry.getValue() > 9000);
 
         // Create a copy we'll remove entries too new to be valid from, and then use for calculations
         HashMap<String, Long> listeningChestsCopy = new HashMap<>(listeningChests);
