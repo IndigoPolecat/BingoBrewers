@@ -1,6 +1,7 @@
 package com.github.indigopolecat.bingobrewers;
 
 
+import com.esotericsoftware.kryonet.Server;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -26,6 +27,7 @@ public class PlayerInfo {
     public static HashMap<String, String> dungeonHubServerMap = new HashMap<>();
     public static int tickCounter = 0;
     public static int day;
+    public static boolean subscribedToCurrentCHServer;
     public volatile static boolean readyToNotify = false;
     public volatile static String splashHubNumberForNotification = null;
     public volatile static boolean readyToNotifyDungeon = false;
@@ -38,6 +40,14 @@ public class PlayerInfo {
             lastWorldLoad = System.currentTimeMillis();
             playerLocation = "";
             newLoad = true;
+            ServerConnection.waypoints.clear();
+            if (playerLocation.equalsIgnoreCase("crystal_hollows")) {
+                KryoNetwork.SubscribeToCHServer subscribeToCHServer = new KryoNetwork.SubscribeToCHServer();
+                subscribedToCurrentCHServer = false;
+                subscribeToCHServer.server = currentServer;
+                subscribeToCHServer.unsubscribe = true;
+                ServerConnection.SubscribeToCHServer(subscribeToCHServer);
+            }
             if (System.currentTimeMillis() - lastSplashHubUpdate > 3000) {
                 inSplashHub = false;
             }

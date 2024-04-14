@@ -5,7 +5,6 @@ import com.esotericsoftware.kryonet.EndPoint;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import com.github.indigopolecat.bingobrewers.util.*;
 
 public class KryoNetwork {
 
@@ -22,7 +21,7 @@ public class KryoNetwork {
         kryo.register(sendLbin.class);
         kryo.register(sendCHItems.class);
         kryo.register(receiveCHItems.class);
-        kryo.register(requestItemsForServer.class);
+        kryo.register(SubscribeToCHServer.class);
         kryo.register(ChestInfo.class);
         kryo.register(CHChestItem.class);
     }
@@ -85,9 +84,10 @@ public class KryoNetwork {
         public Integer itemColor;
     }
 
-    public static class requestItemsForServer {
+    public static class SubscribeToCHServer {
         public String server;
         public int day;
+        public boolean unsubscribe;
     }
 
     public static class receiveCHItems {

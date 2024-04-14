@@ -13,8 +13,6 @@ import com.github.indigopolecat.kryo.KryoNetwork.ConnectionIgn;
 import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -122,7 +120,6 @@ public class ServerConnection extends Listener implements Runnable {
                     ArrayList<ChestInfo> chests = CHItems.chestMap;
                     if (CHItems.server.equals(PlayerInfo.currentServer)) {
                         if (CHItems.day > PlayerInfo.day || System.currentTimeMillis() - CHItems.lastReceivedDayInfo > 25_200_000) return; // ignore if the server is younger than last known, or it's been more than 7 hours since info was received
-                        waypoints.clear();
                         System.out.println("chests size: " + CHItems.chestMap.size());
                         for (ChestInfo chest : chests) {
                             System.out.println("Adding chest " + chest.x + chest.y + chest.z);
@@ -157,6 +154,7 @@ public class ServerConnection extends Listener implements Runnable {
         LoggerUtil.LOGGER.info("sending " + response.hello);
         BingoBrewers.client.sendTCP(response);
         LoggerUtil.LOGGER.info("sent");
+        PlayerInfo.subscribedToCurrentCHServer = false;
         // List of all keys that may be used in infopanel, in the order they'll be rendered in an element
         keyOrder.clear(); // clear the list so it doesn't keep adding the same keys every time you reconnect
         keyOrder.add(HUB);
@@ -173,7 +171,6 @@ public class ServerConnection extends Listener implements Runnable {
 
     public static synchronized Client getClient() {
         return BingoBrewers.client;
-
     }
 
     public synchronized void setActiveHud(TitleHud activeTitle) {
@@ -302,13 +299,16 @@ public class ServerConnection extends Listener implements Runnable {
         currentClient.sendTCP(items);
     }
 
-    public static synchronized void requestCHItems(KryoNetwork.requestItemsForServer server) {
+    public static synchronized void SubscribeToCHServer(SubscribeToCHServer server) {
         Client currentClient = getClient();
         if (currentClient == null) {
             LoggerUtil.LOGGER.info("Client is null");
             return;
         }
         currentClient.sendTCP(server);
+        if (!server.unsubscribe) {
+            PlayerInfo.subscribedToCurrentCHServer = true;
+        }
     }
 
     public void reconnect() {
