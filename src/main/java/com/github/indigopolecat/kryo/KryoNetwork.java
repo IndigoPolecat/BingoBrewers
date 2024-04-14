@@ -80,7 +80,7 @@ public class KryoNetwork {
 
     public static class CHChestItem {
         public String name;
-        public int count;
+        public String count;
         public Integer numberColor;
         public Integer itemColor;
     }
@@ -100,6 +100,6 @@ public class KryoNetwork {
         public int x;
         public int y;
         public int z;
-        public ArrayList<CHChestItem> items;
+        public ArrayList<CHChestItem> items = new ArrayList<>();
     }
 }

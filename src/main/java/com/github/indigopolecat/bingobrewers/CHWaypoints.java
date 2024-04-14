@@ -33,7 +33,7 @@ public class CHWaypoints {
 
         for (KryoNetwork.CHChestItem chChestItem : chest) {
             String item = chChestItem.name;
-            if (item.contains("Jasper")) {
+            if (item.toLowerCase().contains("jasper")) {
                 this.shortName = "Fairy Grotto";
                 this.shortNameColor = 0xff55ff;
                 break;
@@ -121,7 +121,7 @@ public class CHWaypoints {
         float screenY = (1 - textPosition.y) * screenHeight / 2;
 
 // Check if the text is near the center of  the screen
-        float centerThreshold = 30; // Adjust this value as needed
+        float centerThreshold = 50; // Adjust this value as needed
         float centerX = (float) screenWidth / 2;
         float centerY = (float) screenHeight / 2;
         boolean nearCenter = Math.abs(screenX - centerX) < centerThreshold && Math.abs(screenY - centerY) < centerThreshold;
@@ -173,10 +173,11 @@ public class CHWaypoints {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         int height = 0;
-        int width = fontRenderer.getStringWidth(label.shortName);
+        int width = fontRenderer.getStringWidth(label.shortName + distance);
+        int widthShortName = fontRenderer.getStringWidth(label.shortName);
 
         fontRenderer.drawStringWithShadow(label.shortName, -((float) width / 2), height, label.shortNameColor);
-        fontRenderer.drawStringWithShadow(distance, -((float) width / 2) + width, height, distanceColor);
+        fontRenderer.drawStringWithShadow(distance, -((float) width / 2) + widthShortName, height, distanceColor);
         if (nearCenter) {
             for (CHChestItem item : label.expandedName) {
                 height += 10;

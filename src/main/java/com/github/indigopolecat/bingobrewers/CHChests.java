@@ -25,7 +25,7 @@ public class CHChests {
     private static long lastHardstoneChest = 0;
     private static boolean expectingHardstoneLoot;
     // Regex made with the help of Aerh
-    public static Pattern ITEM_PATTERN = Pattern.compile("§[0-9a-fk-or]§[0-9a-fk-or]You received §[0-9a-fk-or](§[0-9a-fk-or])\\+?([\\d,]{1,5})\\s(?:§[0-9a-fk-or](§[0-9a-fk-or]))?(?:.\\s)?(.+?)?(?:§[0-9a-fk-or])*\\.", Pattern.CASE_INSENSITIVE);
+    public static Pattern ITEM_PATTERN = Pattern.compile("§[0-9a-fk-or]§[0-9a-fk-or]You received §[0-9a-fk-or](§[0-9a-fk-or])\\+?([\\d,]{1,5})\\s(?:§[0-9a-fk-or](§[0-9a-fk-or])*)?(?:.\\s)?(.+?)?(?:§[0-9a-fk-or])*\\.", Pattern.CASE_INSENSITIVE);
     // potentially store this as a constant in the server that is downloaded on launch
 
 
@@ -70,8 +70,7 @@ public class CHChests {
         listeningChests.entrySet().removeIf(entry -> System.currentTimeMillis() - entry.getValue() > 7000);
 
         // Create a copy we'll remove entries too new to be valid from, and then use for calculations
-        HashMap<String, Long> listeningChestsCopy = new HashMap<>();
-        listeningChestsCopy.putAll(listeningChests);
+        HashMap<String, Long> listeningChestsCopy = new HashMap<>(listeningChests);
 
         listeningChestsCopy.values().removeIf(entry -> System.currentTimeMillis() - entry < 4800);
         if (listeningChestsCopy.isEmpty()) {
@@ -127,7 +126,7 @@ public class CHChests {
                     System.out.println("match found");
                     chestItem.name = matcher.group(4);
 
-                    chestItem.count = Integer.parseInt(matcher.group(2).replaceAll(",", ""));
+                    chestItem.count = matcher.group(2).replaceAll(",", "");
                     System.out.println(chestItem.count);
 
                     Optional<String> numberColorGroup = Optional.ofNullable(matcher.group(1));
@@ -148,7 +147,7 @@ public class CHChests {
                         continue;
                     }
                     if (existingItem.name.equals(chestItem.name)) {
-                        existingItem.count += chestItem.count;
+                        existingItem.count = (Integer.parseInt(chestItem.count) + Integer.parseInt(existingItem.count)) + "";
                         continue messageLoop;
                     }
                 }
