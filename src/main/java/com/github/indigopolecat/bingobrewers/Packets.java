@@ -95,6 +95,7 @@ public class Packets {
                         }
                     }
                 }
+                System.out.println("already subscribed: " + PlayerInfo.subscribedToCurrentCHServer);
 
                 if (PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows") && !PlayerInfo.subscribedToCurrentCHServer) {
                     KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();

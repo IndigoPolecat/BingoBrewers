@@ -43,8 +43,10 @@ public class ServerConnection extends Listener implements Runnable {
 
     @Override
     public void run() {
+        System.out.println("Beginning to run server BB");
         Client client1 = new Client();
         setClient(client1);
+        System.out.println("client set BB");
         if (BingoBrewers.client == null) {
             LoggerUtil.LOGGER.info("Client is null");
         }
@@ -154,22 +156,24 @@ public class ServerConnection extends Listener implements Runnable {
             }
 
         });
+        System.out.println("starting client BB");
         BingoBrewers.client.start();
+        System.out.println("Client started, Test Instance: " + BingoBrewers.TEST_INSTANCE);
         if (BingoBrewers.TEST_INSTANCE) {
             // Note: for those compiling their own version, the test server will rarely be active so keep the boolean as false
-            LoggerUtil.LOGGER.info("Connecting to test server");
+            System.out.println("Connecting to test server");
             BingoBrewers.client.connect(3000, "38.46.216.110", 9090, 9191);
         } else {
             BingoBrewers.client.connect(3000, "38.46.216.110", 8080, 7070);
         }
-        LoggerUtil.LOGGER.info("Connected to server.");
+        System.out.println("Connected to server.");
         // send server player ign and version
         ConnectionIgn response = new ConnectionIgn();
         String ign = Minecraft.getMinecraft().getSession().getUsername();
         response.hello = ign + "|v0.3|Beta";
-        LoggerUtil.LOGGER.info("sending " + response.hello);
+        System.out.println("sending " + response.hello);
         BingoBrewers.client.sendTCP(response);
-        LoggerUtil.LOGGER.info("sent");
+        System.out.println("sent");
         PlayerInfo.subscribedToCurrentCHServer = false;
         // List of all keys that may be used in infopanel, in the order they'll be rendered in an element
         keyOrder.clear(); // clear the list so it doesn't keep adding the same keys every time you reconnect
@@ -333,7 +337,7 @@ public class ServerConnection extends Listener implements Runnable {
         if (waitTime == 0) {
             waitTime = (int) (5000 * Math.random());
         }
-        LoggerUtil.LOGGER.info("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
+        System.out.println("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
         repeat = true;
         while (repeat) {
             try {
@@ -353,7 +357,7 @@ public class ServerConnection extends Listener implements Runnable {
                 } else if (waitTime > 60000) {
                     waitTime = 60000;
                 }
-                LoggerUtil.LOGGER.info("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
+                System.out.println("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
             }
         }
     }

@@ -38,9 +38,6 @@ public class PlayerInfo {
         if (event instanceof WorldEvent.Load) {
             // for some reason this packet is sent before you load the server, so we have a timer on client tick below
             lastWorldLoad = System.currentTimeMillis();
-            playerLocation = "";
-            newLoad = true;
-            ServerConnection.waypoints.clear();
             if (playerLocation.equalsIgnoreCase("crystal_hollows")) {
                 KryoNetwork.SubscribeToCHServer subscribeToCHServer = new KryoNetwork.SubscribeToCHServer();
                 subscribedToCurrentCHServer = false;
@@ -49,6 +46,9 @@ public class PlayerInfo {
                 System.out.println("unsubscribing");
                 ServerConnection.SubscribeToCHServer(subscribeToCHServer);
             }
+            playerLocation = "";
+            newLoad = true;
+            ServerConnection.waypoints.clear();
             if (System.currentTimeMillis() - lastSplashHubUpdate > 3000) {
                 inSplashHub = false;
             }
