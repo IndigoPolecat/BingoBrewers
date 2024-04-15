@@ -120,25 +120,12 @@ public class ServerConnection extends Listener implements Runnable {
                 } else if (object instanceof receiveCHItems) {
                     receiveCHItems CHItems = (receiveCHItems) object;
                     System.out.println("Received CH Chests for " + CHItems.server);
-                    System.out.println("Received CH Chests for " + CHItems.server);
-                    System.out.println("Received CH Chests for " + CHItems.server);
-                    System.out.println("Received CH Chests for " + CHItems.server);
-                    System.out.println("Received CH Chests for " + CHItems.server);
-                    System.out.println("Received CH Chests for " + CHItems.server);
-                    System.out.println("Received CH Chests for " + CHItems.server);
                     ArrayList<ChestInfo> chests = CHItems.chestMap;
                     if (CHItems.server.equals(PlayerInfo.currentServer)) {
                         System.out.println(CHItems.day);
                         System.out.println(PlayerInfo.day);
                         System.out.println(CHItems.lastReceivedDayInfo);
                         if (CHItems.day > PlayerInfo.day || System.currentTimeMillis() - (CHItems.lastReceivedDayInfo != null ? CHItems.lastReceivedDayInfo : Long.MAX_VALUE) > 25_200_000) return; // ignore if the server is younger than last known, or it's been more than 7 hours since info was received
-                        System.out.println("chests size: " + CHItems.chestMap.size());
-                        System.out.println("chests size: " + CHItems.chestMap.size());
-                        System.out.println("chests size: " + CHItems.chestMap.size());
-                        System.out.println("chests size: " + CHItems.chestMap.size());
-                        System.out.println("chests size: " + CHItems.chestMap.size());
-                        System.out.println("chests size: " + CHItems.chestMap.size());
-                        System.out.println("chests size: " + CHItems.chestMap.size());
                         System.out.println("chests size: " + CHItems.chestMap.size());
                         for (ChestInfo chest : chests) {
                             System.out.println("Adding chest " + chest.x + chest.y + chest.z);

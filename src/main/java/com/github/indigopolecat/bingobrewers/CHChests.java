@@ -66,12 +66,13 @@ public class CHChests {
     }
 
     public static void parseChat() {
-
+        // remove old chests
         listeningChests.entrySet().removeIf(entry -> System.currentTimeMillis() - entry.getValue() > 9000);
 
         // Create a copy we'll remove entries too new to be valid from, and then use for calculations
         HashMap<String, Long> listeningChestsCopy = new HashMap<>(listeningChests);
 
+        // remove chests that were right clicked less than 4.8 seconds ago (temporarily)
         listeningChestsCopy.values().removeIf(entry -> System.currentTimeMillis() - entry < 4800);
         if (listeningChestsCopy.isEmpty()) {
             RecentChatMessages.clear();
@@ -90,12 +91,7 @@ public class CHChests {
         if (coords == null) return;
 
         LoggerUtil.LOGGER.info("structure chest detected");
-
-        // don't need this anymore but idk what I can remove so it stays cuz it doesn't matter
-        // Once a "You received" message is received, set the time remaining to 1 second for messages to come in
-        long newTime = oldest + 8500;
         listeningChests.remove(coords);
-        listeningChests.put(coords, newTime);
         // add the opened chest to blacklist
         Packets.hardstone.put(coords, Long.MAX_VALUE);
 
