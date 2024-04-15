@@ -94,7 +94,7 @@ public class KryoNetwork {
         public ArrayList<ChestInfo> chestMap;
         public String server; // used to confirm that the server is correct
         public int day; // server's last known day
-        public Long lastReceivedDayInfo;
+        public Long lastReceivedDayInfo = Long.MAX_VALUE;
     }
     public static class ChestInfo {
         public int x;

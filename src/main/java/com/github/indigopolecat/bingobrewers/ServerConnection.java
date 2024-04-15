@@ -17,6 +17,7 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.esotericsoftware.minlog.Log.*;
@@ -130,7 +131,7 @@ public class ServerConnection extends Listener implements Runnable {
                         System.out.println(CHItems.day);
                         System.out.println(PlayerInfo.day);
                         System.out.println(CHItems.lastReceivedDayInfo);
-                        if (CHItems.day > PlayerInfo.day || System.currentTimeMillis() - CHItems.lastReceivedDayInfo > 25_200_000) return; // ignore if the server is younger than last known, or it's been more than 7 hours since info was received
+                        if (CHItems.day > PlayerInfo.day || System.currentTimeMillis() - (CHItems.lastReceivedDayInfo != null ? CHItems.lastReceivedDayInfo : Long.MAX_VALUE) > 25_200_000) return; // ignore if the server is younger than last known, or it's been more than 7 hours since info was received
                         System.out.println("chests size: " + CHItems.chestMap.size());
                         System.out.println("chests size: " + CHItems.chestMap.size());
                         System.out.println("chests size: " + CHItems.chestMap.size());
