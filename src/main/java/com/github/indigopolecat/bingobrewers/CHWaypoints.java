@@ -1,5 +1,6 @@
 package com.github.indigopolecat.bingobrewers;
 
+import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.CHChestItem;
 import net.minecraft.client.Minecraft;
@@ -21,12 +22,15 @@ import org.lwjgl.util.vector.Vector4f;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class CHWaypoints {
     public BlockPos pos;
     public String shortName = "Crystal Hollows";
     public int shortNameColor = 0xAA00AA;
-    public ArrayList<CHChestItem> expandedName;
+    public static ArrayList<CHChestItem> expandedName;
+    public static HashMap<String, CrystalHollowsItemTotal> itemCounts = new HashMap<>(); // # of each item
+    public static CopyOnWriteArrayList<CHWaypoints> filteredWaypoints = new CopyOnWriteArrayList<>();
     public CHWaypoints(int x, int y, int z, ArrayList<CHChestItem> chest) {
         this.pos = new BlockPos(x, y, z);
         this.expandedName = chest;
@@ -126,8 +130,8 @@ public class CHWaypoints {
         float centerY = (float) screenHeight / 2;
         boolean nearCenter = Math.abs(screenX - centerX) < centerThreshold && Math.abs(screenY - centerY) < centerThreshold;
 
-        String distance = " (" + (int) dist + "M)";
-        int distanceColor = 0xFFFFFF;
+        String distance = " (" + (int) dist + "m)";
+        int distanceColor;
 
         if (dist > 300) {
             distanceColor = 0xFF5555;

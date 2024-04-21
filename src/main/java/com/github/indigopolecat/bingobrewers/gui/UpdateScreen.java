@@ -1,13 +1,10 @@
 package com.github.indigopolecat.bingobrewers.gui;
 
 import com.github.indigopolecat.bingobrewers.BingoBrewers;
-import com.github.indigopolecat.bingobrewers.BingoBrewersConfig;
-import com.github.indigopolecat.bingobrewers.TitleHud;
+import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiLabel;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import org.lwjgl.input.Mouse;

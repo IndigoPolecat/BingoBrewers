@@ -6,6 +6,9 @@ import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.minlog.Log;
+import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
+import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
+import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.*;
@@ -14,13 +17,14 @@ import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.esotericsoftware.minlog.Log.*;
+import static com.github.indigopolecat.bingobrewers.CHWaypoints.itemCounts;
 import static java.lang.String.valueOf;
 
 public class ServerConnection extends Listener implements Runnable {
@@ -40,6 +44,10 @@ public class ServerConnection extends Listener implements Runnable {
     public static ArrayList<String> hubList = new ArrayList<>();
     long originalTime = -1;
     public static CopyOnWriteArrayList<CHWaypoints> waypoints = new CopyOnWriteArrayList<>();
+
+    //TODO: add this constant
+    // if new CH items are added, I can add them server side and they will be able to be shown
+    public static ArrayList<String> newMiscCHItems = new ArrayList<>();
 
 
     @Override
@@ -61,7 +69,7 @@ public class ServerConnection extends Listener implements Runnable {
     }
 
     private void connection() throws IOException {
-        Log.set(LEVEL_ERROR);
+        Log.set(LEVEL_TRACE);
         KryoNetwork.register(BingoBrewers.client);
         BingoBrewers.client.addListener(new Listener() {
             @Override
@@ -131,6 +139,10 @@ public class ServerConnection extends Listener implements Runnable {
                             System.out.println("Adding chest " + chest.x + chest.y + chest.z);
                             CHWaypoints chWaypoints = new CHWaypoints(chest.x, chest.y, chest.z, chest.items);
                             waypoints.add(chWaypoints);
+
+                            for (CHChestItem item : chest.items) {
+                                CrystalHollowsItemTotal.sumItems(item);
+                            }
                         }
 
                     }
@@ -263,8 +275,8 @@ public class ServerConnection extends Listener implements Runnable {
     // This is called onTickEvent in PlayerInfo when the player is not null
     public synchronized void notification(String hub, boolean dungeonHub) {
         if (!BingoBrewersConfig.splashNotificationsEnabled) return;
-        if(!HudRendering.onBingo && !BingoBrewersConfig.splashNotificationsInBingo) return;
-        if(!HudRendering.inSkyblockorPTLobby && !BingoBrewersConfig.splashNotificationsOutsideSkyblock) return;
+        if(!SplashHud.onBingo && !BingoBrewersConfig.splashNotificationsInBingo) return;
+        if(!SplashHud.inSkyblockorPTLobby && !BingoBrewersConfig.splashNotificationsOutsideSkyblock) return;
         if(!BingoBrewers.onHypixel) return;
         EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
         if (!dungeonHub) {
@@ -298,7 +310,7 @@ public class ServerConnection extends Listener implements Runnable {
         currentClient.sendUDP(count);
     }
 
-    public synchronized void sendCHItems(KryoNetwork.sendCHItems items) {
+    public static synchronized void sendCHItems(KryoNetwork.sendCHItems items) {
         Client currentClient = getClient();
         if (currentClient == null) {
             LoggerUtil.LOGGER.info("Client is null");

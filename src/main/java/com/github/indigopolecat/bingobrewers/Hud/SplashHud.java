@@ -1,9 +1,10 @@
-package com.github.indigopolecat.bingobrewers;
+package com.github.indigopolecat.bingobrewers.Hud;
 
 import cc.polyfrost.oneconfig.events.EventManager;
 import cc.polyfrost.oneconfig.hud.Hud;
 import java.util.ArrayList;
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
+import com.github.indigopolecat.bingobrewers.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
@@ -17,7 +18,7 @@ import java.awt.Color;
 import java.util.HashMap;
 import java.util.List;
 
-public class HudRendering extends Hud {
+public class SplashHud extends Hud {
     float lastLineRenderedAtY = 0;
     int totalLines = 0;
     boolean listTooLong = false;
@@ -31,7 +32,7 @@ public class HudRendering extends Hud {
     public static boolean onBingo = false;
     public static boolean inSkyblockorPTLobby = false;
 
-    public HudRendering() {
+    public SplashHud() {
         super(true);
         EventManager.INSTANCE.register(this);
     }
@@ -45,7 +46,7 @@ public class HudRendering extends Hud {
         }
         ArrayList<HashMap<String, ArrayList<String>>> infoPanel = new ArrayList<>();
         if(!onBingo && !BingoBrewersConfig.splashNotificationsInBingo && !example) return;
-        if(!HudRendering.inSkyblockorPTLobby && !BingoBrewersConfig.splashNotificationsOutsideSkyblock && !example) return;
+        if(!SplashHud.inSkyblockorPTLobby && !BingoBrewersConfig.splashNotificationsOutsideSkyblock && !example) return;
         if(!BingoBrewers.onHypixel) return;
         if (example && (ServerConnection.mapList.isEmpty() || !BingoBrewersConfig.splashNotificationsEnabled)) {
             // Example splash displayed in settings if none is active

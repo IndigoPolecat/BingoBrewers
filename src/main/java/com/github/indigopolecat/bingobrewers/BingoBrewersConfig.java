@@ -7,13 +7,46 @@ import cc.polyfrost.oneconfig.config.data.InfoType;
 import cc.polyfrost.oneconfig.config.data.Mod;
 import cc.polyfrost.oneconfig.config.data.ModType;
 import cc.polyfrost.oneconfig.config.data.OptionSize;
+import com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud;
+import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
 import com.github.indigopolecat.bingobrewers.gui.UpdateScreen;
+import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
+import com.github.indigopolecat.kryo.KryoNetwork;
 import net.minecraft.client.Minecraft;
+
+import java.util.Map.Entry;
+import java.util.Set;
+
+import static com.github.indigopolecat.bingobrewers.CHWaypoints.itemCounts;
+import static com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud.filteredItems;
 
 public class BingoBrewersConfig extends Config {
     public BingoBrewersConfig() {
         super(new Mod("Bingo Brewers", ModType.SKYBLOCK), "bingobrewers.json");
+        addDependency("robotParts", () -> crystalHollowsWaypointsToggle);
+        addDependency("powder", () -> crystalHollowsWaypointsToggle);
+        addDependency("highPowder", () -> crystalHollowsWaypointsToggle);
+        addDependency("prehistoricEggs", () -> crystalHollowsWaypointsToggle);
+        addDependency("pickonimbus", () -> crystalHollowsWaypointsToggle);
+        addDependency("goblinEggs", () -> crystalHollowsWaypointsToggle);
+        addDependency("blueEggs", () -> crystalHollowsWaypointsToggle);
+        addDependency("roughGemstones", () -> crystalHollowsWaypointsToggle);
+        addDependency("fineGemstones", () -> crystalHollowsWaypointsToggle);
+        addDependency("jasperGemstones", () -> crystalHollowsWaypointsToggle);
+        addDependency("junk", () -> crystalHollowsWaypointsToggle);
+        addListener("robotParts", BingoBrewersConfig::filterRobotParts);
+        addListener("powder", BingoBrewersConfig::filterPowder);
+        addListener("highPowder", BingoBrewersConfig::filterHighPowder);
+        addListener("prehistoricEggs", BingoBrewersConfig::filterPrehistoricEggs);
+        addListener("pickonimbus", BingoBrewersConfig::filterPickonimbus);
+        addListener("goblinEggs", BingoBrewersConfig::filterGoblinEggs);
+        addListener("blueEggs", BingoBrewersConfig::filterBlueEggs);
+        addListener("roughGemstones", BingoBrewersConfig::filterRoughGemstones);
+        addListener("fineGemstones", BingoBrewersConfig::filterFineGemstones);
+        addListener("jasperGemstones", BingoBrewersConfig::filterJasperGemstones);
+        addListener("junk", BingoBrewersConfig::filterMisc);
         initialize();
+
     }
 
     @Switch(
@@ -51,7 +84,7 @@ public class BingoBrewersConfig extends Config {
             name = "Splash Notification HUD",
             category = "Splash Notifications"
     )
-    public HudRendering hud = new HudRendering();
+    public SplashHud hud = new SplashHud();
 
     @Slider(
             name = "Notification Volume",
@@ -67,6 +100,99 @@ public class BingoBrewersConfig extends Config {
             description = "Set the color of the alert text (i.e. \"Splash in Hub 14\")"
     )
     public static OneColor alertTextColor = new OneColor(0xFF8BAFE0);
+
+    @Switch(
+            name = "Crystal Hollows Waypoints",
+            category = "Crystal Hollows Waypoints",
+            description = "Toggle Crystal Hollows Waypoints"
+    )
+    public static boolean crystalHollowsWaypointsToggle = true;
+
+    @HUD(
+            name = "Crystal Hollows Loot HUD",
+            category = "Crystal Hollows Waypoints"
+    )
+    public CrystalHollowsHud CHHud = new CrystalHollowsHud();
+
+    @Checkbox(
+            name = "Robot Parts",
+            category = "Crystal Hollows Waypoints",
+            description = "Include all 6 Robot Parts.",
+            size = OptionSize.DUAL
+    )
+    public static boolean robotParts = true;
+
+    @Checkbox(
+            name = "Powder",
+            category = "Crystal Hollows Waypoints",
+            description = "Include Mithril and Gemstone powder."
+    )
+    public static boolean powder = true;
+
+    @Checkbox(
+            name = "Only Include more than 1200 Powder",
+            category = "Crystal Hollows Waypoints",
+            description = "Toggle to ignore less than 1200 powder, may occasionally be incorrect."
+    )
+    public static boolean highPowder = true;
+
+    @Checkbox(
+            name = "Prehistoric Eggs",
+            category = "Crystal Hollows Waypoints",
+            description = "Include Prehistoric Eggs.",
+            size = OptionSize.DUAL
+    )
+    public static boolean prehistoricEggs = true;
+
+    @Checkbox(
+            name = "Pickonimbus 2000",
+            category = "Crystal Hollows Waypoints",
+            description = "Include Pickonimbus 2000s.",
+            size = OptionSize.DUAL
+    )
+    public static boolean pickonimbus = true;
+
+    @Checkbox(
+            name = "Blue Goblin Eggs",
+            category = "Crystal Hollows Waypoints",
+            description = "Separate toggle for only Blue Goblin Eggs."
+    )
+    public static boolean blueEggs = true;
+
+    @Checkbox(
+            name = "Goblin Eggs",
+            category = "Crystal Hollows Waypoints",
+            description = "Include all Goblin Eggs."
+    )
+    public static boolean goblinEggs = true;
+
+    @Checkbox(
+            name = "Rough/Flawed Gemstones",
+            category = "Crystal Hollows Waypoints",
+            description = "Include Rough and Flawed gemstones found in chests."
+    )
+    public static boolean roughGemstones = false;
+
+    @Checkbox(
+            name = "Fine/Flawless Gemstones",
+            category = "Crystal Hollows Waypoints",
+            description = "Include Fine and Flawless gemstones found in chests."
+    )
+    public static boolean fineGemstones = true;
+
+    @Checkbox(
+            name = "Jasper Gemstones",
+            category = "Crystal Hollows Waypoints",
+            description = "Separate toggle for all Jasper gemstones, they can reveal Fairy Grottos."
+    )
+    public static boolean jasperGemstones = true;
+
+    @Checkbox(
+            name = "Misc.",
+            category = "Crystal Hollows Waypoints",
+            description = "Wishing Compasses, Treasurite, Jungle Hearts, Oil Barrels, Sludge Juice, Ascension Ropes, Yoggies."
+    )
+    public static boolean junk = true;
 
     @Switch(
             name = "Show Coins/Bingo Point",
@@ -135,4 +261,214 @@ public class BingoBrewersConfig extends Config {
             description = "Play a sound if the Chicken Head cooldown is reset."
     )
     public static boolean playEggTimerResetSound = false;
+
+    public static void filterRobotParts() {
+        if (robotParts) {
+            System.out.println("Enabling");
+            for (String item : CHWaypoints.itemCounts.keySet()) {
+                if ("FTX 3070".equals(item) || "Robotron Reflector".equals(item) || "Control Switch".equals(item) || "Synthetic Heart".equals(item) || "Superlite Motor".equals(item) || "Electron Transmitter".equals(item)) {
+                    filteredItems.put(item, CHWaypoints.itemCounts.get(item));
+                }
+            }
+        } else {
+            System.out.println("Disabling");
+            for (String item : filteredItems.keySet()) {
+                if ("FTX 3070".equals(item) || "Robotron Reflector".equals(item) || "Control Switch".equals(item) || "Synthetic Heart".equals(item) || "Superlite Motor".equals(item) || "Electron Transmitter".equals(item)) {
+                    filteredItems.remove(item);
+                }
+            }
+        }
+
+    }
+    public static void filterPowder() {
+        if (powder) {
+            highPowder = true;
+            System.out.println("Enabling");
+            for (String item : CHWaypoints.itemCounts.keySet()) {
+                if (item.contains(" Powder")) {
+                    filteredItems.put(item, CHWaypoints.itemCounts.get(item));
+                }
+            }
+        } else {
+            for (String item : filteredItems.keySet()) {
+                if (item.contains(" Powder")) {
+                    filteredItems.remove(item);
+                }
+            }
+        }
+    }
+    public static void filterHighPowder() {
+        if (highPowder) {
+            System.out.println("Enabling");
+            for (KryoNetwork.CHChestItem item : CHWaypoints.expandedName) {
+                if (!item.count.contains("-")) return;
+                if (item.name.contains(" Powder") && Integer.parseInt(item.count.split("-")[1]) > 1200 && !powder) {
+                    if (filteredItems.containsKey(item.name)) {
+                        CrystalHollowsItemTotal itemTotal = filteredItems.get(item.name);
+                        String itemCountExisting = itemTotal.itemCount;
+                        filteredItems.put(item.name, CrystalHollowsItemTotal.sumPowder(itemCountExisting, item, itemTotal));
+                    } else {
+                        CrystalHollowsItemTotal itemTotal = new CrystalHollowsItemTotal();
+                        itemTotal.itemCount = item.count;
+                        itemTotal.itemName = item.name;
+                        itemTotal.itemColor = item.itemColor;
+                        itemTotal.countColor = item.numberColor;
+                        filteredItems.put(item.name, itemTotal);
+                    }
+                }
+            }
+        } else {
+            powder = false;
+            for (String item : filteredItems.keySet()) {
+                if (item.contains(" Powder")) {
+                    filteredItems.remove(item);
+                }
+            }
+        }
+
+    }
+    public static void filterPrehistoricEggs() {
+        if (prehistoricEggs) {
+            System.out.println("Enabling");
+            for (String item : CHWaypoints.itemCounts.keySet()) {
+                if ("Prehistoric Egg".equals(item)) {
+                    filteredItems.put(item, CHWaypoints.itemCounts.get(item));
+                }
+            }
+        } else {
+            System.out.println("Disabling");
+            for (String item : filteredItems.keySet()) {
+                if ("Prehistoric Egg".equals(item)) {
+                    filteredItems.remove(item);
+                }
+            }
+        }
+
+    }
+    public static void filterPickonimbus() {
+        if (pickonimbus) {
+            System.out.println("Enabling");
+            for (String item : CHWaypoints.itemCounts.keySet()) {
+                if (item.contains("Pickonimbus")) {
+                    filteredItems.put(item, CHWaypoints.itemCounts.get(item));
+                }
+            }
+        } else {
+            for (String item : filteredItems.keySet()) {
+                if (item.contains("Pickonimbus")) {
+                    filteredItems.remove(item);
+                }
+            }
+        }
+
+    }
+    public static void filterBlueEggs() {
+        if (blueEggs) {
+            System.out.println("Enabling");
+            for (String item : CHWaypoints.itemCounts.keySet()) {
+                if ("Blue Goblin Egg".equals(item)) {
+                    filteredItems.put(item, CHWaypoints.itemCounts.get(item));
+                }
+            }
+        } else {
+            goblinEggs = false;
+            for (String item : filteredItems.keySet()) {
+                if (item.contains("Goblin Egg")) {
+                    filteredItems.remove(item);
+                }
+            }
+        }
+
+    }
+    public static void filterGoblinEggs() {
+        if (goblinEggs) {
+            blueEggs = true;
+            System.out.println("Enabling");
+            for (String item : CHWaypoints.itemCounts.keySet()) {
+                if (item.contains("Goblin Egg")) {
+                    filteredItems.put(item, CHWaypoints.itemCounts.get(item));
+                }
+            }
+        } else {
+            for (String item : filteredItems.keySet()) {
+                if (item.contains("Goblin Egg")) {
+                    filteredItems.remove(item);
+                }
+            }
+        }
+
+    }
+    public static void filterRoughGemstones() {
+        if (roughGemstones) {
+            fineGemstones = true;
+            jasperGemstones = true;
+            System.out.println("Enabling");
+            for (String item : CHWaypoints.itemCounts.keySet()) {
+                if (item.contains("Gemstone")) {
+                    filteredItems.put(item, CHWaypoints.itemCounts.get(item));
+                }
+            }
+        } else {
+            for (String item : filteredItems.keySet()) {
+                if (item.contains("Rough") || item.contains("Flawed")) {
+                    filteredItems.remove(item);
+                }
+            }
+        }
+
+    }
+    public static void filterFineGemstones() {
+        if (fineGemstones) {
+            System.out.println("Enabling");
+            for (String item : CHWaypoints.itemCounts.keySet()) {
+                if (item.contains("Fine") || item.contains("Flawless")) {
+                    filteredItems.put(item, CHWaypoints.itemCounts.get(item));
+                }
+            }
+        } else {
+            roughGemstones = false;
+            for (String item : filteredItems.keySet()) {
+                if (item.contains("Rough") || item.contains("Flawed") || item.contains("Fine") || item.contains("Flawless")) {
+                    filteredItems.remove(item);
+                }
+            }
+        }
+
+    }
+    public static void filterJasperGemstones() {
+        if (jasperGemstones) {
+            System.out.println("Enabling");
+            for (String item : CHWaypoints.itemCounts.keySet()) {
+                if (item.contains("Jasper")) {
+                    filteredItems.put(item, CHWaypoints.itemCounts.get(item));
+                }
+            }
+        } else {
+            roughGemstones = false;
+            for (String item : filteredItems.keySet()) {
+                if (item.contains("Jasper") || item.contains("Rough") || item.contains("Flawed")) {
+                    filteredItems.remove(item);
+                }
+            }
+        }
+
+    }
+    public static void filterMisc() {
+        if (junk) {
+            System.out.println("Enabling");
+            for (String item : CHWaypoints.itemCounts.keySet()) {
+                if ("Wishing Compass".equals(item) || "Treasurite".equals(item) || "Jungle Heart".equals(item) || "Oil Barrel".equals(item) || "Sludge Juice".equals(item) || "Ascension Rope".equals(item) || "Yoggie".equals(item) || ServerConnection.newMiscCHItems.contains(item)) {
+                    filteredItems.put(item, CHWaypoints.itemCounts.get(item));
+                }
+            }
+        } else {
+            for (String item : filteredItems.keySet()) {
+                if ("Wishing Compass".equals(item) || "Treasurite".equals(item) || "Jungle Heart".equals(item) || "Oil Barrel".equals(item) || "Sludge Juice".equals(item) || "Ascension Rope".equals(item) || "Yoggie".equals(item) || ServerConnection.newMiscCHItems.contains(item)) {
+                    filteredItems.remove(item);
+                }
+            }
+        }
+
+    }
+
 }

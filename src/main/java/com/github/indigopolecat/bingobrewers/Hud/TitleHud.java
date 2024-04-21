@@ -1,4 +1,4 @@
-package com.github.indigopolecat.bingobrewers;
+package com.github.indigopolecat.bingobrewers.Hud;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;

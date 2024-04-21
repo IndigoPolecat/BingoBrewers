@@ -1,5 +1,6 @@
 package com.github.indigopolecat.bingobrewers;
 
+import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -9,6 +10,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.play.server.*;
 import net.minecraft.util.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -68,12 +70,12 @@ public class Packets {
                 if (PlayerInfo.playerGameType.equalsIgnoreCase("skyblock")) {
                     PlayerInfo.playerLocation = locrawMap.get("mode");
                     // Check if the scoreboard contains "bingo" and set the onBingo flag once we know if we're on skyblock
-                    HudRendering.onBingo = ScoreBoard.isBingo();
-                    HudRendering.inSkyblockorPTLobby = true;
+                    SplashHud.onBingo = ScoreBoard.isBingo();
+                    SplashHud.inSkyblockorPTLobby = true;
                 } else if (PlayerInfo.playerGameType.equalsIgnoreCase("prototype")) {
-                    HudRendering.inSkyblockorPTLobby = true;
+                    SplashHud.inSkyblockorPTLobby = true;
                 } else {
-                    HudRendering.inSkyblockorPTLobby = false;
+                    SplashHud.inSkyblockorPTLobby = false;
                 }
 
 
@@ -97,6 +99,13 @@ public class Packets {
                 }
 
                 if (PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows") && !PlayerInfo.subscribedToCurrentCHServer) {
+                    // update day
+                    World world = Minecraft.getMinecraft().theWorld;
+                    long worldTime = world.getWorldTime();
+                    System.out.println("worldTime: " + worldTime);
+                    PlayerInfo.day = (int) (worldTime / 24000);
+                    System.out.println("days: " + PlayerInfo.day);
+
                     KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
                     CHRequest.server = PlayerInfo.currentServer;
                     System.out.println(PlayerInfo.day);

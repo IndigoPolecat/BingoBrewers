@@ -6,6 +6,7 @@ import com.github.indigopolecat.kryo.KryoNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -49,6 +50,7 @@ public class PlayerInfo {
             playerLocation = "";
             newLoad = true;
             ServerConnection.waypoints.clear();
+            CHWaypoints.itemCounts.clear();
             if (System.currentTimeMillis() - lastSplashHubUpdate > 3000) {
                 inSplashHub = false;
             }
@@ -74,8 +76,11 @@ public class PlayerInfo {
                         lastPositionUpdate = System.currentTimeMillis();
                         newLoad = false;
 
-
-                        day = (int) Math.floor(Minecraft.getMinecraft().theWorld.getTotalWorldTime() / 24000f);
+                        World world = Minecraft.getMinecraft().theWorld;
+                        long worldTime = world.getWorldTime();
+                        System.out.println("worldTime: " + worldTime);
+                        day = (int) (worldTime / 24000);
+                        System.out.println("days: " + day);
                     }
                 }
             }

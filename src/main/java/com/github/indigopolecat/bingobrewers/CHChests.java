@@ -25,6 +25,7 @@ public class CHChests {
     private static long lastHardstoneChest = 0;
     private static boolean expectingHardstoneLoot;
     // Regex made with the help of Aerh
+    // TODO: make this originate from the server
     public static Pattern ITEM_PATTERN = Pattern.compile("§[0-9a-fk-or]§[0-9a-fk-or]You received §[0-9a-fk-or](§[0-9a-fk-or])\\+?([\\d,]{1,5})\\s(?:§[0-9a-fk-or](§[0-9a-fk-or])*)?(?:.\\s)?(.+?)?(?:§[0-9a-fk-or])*\\.", Pattern.CASE_INSENSITIVE);
     // potentially store this as a constant in the server that is downloaded on launch
 
@@ -97,6 +98,7 @@ public class CHChests {
 
         KryoNetwork.sendCHItems chestLoot = new KryoNetwork.sendCHItems();
         chestLoot.server = PlayerInfo.currentServer;
+        chestLoot.day = (int) Minecraft.getMinecraft().theWorld.getWorldTime() / 24000;
         // coords are in the format BlockPos{x=420, y=124, z=576}
         Pattern coordPattern = Pattern.compile("BlockPos\\{x=(\\d+), y=(\\d+), z=(\\d+)}");
         Matcher coordMatcher = coordPattern.matcher(coords);
@@ -153,8 +155,7 @@ public class CHChests {
             }
         }
         if (!chestLoot.items.isEmpty()) {
-            ServerConnection serverConnection = new ServerConnection();
-            serverConnection.sendCHItems(chestLoot);
+            ServerConnection.sendCHItems(chestLoot);
         }
         RecentChatMessages.clear();
     }
