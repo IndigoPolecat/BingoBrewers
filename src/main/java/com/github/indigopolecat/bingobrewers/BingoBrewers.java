@@ -4,8 +4,6 @@ import com.esotericsoftware.kryonet.Client;
 import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
 import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
 import com.github.indigopolecat.bingobrewers.commands.ConfigCommand;
-import com.github.indigopolecat.bingobrewers.commands.DayTestCommand;
-import com.github.indigopolecat.bingobrewers.commands.SubscribeTestCommand;
 import com.github.indigopolecat.bingobrewers.util.AutoUpdater;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -46,8 +44,6 @@ public class BingoBrewers {
         config = new BingoBrewersConfig();
         createServerThread();
         ClientCommandHandler.instance.registerCommand(new ConfigCommand());
-        ClientCommandHandler.instance.registerCommand(new DayTestCommand());
-        ClientCommandHandler.instance.registerCommand(new SubscribeTestCommand());
 
         minecraftColors.put("§0", 0x000000);  // Black
         minecraftColors.put("§1", 0x0000AA);  // Dark Blue

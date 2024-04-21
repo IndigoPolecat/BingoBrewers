@@ -51,7 +51,6 @@ public class SplashHud extends Hud {
         if (example && (ServerConnection.mapList.isEmpty() || !BingoBrewersConfig.splashNotificationsEnabled)) {
             // Example splash displayed in settings if none is active
             HashMap<String, ArrayList<String>> infoMap = getExampleHud();
-
             infoPanel.add(infoMap);
         } else if (BingoBrewersConfig.splashNotificationsEnabled) {
             renderCounter++;
@@ -157,8 +156,9 @@ public class SplashHud extends Hud {
         GL11.glPushMatrix();
         GL11.glScalef(fontSize, fontSize, scale);
         x = (x / fontSize);
-        y = (y / fontSize / (heightScaled + 2));
+        y = (y / fontSize );// (heightScaled + 2));
         y = Math.min(y, heightScaled - getHeight(scale, false));
+        lastLineRenderedAtY /= scale;
 
 
 
@@ -181,7 +181,7 @@ public class SplashHud extends Hud {
                 // render prefix
                 ArrayList<String> splashInfo = map.get(key);
                 String prefix = splashInfo.get(0);
-                float nextStart = renderBoldText(prefix, (x), (y + lastLineRenderedAtY), colorPrefix.getRGB()) - x;
+                float nextStart = renderBoldText(prefix, (x), (lastLineRenderedAtY), colorPrefix.getRGB()) - x;
 
                 // loop through the info
                 infoRenderLoop:
@@ -213,7 +213,7 @@ public class SplashHud extends Hud {
 
 
                         // render the string
-                        fontRenderer.drawStringWithShadow(line, (x + nextStart), (y + lastLineRenderedAtY), colorText.getRGB());
+                        fontRenderer.drawStringWithShadow(line, (x + nextStart), (lastLineRenderedAtY), colorText.getRGB());
                         // mark the last y value we rendered a string at
                         lastLineRenderedAtY += 10;
                         // increase the line count

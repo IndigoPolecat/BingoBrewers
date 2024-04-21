@@ -10,6 +10,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class PlayerInfo {
@@ -95,7 +97,6 @@ public class PlayerInfo {
                             break;
                         } else {
                             BingoBrewers.onHypixel = false;
-                            break;
                         }
                     }
                 }

@@ -16,7 +16,6 @@ import java.util.List;
 public class CrystalHollowsHud extends Hud {
     float lastLineRenderedAtY = 0;
     int totalLines = 0;
-    boolean listTooLong = false;
     long renderCounter = 0;
     // For some reason, latestSplash becomes bloated because it is stored in a config class, don't know how to fix but it's not a massive issue immediately, though it will inflate file size.
     public static ArrayList<Long> latestSplash = new ArrayList<>(2);
@@ -26,9 +25,27 @@ public class CrystalHollowsHud extends Hud {
     public static LinkedHashMap<String, CrystalHollowsItemTotal> filteredItems = new LinkedHashMap<>();
 
 
+
     @Override
     protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
-        renderCrystalHollowsHud(x, y, scale);
+        renderCounter++;
+        LinkedHashMap<String, CrystalHollowsItemTotal> items = new LinkedHashMap<>();
+        if (example) {
+            CrystalHollowsItemTotal item1 = new CrystalHollowsItemTotal();
+            item1.itemCount = "80-4800";
+            item1.countColor = 0x55FFFF;
+            item1.itemName = "Mithril Powder";
+            item1.itemColor = 0x00AA00;
+            items.put(item1.itemName, item1);
+        } else {
+            items = filteredItems;
+        }
+        renderCrystalHollowsHud(items, x, y, scale);
+
+        totalHeight = totalLines * 10 - 7;
+
+        // Reset at the end
+        lastLineRenderedAtY = y + 3;
     }
 
     @Override
@@ -52,7 +69,7 @@ public class CrystalHollowsHud extends Hud {
         return totalHeight * scale;
     }
 
-    public void renderCrystalHollowsHud(float x, float y, float scale) {
+    public void renderCrystalHollowsHud(LinkedHashMap<String, CrystalHollowsItemTotal> items, float x, float y, float scale) {
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
 
         ScaledResolution scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
@@ -66,19 +83,18 @@ public class CrystalHollowsHud extends Hud {
         GL11.glPushMatrix();
         GL11.glScalef(fontSize, fontSize, scale);
         x = (x / fontSize);
-        y = (y / fontSize / (heightScaled + 2));
+        y = (y / fontSize );// (heightScaled + 2));
         y = Math.min(y, heightScaled - getHeight(scale, false));
+        lastLineRenderedAtY /= scale;
 
 
 
         // set color of text
         int lineCount = 0;
-        listTooLong = false;
-        Set<String> keys = filteredItems.keySet();
-        if (keys.isEmpty()) return;
+        Set<String> keys = items.keySet();
         // loop through the hashmap of the splash
         for (String item : keys) {
-            CrystalHollowsItemTotal itemTotal = filteredItems.get(item);
+            CrystalHollowsItemTotal itemTotal = items.get(item);
             String itemCount = itemTotal.itemCount;
             String itemName = itemTotal.itemName;
             Color itemColor = new Color(itemTotal.itemColor);
@@ -88,10 +104,10 @@ public class CrystalHollowsHud extends Hud {
             float maxWidth = 200 * scale;
 
             // Render item count
-            float nextStart = fontRenderer.drawStringWithShadow(itemCount, (x), (y + lastLineRenderedAtY), countColor.getRGB()) - x;
+            fontRenderer.drawStringWithShadow(itemCount, (x), (lastLineRenderedAtY), itemTotal.countColor);
+            float nextStart = fontRenderer.getStringWidth(itemCount + " ");
 
             List<String> wrappedLines = fontRenderer.listFormattedStringToWidth(itemName, (int) maxWidth);
-
             for (int l = 0; l < wrappedLines.size(); l++) {
                 String line = wrappedLines.get(l);
 
@@ -102,23 +118,21 @@ public class CrystalHollowsHud extends Hud {
                 if (l == 1) nextStart = 0;
 
                 // render the string
-                fontRenderer.drawStringWithShadow(line, (x + nextStart), (y + lastLineRenderedAtY), itemColor.getRGB());
+                fontRenderer.drawStringWithShadow(line, (x + nextStart), (lastLineRenderedAtY), itemTotal.itemColor);
                 // mark the last y value we rendered a string at
                 lastLineRenderedAtY += 10;
                 // increase the line count
                 lineCount++;
                 // stop rendering if we're off screen
                 if (lastLineRenderedAtY > heightScaled - 10) {
-                    listTooLong = true;
                     break;
                 }
             }
 
         }
-        totalLines += lineCount + 1;
+        totalLines += lineCount;
         // add a buffer between parts
         lastLineRenderedAtY += 10;
         GL11.glPopMatrix();
     }
 }
-
