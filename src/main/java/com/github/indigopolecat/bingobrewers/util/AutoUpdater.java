@@ -15,14 +15,11 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
@@ -33,11 +30,10 @@ public class AutoUpdater {
             UpdateSource.githubUpdateSource("IndigoPolecat", "BingoBrewers"),
             UpdateTarget.deleteAndSaveInTheSameFolder(AutoUpdater.class),
             CurrentVersion.ofTag(BingoBrewers.version),
-            "bingobrewers"
+            "BingoBrewers"
     );
 
     public CompletableFuture<Boolean> checkUpdate() {
-        System.out.println("Checking....");
         return CompletableFuture.supplyAsync(() -> {
             try {
                 String updaterType = "none";
@@ -45,7 +41,6 @@ public class AutoUpdater {
                 if(BingoBrewersConfig.autoUpdaterType == 1) updaterType = "pre";
                 PotentialUpdate potentialUpdate = context.checkUpdate(updaterType).join();
                 Thread.sleep(1000);
-                System.out.println("update available: " + potentialUpdate.isUpdateAvailable());
                 return potentialUpdate.isUpdateAvailable();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -54,28 +49,11 @@ public class AutoUpdater {
     }
 
     public CompletableFuture<Boolean> update() {
-        System.out.println("updating");
-        context.cleanup();
-        SSLContext sslContext;
-        try {
-            sslContext = SSLContext.getInstance("TLS");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            return CompletableFuture.completedFuture(false);
-
-        }
-        UpdateUtils.patchConnection(connection -> {
-            if (connection instanceof HttpsURLConnection) {
-                patchHttpsRequest((HttpsURLConnection) connection, sslContext);
-            }
-        });
-        System.out.println("checking for updates");
         String updaterType = "none";
         if(BingoBrewersConfig.autoUpdaterType == 0) updaterType = "full";
         if(BingoBrewersConfig.autoUpdaterType == 1) updaterType = "pre";
         return context.checkUpdate(updaterType).thenComposeAsync(potentialUpdate -> {
             if(potentialUpdate.isUpdateAvailable()) {
-                System.out.println("update available");
                 return potentialUpdate.launchUpdate().thenApply((ignored) -> {
                     Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Bingo Brewers has been updated to the latest version! Please restart your game to apply the update."));
                     return true;
@@ -100,7 +78,7 @@ public class AutoUpdater {
                 if(updateAvailable) {
                     if(BingoBrewersConfig.autoDownload) {
                         BingoBrewers.autoUpdater.update();
-                        BingoBrewers.activeTitle = new TitleHud("Bingo Brewers will update on game close.", 0x47EB62, 4000);
+                        BingoBrewers.activeTitle = new TitleHud("Bingo Brewers will update on game cloase.", 0x47EB62, 4000);
                     } else {
                         isThereUpdate = true;
                         updateScreen = true;
@@ -108,10 +86,6 @@ public class AutoUpdater {
                 }
             });
         }
-    }
-
-    public static void patchHttpsRequest(HttpsURLConnection connection, SSLContext sslContext) {
-        connection.setSSLSocketFactory(sslContext.getSocketFactory());
     }
 
     @SubscribeEvent
