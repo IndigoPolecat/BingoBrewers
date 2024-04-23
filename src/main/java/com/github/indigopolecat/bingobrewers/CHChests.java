@@ -24,6 +24,7 @@ public class CHChests {
     static boolean addMessages = false;
     private static long lastHardstoneChest = 0;
     private static boolean expectingHardstoneLoot;
+    public static HashMap<String, ArrayList<String>> visitedChests = new HashMap<>();
     // Regex made with the help of Aerh
     // TODO: make this originate from the server
     public static Pattern ITEM_PATTERN = Pattern.compile("§[0-9a-fk-or]§[0-9a-fk-or]You received §[0-9a-fk-or](§[0-9a-fk-or])\\+?([\\d,]{1,5})\\s(?:§[0-9a-fk-or](§[0-9a-fk-or])*)?(?:.\\s)?(.+?)?(?:§[0-9a-fk-or])*\\.", Pattern.CASE_INSENSITIVE);
@@ -36,7 +37,16 @@ public class CHChests {
         if (!event.world.getBlockState(event.pos).getBlock().getUnlocalizedName().contains("chest")) return;
         // Add the chest to the list of chests to listen for
         if (!Packets.hardstone.containsKey(event.pos.toString())) {
-            listeningChests.put(event.pos.toString(), System.currentTimeMillis());
+            ArrayList<String> lobbyVisitedChests = visitedChests.get(PlayerInfo.currentServer);
+            if (lobbyVisitedChests == null) {
+                lobbyVisitedChests = new ArrayList<>();
+            }
+            if (!lobbyVisitedChests.contains(event.pos.getX() + event.pos.getY() + event.pos.getZ() + "")) {
+                listeningChests.put(event.pos.toString(), System.currentTimeMillis());
+
+                lobbyVisitedChests.add(event.pos.getX() + event.pos.getY() + event.pos.getZ() + "");
+                visitedChests.put(PlayerInfo.currentServer, lobbyVisitedChests);
+            }
         } else {
             lastHardstoneChest = System.currentTimeMillis();
             expectingHardstoneLoot = true;

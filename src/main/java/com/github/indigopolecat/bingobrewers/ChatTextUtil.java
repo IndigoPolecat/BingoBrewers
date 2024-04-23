@@ -50,7 +50,7 @@ public class ChatTextUtil {
     public void onRender(RenderWorldLastEvent event) {
         // Render the waypoints
 
-        for (CHWaypoints waypoint : ServerConnection.waypoints) {
+        for (CHWaypoints waypoint : CHWaypoints.filteredWaypoints) {
             CHWaypoints.renderPointLabel(waypoint, waypoint.pos, event.partialTicks);
         }
     }

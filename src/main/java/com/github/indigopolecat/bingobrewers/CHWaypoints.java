@@ -3,12 +3,17 @@ package com.github.indigopolecat.bingobrewers;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.CHChestItem;
+import com.sun.jna.platform.win32.Guid;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.Matrix4f;
@@ -28,12 +33,14 @@ public class CHWaypoints {
     public BlockPos pos;
     public String shortName = "Crystal Hollows";
     public int shortNameColor = 0xAA00AA;
+    public String id;
     public  ArrayList<CHChestItem> expandedName;
     public  ArrayList<CHChestItem> filteredExpandedItems = new ArrayList<>();
     public static HashMap<String, CrystalHollowsItemTotal> itemCounts = new HashMap<>(); // # of each item
     public static CopyOnWriteArrayList<CHWaypoints> filteredWaypoints = new CopyOnWriteArrayList<>();
     public CHWaypoints(int x, int y, int z, ArrayList<CHChestItem> chest) {
         this.pos = new BlockPos(x, y, z);
+        this.id = x + y + z + "";
         this.expandedName = chest;
 
         for (KryoNetwork.CHChestItem chChestItem : chest) {
@@ -66,6 +73,10 @@ public class CHWaypoints {
     }
 
     public static void renderPointLabel(CHWaypoints label, BlockPos thisPoint, Float partialTicks) {
+        ArrayList<String> lobbyVisitedChests = CHChests.visitedChests.get(PlayerInfo.currentServer);
+        if (lobbyVisitedChests != null) {
+            if (lobbyVisitedChests.contains(label.id) && BingoBrewersConfig.waypointFate == 1) return;
+        }
         // References to various instances
         Minecraft mc = Minecraft.getMinecraft();
         Entity viewer = mc.getRenderViewEntity();
@@ -181,15 +192,46 @@ public class CHWaypoints {
         int width = fontRenderer.getStringWidth(label.shortName + distance);
         int widthShortName = fontRenderer.getStringWidth(label.shortName);
 
-        fontRenderer.drawStringWithShadow(label.shortName, -((float) width / 2), height, label.shortNameColor);
+        boolean strikethrough = false;
+        if (lobbyVisitedChests != null) {
+            strikethrough = lobbyVisitedChests.contains(label.id) && BingoBrewersConfig.waypointFate == 0;
+        }
+        Tessellator tessellator1;
+        WorldRenderer worldrenderer1;
+
         fontRenderer.drawStringWithShadow(distance, -((float) width / 2) + widthShortName, height, distanceColor);
+        fontRenderer.drawStringWithShadow(label.shortName, -((float) width / 2), height, label.shortNameColor);
+        if (strikethrough) {
+            tessellator1 = Tessellator.getInstance();
+            worldrenderer1 = tessellator1.getWorldRenderer();
+            GlStateManager.disableTexture2D();
+            worldrenderer1.begin(7, DefaultVertexFormats.POSITION);
+            worldrenderer1.pos(-(double) width / 2, (height + (float) (fontRenderer.FONT_HEIGHT / 2)), 0).endVertex();
+            worldrenderer1.pos((double) width / 2, (height + (float) (fontRenderer.FONT_HEIGHT / 2)), 0).endVertex();
+            worldrenderer1.pos((double) width / 2, (height + (float) (fontRenderer.FONT_HEIGHT / 2)) - 1.0F, 0).endVertex();
+            worldrenderer1.pos(-(double) width / 2, (height + (float) (fontRenderer.FONT_HEIGHT / 2)) - 1.0F, 0).endVertex();
+            tessellator1.draw();
+            GlStateManager.enableTexture2D();
+        }
         if (nearCenter) {
-            for (CHChestItem item : label.expandedName) {
+            for (CHChestItem item : label.filteredExpandedItems) {
                 height += 10;
                 width = fontRenderer.getStringWidth(item.count + " " + item.name);
                 int countWidth = fontRenderer.getStringWidth(item.count + " ");
                 fontRenderer.drawStringWithShadow(item.count + " ", ((float) -width / 2), height, item.numberColor);
                 fontRenderer.drawStringWithShadow(item.name,  ((float) -width / 2) + countWidth, height, item.itemColor);
+                if (strikethrough) {
+                    tessellator1 = Tessellator.getInstance();
+                    worldrenderer1 = tessellator1.getWorldRenderer();
+                    GlStateManager.disableTexture2D();
+                    worldrenderer1.begin(7, DefaultVertexFormats.POSITION);
+                    worldrenderer1.pos(-(double) width / 2, (height + (float) (fontRenderer.FONT_HEIGHT / 2)), 0).endVertex();
+                    worldrenderer1.pos((double) width / 2, (height + (float) (fontRenderer.FONT_HEIGHT / 2)), 0).endVertex();
+                    worldrenderer1.pos((double) width / 2, (height + (float) (fontRenderer.FONT_HEIGHT / 2)) - 1.0F, 0).endVertex();
+                    worldrenderer1.pos(-(double) width / 2, (height + (float) (fontRenderer.FONT_HEIGHT / 2)) - 1.0F, 0).endVertex();
+                    tessellator1.draw();
+                    GlStateManager.enableTexture2D();
+                }
             }
         }
         GlStateManager.enableDepth();

@@ -2,6 +2,7 @@ package com.github.indigopolecat.bingobrewers.Hud;
 
 import cc.polyfrost.oneconfig.hud.Hud;
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
+import com.github.indigopolecat.bingobrewers.BingoBrewersConfig;
 import com.github.indigopolecat.bingobrewers.ServerConnection;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 import net.minecraft.client.Minecraft;
@@ -37,12 +38,41 @@ public class CrystalHollowsHud extends Hud {
             item1.itemName = "Mithril Powder";
             item1.itemColor = 0x00AA00;
             items.put(item1.itemName, item1);
+
+            CrystalHollowsItemTotal item2 = new CrystalHollowsItemTotal();
+            item2.itemCount = "2";
+            item2.itemName = "Robotron Reflector";
+            item2.countColor = 0xFFFFFF;
+            item2.itemColor = 0x5555FF;
+            items.put(item2.itemName, item2);
+
+            CrystalHollowsItemTotal item3 = new CrystalHollowsItemTotal();
+            item3.itemCount = "1";
+            item3.itemName = "Prehistoric Egg";
+            item3.countColor = 0xFFFFFF;
+            item3.itemColor = 0xFFFFFF;
+            items.put(item3.itemName, item3);
+
+            CrystalHollowsItemTotal item4 = new CrystalHollowsItemTotal();
+            item4.itemCount = "1";
+            item4.itemName = "Blue Goblin Egg";
+            item4.countColor = 0xFFFFFF;
+            item4.itemColor = 0x00AAAA;
+            items.put(item4.itemName, item4);
+
+            CrystalHollowsItemTotal item5 = new CrystalHollowsItemTotal();
+            item5.itemCount = "1";
+            item5.itemName = "Flawless Sapphire Gemstone";
+            item5.countColor = 0xFFFFFF;
+            item5.itemColor = 0xAA00AA;
+            items.put(item5.itemName, item5);
+
         } else {
             items = filteredItems;
         }
         renderCrystalHollowsHud(items, x, y, scale);
 
-        totalHeight = totalLines * 10 - 7;
+        totalHeight = totalLines * 10 + 3;
 
         // Reset at the end
         lastLineRenderedAtY = y + 3;
@@ -50,13 +80,18 @@ public class CrystalHollowsHud extends Hud {
 
     @Override
     protected float getWidth(float scale, boolean example) {
+        if (BingoBrewersConfig.justifyAlignmentCHHud) {
+            return BingoBrewersConfig.justifySeparation * scale;
+        }
+
         if (scale == 0) {
             scale = 1;
         }
         // the string wraps at 106
-        if (longestWidth > 200 * scale) {
-            longestWidth = 200;
+        if (longestWidth > 300 * scale) {
+            longestWidth = 300;
         }
+
 
         return (longestWidth * scale) + 3;
     }
@@ -81,9 +116,9 @@ public class CrystalHollowsHud extends Hud {
 
         // set font size
         GL11.glPushMatrix();
-        GL11.glScalef(fontSize, fontSize, scale);
-        x = (x / fontSize);
-        y = (y / fontSize );// (heightScaled + 2));
+        GL11.glScalef(scale, scale, scale);
+        x = (x / scale);
+        y = (y / scale );
         y = Math.min(y, heightScaled - getHeight(scale, false));
         lastLineRenderedAtY /= scale;
 
@@ -97,8 +132,6 @@ public class CrystalHollowsHud extends Hud {
             CrystalHollowsItemTotal itemTotal = items.get(item);
             String itemCount = itemTotal.itemCount;
             String itemName = itemTotal.itemName;
-            Color itemColor = new Color(itemTotal.itemColor);
-            Color countColor = new Color(itemTotal.countColor);
 
             // wrap width
             float maxWidth = 200 * scale;
@@ -108,15 +141,18 @@ public class CrystalHollowsHud extends Hud {
             float nextStart = fontRenderer.getStringWidth(itemCount + " ");
 
             List<String> wrappedLines = fontRenderer.listFormattedStringToWidth(itemName, (int) maxWidth);
+
             for (int l = 0; l < wrappedLines.size(); l++) {
                 String line = wrappedLines.get(l);
-
-                if (fontRenderer.getStringWidth(line) + nextStart > longestWidth) {
-                    longestWidth = fontRenderer.getStringWidth(line) + nextStart;
-                }
                 // reset the offset if there is more than one line
                 if (l == 1) nextStart = 0;
 
+                if (BingoBrewersConfig.justifyAlignmentCHHud) {
+                    maxWidth = BingoBrewersConfig.justifySeparation * scale;
+                    nextStart = (maxWidth / scale) - (fontRenderer.getStringWidth(line));
+                } else if (fontRenderer.getStringWidth(line) + nextStart > longestWidth) {
+                    longestWidth = fontRenderer.getStringWidth(line) + nextStart;
+                }
                 // render the string
                 fontRenderer.drawStringWithShadow(line, (x + nextStart), (lastLineRenderedAtY), itemTotal.itemColor);
                 // mark the last y value we rendered a string at

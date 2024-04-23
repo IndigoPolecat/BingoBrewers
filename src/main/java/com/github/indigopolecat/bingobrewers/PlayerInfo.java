@@ -2,6 +2,7 @@ package com.github.indigopolecat.bingobrewers;
 
 
 import com.esotericsoftware.kryonet.Server;
+import com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -52,6 +53,8 @@ public class PlayerInfo {
             playerLocation = "";
             newLoad = true;
             ServerConnection.waypoints.clear();
+            CHWaypoints.filteredWaypoints.clear();
+            CrystalHollowsHud.filteredItems.clear();
             CHWaypoints.itemCounts.clear();
             if (System.currentTimeMillis() - lastSplashHubUpdate > 3000) {
                 inSplashHub = false;

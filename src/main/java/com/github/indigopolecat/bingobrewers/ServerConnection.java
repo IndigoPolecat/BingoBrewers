@@ -6,6 +6,7 @@ import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.minlog.Log;
+import com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud;
 import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
 import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
@@ -69,7 +70,7 @@ public class ServerConnection extends Listener implements Runnable {
     }
 
     private void connection() throws IOException {
-        Log.set(LEVEL_TRACE);
+        Log.set(LEVEL_ERROR);
         KryoNetwork.register(BingoBrewers.client);
         BingoBrewers.client.addListener(new Listener() {
             @Override
@@ -133,7 +134,7 @@ public class ServerConnection extends Listener implements Runnable {
                         System.out.println(CHItems.day);
                         System.out.println(PlayerInfo.day);
                         System.out.println(CHItems.lastReceivedDayInfo);
-                        if (CHItems.day > PlayerInfo.day || System.currentTimeMillis() - (CHItems.lastReceivedDayInfo != null ? CHItems.lastReceivedDayInfo : Long.MAX_VALUE) > 25_200_000) return; // ignore if the server is younger than last known, or it's been more than 7 hours since info was received
+                        if (CHItems.day - 1 > PlayerInfo.day || System.currentTimeMillis() - (CHItems.lastReceivedDayInfo != null ? CHItems.lastReceivedDayInfo : Long.MAX_VALUE) > 25_200_000) return; // ignore if the server is younger than last known, or it's been more than 7 hours since info was received
                         System.out.println("chests size: " + CHItems.chestMap.size());
                         for (ChestInfo chest : chests) {
                             System.out.println("Adding chest " + chest.x + chest.y + chest.z);
@@ -143,6 +144,22 @@ public class ServerConnection extends Listener implements Runnable {
                             for (CHChestItem item : chest.items) {
                                 CrystalHollowsItemTotal.sumItems(item);
                             }
+
+                            for (CHWaypoints waypoint : CHWaypoints.filteredWaypoints) {
+                                waypoint.filteredExpandedItems.clear();
+                            }
+                            CHWaypoints.filteredWaypoints.clear();
+                            CrystalHollowsHud.filteredItems.clear();
+                            BingoBrewersConfig.filterRobotParts();
+                            BingoBrewersConfig.filterPowder();
+                            BingoBrewersConfig.filterBlueEggs();
+                            BingoBrewersConfig.filterGoblinEggs();
+                            BingoBrewersConfig.filterPickonimbus();
+                            BingoBrewersConfig.filterPrehistoricEggs();
+                            BingoBrewersConfig.filterRoughGemstones();
+                            BingoBrewersConfig.filterFineGemstones();
+                            BingoBrewersConfig.filterJasperGemstones();
+                            BingoBrewersConfig.filterMisc();
                         }
 
                     }
