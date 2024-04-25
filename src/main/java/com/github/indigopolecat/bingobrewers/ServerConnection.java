@@ -148,17 +148,13 @@ public class ServerConnection extends Listener implements Runnable {
                             for (CHWaypoints waypoint : CHWaypoints.filteredWaypoints) {
                                 waypoint.filteredExpandedItems.clear();
                             }
-                            CHWaypoints.filteredWaypoints.clear();
-                            CrystalHollowsHud.filteredItems.clear();
-                            BingoBrewersConfig.filterRobotParts();
                             BingoBrewersConfig.filterPowder();
-                            BingoBrewersConfig.filterBlueEggs();
                             BingoBrewersConfig.filterGoblinEggs();
-                            BingoBrewersConfig.filterPickonimbus();
-                            BingoBrewersConfig.filterPrehistoricEggs();
                             BingoBrewersConfig.filterRoughGemstones();
-                            BingoBrewersConfig.filterFineGemstones();
                             BingoBrewersConfig.filterJasperGemstones();
+                            BingoBrewersConfig.filterRobotParts();
+                            BingoBrewersConfig.filterPrehistoricEggs();
+                            BingoBrewersConfig.filterPickonimbus();
                             BingoBrewersConfig.filterMisc();
                         }
 
@@ -371,7 +367,7 @@ public class ServerConnection extends Listener implements Runnable {
                 }
                 if (waitTime < 60000) {
                     waitTime *= 2;
-                } else if (waitTime > 60000) {
+                } else if (waitTime >= 60000) {
                     waitTime = 60000;
                 }
                 System.out.println("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");

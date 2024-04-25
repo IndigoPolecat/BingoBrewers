@@ -5,6 +5,7 @@ import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
 import com.github.indigopolecat.bingobrewers.BingoBrewersConfig;
 import com.github.indigopolecat.bingobrewers.ServerConnection;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
+import io.netty.util.internal.ConcurrentSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
@@ -13,59 +14,58 @@ import org.lwjgl.opengl.GL11;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class CrystalHollowsHud extends Hud {
     float lastLineRenderedAtY = 0;
     int totalLines = 0;
     long renderCounter = 0;
-    // For some reason, latestSplash becomes bloated because it is stored in a config class, don't know how to fix but it's not a massive issue immediately, though it will inflate file size.
-    public static ArrayList<Long> latestSplash = new ArrayList<>(2);
     float totalHeight = 0;
     float longestWidth = 0;
     float fontSize = 0.2F;
-    public static LinkedHashMap<String, CrystalHollowsItemTotal> filteredItems = new LinkedHashMap<>();
+    public static ConcurrentLinkedDeque<CrystalHollowsItemTotal> filteredItems = new ConcurrentLinkedDeque<>();
 
 
 
     @Override
     protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
         renderCounter++;
-        LinkedHashMap<String, CrystalHollowsItemTotal> items = new LinkedHashMap<>();
-        if (example) {
+        ConcurrentLinkedDeque<CrystalHollowsItemTotal> items = new ConcurrentLinkedDeque<>();
+        if (example && filteredItems.isEmpty()) {
             CrystalHollowsItemTotal item1 = new CrystalHollowsItemTotal();
             item1.itemCount = "80-4800";
             item1.countColor = 0x55FFFF;
             item1.itemName = "Mithril Powder";
             item1.itemColor = 0x00AA00;
-            items.put(item1.itemName, item1);
+            items.add(item1);
 
             CrystalHollowsItemTotal item2 = new CrystalHollowsItemTotal();
             item2.itemCount = "2";
             item2.itemName = "Robotron Reflector";
             item2.countColor = 0xFFFFFF;
             item2.itemColor = 0x5555FF;
-            items.put(item2.itemName, item2);
+            items.add(item2);
 
             CrystalHollowsItemTotal item3 = new CrystalHollowsItemTotal();
             item3.itemCount = "1";
             item3.itemName = "Prehistoric Egg";
             item3.countColor = 0xFFFFFF;
             item3.itemColor = 0xFFFFFF;
-            items.put(item3.itemName, item3);
+            items.add(item3);
 
             CrystalHollowsItemTotal item4 = new CrystalHollowsItemTotal();
             item4.itemCount = "1";
             item4.itemName = "Blue Goblin Egg";
             item4.countColor = 0xFFFFFF;
             item4.itemColor = 0x00AAAA;
-            items.put(item4.itemName, item4);
+            items.add(item4);
 
             CrystalHollowsItemTotal item5 = new CrystalHollowsItemTotal();
             item5.itemCount = "1";
             item5.itemName = "Flawless Sapphire Gemstone";
             item5.countColor = 0xFFFFFF;
             item5.itemColor = 0xAA00AA;
-            items.put(item5.itemName, item5);
+            items.add(item5);
 
         } else {
             items = filteredItems;
@@ -104,7 +104,7 @@ public class CrystalHollowsHud extends Hud {
         return totalHeight * scale;
     }
 
-    public void renderCrystalHollowsHud(LinkedHashMap<String, CrystalHollowsItemTotal> items, float x, float y, float scale) {
+    public void renderCrystalHollowsHud(ConcurrentLinkedDeque<CrystalHollowsItemTotal> items, float x, float y, float scale) {
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
 
         ScaledResolution scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
@@ -126,10 +126,10 @@ public class CrystalHollowsHud extends Hud {
 
         // set color of text
         int lineCount = 0;
-        Set<String> keys = items.keySet();
+
         // loop through the hashmap of the splash
-        for (String item : keys) {
-            CrystalHollowsItemTotal itemTotal = items.get(item);
+        for (CrystalHollowsItemTotal itemTotal : items) {
+
             String itemCount = itemTotal.itemCount;
             String itemName = itemTotal.itemName;
 

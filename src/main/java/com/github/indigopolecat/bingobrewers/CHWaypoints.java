@@ -27,6 +27,7 @@ import org.lwjgl.util.vector.Vector4f;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class CHWaypoints {
@@ -35,7 +36,7 @@ public class CHWaypoints {
     public int shortNameColor = 0xAA00AA;
     public String id;
     public  ArrayList<CHChestItem> expandedName;
-    public  ArrayList<CHChestItem> filteredExpandedItems = new ArrayList<>();
+    public HashSet<CHChestItem> filteredExpandedItems = new HashSet<>();
     public static HashMap<String, CrystalHollowsItemTotal> itemCounts = new HashMap<>(); // # of each item
     public static CopyOnWriteArrayList<CHWaypoints> filteredWaypoints = new CopyOnWriteArrayList<>();
     public CHWaypoints(int x, int y, int z, ArrayList<CHChestItem> chest) {
