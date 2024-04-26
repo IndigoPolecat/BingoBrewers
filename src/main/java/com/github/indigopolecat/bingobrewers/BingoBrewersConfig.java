@@ -101,7 +101,7 @@ public class BingoBrewersConfig extends Config {
             name = "Crystal Hollows Loot HUD",
             category = "Crystal Hollows Waypoints"
     )
-    public static CrystalHollowsHud CHHud = new CrystalHollowsHud();
+    public CrystalHollowsHud CHHud = new CrystalHollowsHud();
 
     @Dropdown(
             name = "Waypoints After Opening",

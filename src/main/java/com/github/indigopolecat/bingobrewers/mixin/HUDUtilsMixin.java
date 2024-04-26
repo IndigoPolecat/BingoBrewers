@@ -25,15 +25,13 @@ public class HUDUtilsMixin {
         Hud hud = (Hud) ConfigUtils.getField(field, instance);
         if (!(hud instanceof CrystalHollowsHud)) return;
         HUD hudAnnotation = field.getAnnotation(HUD.class);
-        HudCore.hudOptions.removeIf(HUDUtilsMixin::hudUtils$shouldRemove);
-        ConfigUtils.getSubCategory(page, hudAnnotation.category(), hudAnnotation.subcategory()).options.removeIf(HUDUtilsMixin::hudUtils$shouldRemove);
+        HudCore.hudOptions.removeIf(HUDUtilsMixin::hudUtils$addDependency);
+        ConfigUtils.getSubCategory(page, hudAnnotation.category(), hudAnnotation.subcategory()).options.removeIf(HUDUtilsMixin::hudUtils$addDependency);
     }
 
     @Unique
-    private static boolean hudUtils$shouldRemove(BasicOption option) {
-        String fieldName = option.getField().getName();
-        Object hud = option.getParent();
-        if (!(hud instanceof CrystalHollowsHud)) return false;
+    private static boolean hudUtils$addDependency(BasicOption option) {
+        if (!(option.getParent() instanceof CrystalHollowsHud)) return false;
         option.addDependency("crystalHollowsWaypointsToggle", () -> BingoBrewersConfig.crystalHollowsWaypointsToggle);
         return false;
     }
