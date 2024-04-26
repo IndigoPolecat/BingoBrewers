@@ -22,7 +22,7 @@ public class BingoBrewersConfig extends Config {
     public BingoBrewersConfig() {
         super(new Mod("Bingo Brewers", ModType.SKYBLOCK), "bingobrewers.json");
         initialize();
-        List<String> crystalHollowsWaypoints = Arrays.asList("robotParts", "powder", "prehistoricEggs", "pickonimbus", "goblinEggs", "roughGemstones", "jasperGemstones", "junk", "CHHud", "justifyAlignmentCHHud", "justifySeparation", "waypointFate");
+        List<String> crystalHollowsWaypoints = Arrays.asList("robotParts", "powder", "prehistoricEggs", "pickonimbus", "goblinEggs", "roughGemstones", "jasperGemstones", "junk", "CHHud", "waypointFate");
         for (String option : crystalHollowsWaypoints) {
             addDependency(option, "crystalHollowsWaypointsToggle");
         }
@@ -102,25 +102,6 @@ public class BingoBrewersConfig extends Config {
             category = "Crystal Hollows Waypoints"
     )
     public CrystalHollowsHud CHHud = new CrystalHollowsHud();
-
-    @DualOption(
-            name = "Alignment",
-            left = "Left",
-            right = "Justify",
-            category = "Crystal Hollows Waypoints",
-            description = "The alignment of the HUD text"
-    )
-    public static boolean justifyAlignmentCHHud = false;
-
-    @Slider(
-            name = "Justify Separation",
-            min = 150,
-            max = 300,
-            step = 5,
-            category = "Crystal Hollows Waypoints",
-            description = "How far the separation is for the justified HUD"
-    )
-    public static Integer justifySeparation = 175;
 
     @Dropdown(
             name = "Waypoints After Opening",

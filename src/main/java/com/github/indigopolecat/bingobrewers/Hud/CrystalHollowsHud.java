@@ -1,11 +1,10 @@
 package com.github.indigopolecat.bingobrewers.Hud;
 
+import cc.polyfrost.oneconfig.config.annotations.*;
 import cc.polyfrost.oneconfig.hud.Hud;
 import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
 import com.github.indigopolecat.bingobrewers.BingoBrewersConfig;
-import com.github.indigopolecat.bingobrewers.ServerConnection;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
-import io.netty.util.internal.ConcurrentSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
@@ -25,7 +24,28 @@ public class CrystalHollowsHud extends Hud {
     float fontSize = 0.2F;
     public static ConcurrentLinkedDeque<CrystalHollowsItemTotal> filteredItems = new ConcurrentLinkedDeque<>();
 
+    public CrystalHollowsHud() {
+        BingoBrewersConfig.crystalHollowsWaypointsToggle = enabled;
+    }
 
+    @DualOption(
+            name = "Alignment",
+            left = "Left",
+            right = "Justify",
+            category = "Crystal Hollows Waypoints",
+            description = "The alignment of the HUD text"
+    )
+    public static boolean justifyAlignmentCHHud = false;
+
+    @Slider(
+            name = "Justify Separation",
+            min = 150,
+            max = 300,
+            step = 5,
+            category = "Crystal Hollows Waypoints",
+            description = "How far the separation is for the justified HUD"
+    )
+    public static Integer justifySeparation = 175;
 
     @Override
     protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
@@ -80,8 +100,8 @@ public class CrystalHollowsHud extends Hud {
 
     @Override
     protected float getWidth(float scale, boolean example) {
-        if (BingoBrewersConfig.justifyAlignmentCHHud) {
-            return BingoBrewersConfig.justifySeparation * scale;
+        if (justifyAlignmentCHHud) {
+            return justifySeparation * scale;
         }
 
         if (scale == 0) {
@@ -147,8 +167,8 @@ public class CrystalHollowsHud extends Hud {
                 // reset the offset if there is more than one line
                 if (l == 1) nextStart = 0;
 
-                if (BingoBrewersConfig.justifyAlignmentCHHud) {
-                    maxWidth = BingoBrewersConfig.justifySeparation * scale;
+                if (justifyAlignmentCHHud) {
+                    maxWidth = justifySeparation * scale;
                     nextStart = (maxWidth / scale) - (fontRenderer.getStringWidth(line));
                 } else if (fontRenderer.getStringWidth(line) + nextStart > longestWidth) {
                     longestWidth = fontRenderer.getStringWidth(line) + nextStart;
