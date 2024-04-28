@@ -115,15 +115,10 @@ public class PlayerInfo {
             if (ServerConnection.joinTitle != null && Minecraft.getMinecraft().thePlayer != null) {
                 BingoBrewers.activeTitle = new TitleHud(ServerConnection.joinTitle);
                 ServerConnection.joinTitle = null;
-            } else {
-                System.out.println("nulled");
             }
             if (ServerConnection.joinChat != null && Minecraft.getMinecraft().thePlayer != null) {
                 Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(ServerConnection.joinChat));
                 ServerConnection.joinChat = null;
-            } else {
-                System.out.println("nulled");
-
             }
         }
     }
