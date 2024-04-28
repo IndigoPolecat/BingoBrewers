@@ -18,17 +18,23 @@ import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.esotericsoftware.minlog.Log.*;
-import static com.github.indigopolecat.bingobrewers.CHWaypoints.itemCounts;
+import static com.github.indigopolecat.bingobrewers.CHWaypoints.*;
 import static java.lang.String.valueOf;
 
 public class ServerConnection extends Listener implements Runnable {
+
+    public static ConcurrentLinkedDeque<CrystalHollowsItemTotal> filteredItems = new ConcurrentLinkedDeque<>();
+    public static ConcurrentLinkedDeque<CrystalHollowsItemTotal> filteredFractionalItems = new ConcurrentLinkedDeque<>();
+    public static ConcurrentLinkedDeque<CrystalHollowsItemTotal> filteredRemainingItems = new ConcurrentLinkedDeque<>();
+    public static ArrayList<Long> latestSplash = new ArrayList<>(2);
+
 
     public static final String DUNGEON_HUB = "Dungeon Hub";
     public static final String HUB = "Hub";
@@ -142,12 +148,14 @@ public class ServerConnection extends Listener implements Runnable {
                             waypoints.add(chWaypoints);
 
                             for (CHChestItem item : chest.items) {
-                                CrystalHollowsItemTotal.sumItems(item);
+                                System.out.println("itemCounts: " + itemCounts.keySet());
+                                CrystalHollowsItemTotal.sumItems(item, itemCounts);
+                                if (CHChests.visitedChests.get(PlayerInfo.currentServer).contains(chWaypoints.id)) {
+                                    CrystalHollowsItemTotal.sumItems(item, CHWaypoints.collectedItemCounts);
+                                    CrystalHollowsItemTotal.subtractTotal(itemCounts, CHWaypoints.collectedItemCounts, CHWaypoints.remainingItems);
+                                }
                             }
 
-                            for (CHWaypoints waypoint : CHWaypoints.filteredWaypoints) {
-                                waypoint.filteredExpandedItems.clear();
-                            }
                             BingoBrewersConfig.filterPowder();
                             BingoBrewersConfig.filterGoblinEggs();
                             BingoBrewersConfig.filterRoughGemstones();
@@ -156,6 +164,18 @@ public class ServerConnection extends Listener implements Runnable {
                             BingoBrewersConfig.filterPrehistoricEggs();
                             BingoBrewersConfig.filterPickonimbus();
                             BingoBrewersConfig.filterMisc();
+
+                            filteredFractionalItems.clear();
+                            filteredRemainingItems.clear();
+                            for (CrystalHollowsItemTotal item : filteredItems) {
+                                if (collectedItemCounts.containsKey(item.itemName)) {
+                                    filteredFractionalItems.add(new CrystalHollowsItemTotal(collectedItemCounts.get(item.itemName)));
+                                }
+                                CrystalHollowsHud.updateFractionItems();
+                                if (remainingItems.containsKey(item.itemName)) {
+                                    filteredRemainingItems.add(new CrystalHollowsItemTotal(remainingItems.get(item.itemName)));
+                                }
+                            }
                         }
 
                     }
@@ -298,7 +318,7 @@ public class ServerConnection extends Listener implements Runnable {
             } else {
                 hub = "Hub " + hub;
             }
-            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000);
+            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000, false);
             setActiveHud(titleHud);
         } else {
             if (hub.equalsIgnoreCase("Unknown Hub")) {
@@ -306,7 +326,7 @@ public class ServerConnection extends Listener implements Runnable {
             } else {
                 hub = "Dungeon Hub " + hub;
             }
-            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000);
+            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000, false);
             setActiveHud(titleHud);
         }
 

@@ -10,10 +10,13 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
 import org.lwjgl.opengl.GL11;
 
-import java.awt.*;
-import java.util.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import static com.github.indigopolecat.bingobrewers.CHWaypoints.collectedItemCounts;
+import static com.github.indigopolecat.bingobrewers.CHWaypoints.itemCounts;
+import static com.github.indigopolecat.bingobrewers.ServerConnection.*;
 
 public class CrystalHollowsHud extends Hud {
     float lastLineRenderedAtY = 0;
@@ -22,11 +25,18 @@ public class CrystalHollowsHud extends Hud {
     float totalHeight = 0;
     float longestWidth = 0;
     float fontSize = 0.2F;
-    public static ConcurrentLinkedDeque<CrystalHollowsItemTotal> filteredItems = new ConcurrentLinkedDeque<>();
 
     public CrystalHollowsHud() {
         BingoBrewersConfig.crystalHollowsWaypointsToggle = enabled;
     }
+
+    @Dropdown(
+            name = "Loot Amount",
+            options = {"All", "Remaining", "Fraction"},
+            category = "Crystal Hollows Waypoints",
+            description = "How to calculate the total of a type of loot in a lobby."
+    )
+    public static int lootCount = 0;
 
     @DualOption(
             name = "Alignment",
@@ -46,6 +56,14 @@ public class CrystalHollowsHud extends Hud {
             description = "How far the separation is for the justified HUD"
     )
     public static Integer justifySeparation = 175;
+
+    public static void updateFractionItems() {
+        for (CrystalHollowsItemTotal itemTotal : filteredFractionalItems) {
+            CrystalHollowsItemTotal itemCollected = collectedItemCounts.get(itemTotal.itemName);
+            if (itemCollected == null) continue;
+            itemTotal.itemCount = itemCollected.itemCount + "/" + itemTotal.itemCount;
+        }
+    }
 
     @Override
     protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
@@ -87,8 +105,24 @@ public class CrystalHollowsHud extends Hud {
             item5.itemColor = 0xAA00AA;
             items.add(item5);
 
-        } else {
+            if (lootCount == 2) {
+                item1.itemCount += "/160-6000";
+                item2.itemCount += "/3";
+                item3.itemCount += "/1";
+                item4.itemCount += "/1";
+                item5.itemCount += "/1";
+            } else if (lootCount == 1) {
+                item3.itemCount = "0";
+                item5.itemCount = "0";
+                item2.itemCount = "1";
+            }
+
+        } else if (lootCount == 0) {
             items = filteredItems;
+        } else if (lootCount == 1) {
+            items = filteredRemainingItems;
+        } else if (lootCount == 2) {
+            items = filteredFractionalItems;
         }
         renderCrystalHollowsHud(items, x, y, scale);
 
@@ -124,7 +158,7 @@ public class CrystalHollowsHud extends Hud {
         return totalHeight * scale;
     }
 
-    public void renderCrystalHollowsHud(ConcurrentLinkedDeque<CrystalHollowsItemTotal> items, float x, float y, float scale) {
+    public void renderCrystalHollowsHud(ConcurrentLinkedDeque<CrystalHollowsItemTotal> items,  float x, float y, float scale) {
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
 
         ScaledResolution scaledResolution = new ScaledResolution(Minecraft.getMinecraft());

@@ -47,14 +47,13 @@ public class PlayerInfo {
                 subscribedToCurrentCHServer = false;
                 subscribeToCHServer.server = currentServer;
                 subscribeToCHServer.unsubscribe = true;
-                System.out.println("unsubscribing");
                 ServerConnection.SubscribeToCHServer(subscribeToCHServer);
             }
             playerLocation = "";
             newLoad = true;
             ServerConnection.waypoints.clear();
             CHWaypoints.filteredWaypoints.clear();
-            CrystalHollowsHud.filteredItems.clear();
+            ServerConnection.filteredItems.clear();
             CHWaypoints.itemCounts.clear();
             if (System.currentTimeMillis() - lastSplashHubUpdate > 3000) {
                 inSplashHub = false;

@@ -1,5 +1,6 @@
 package com.github.indigopolecat.bingobrewers;
 
+import com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.CHChestItem;
@@ -14,6 +15,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.github.indigopolecat.bingobrewers.ServerConnection.filteredFractionalItems;
+import static com.github.indigopolecat.bingobrewers.ServerConnection.filteredRemainingItems;
 
 
 public class CHChests {
@@ -46,6 +50,9 @@ public class CHChests {
 
                 lobbyVisitedChests.add(event.pos.getX() + event.pos.getY() + event.pos.getZ() + "");
                 visitedChests.put(PlayerInfo.currentServer, lobbyVisitedChests);
+                filteredFractionalItems.clear();
+                filteredRemainingItems.clear();
+                CrystalHollowsHud.updateFractionItems();
             }
         } else {
             lastHardstoneChest = System.currentTimeMillis();

@@ -78,7 +78,7 @@ public class AutoUpdater {
                 if(updateAvailable) {
                     if(BingoBrewersConfig.autoDownload) {
                         BingoBrewers.autoUpdater.update();
-                        BingoBrewers.activeTitle = new TitleHud("Bingo Brewers will update on game cloase.", 0x47EB62, 4000);
+                        BingoBrewers.activeTitle = new TitleHud("Bingo Brewers will update on game close.", 0x47EB62, 4000, false);
                     } else {
                         isThereUpdate = true;
                         updateScreen = true;

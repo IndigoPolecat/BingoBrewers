@@ -35,7 +35,7 @@ public class ChatTextUtil {
     private static void notifyEggLayingReady() {
         scheduler.schedule(() -> {
             if (displayEggTimerReset) {
-                TitleHud titleHud = new TitleHud("You can lay an egg again", Color.GREEN.getRGB(), 1000);
+                TitleHud titleHud = new TitleHud(BingoBrewersConfig.eggTimerMessage, Color.GREEN.getRGB(), 1000, true);
                 ServerConnection serverConnection = new ServerConnection();
                 serverConnection.setActiveHud(titleHud);
             }

@@ -18,13 +18,14 @@ import java.awt.Color;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.github.indigopolecat.bingobrewers.ServerConnection.latestSplash;
+
 public class SplashHud extends Hud {
     float lastLineRenderedAtY = 0;
     int totalLines = 0;
     boolean listTooLong = false;
     long renderCounter = 0;
     // For some reason, latestSplash becomes bloated because it is stored in a config class, don't know how to fix but it's not a massive issue immediately, though it will inflate file size.
-    public static ArrayList<Long> latestSplash = new ArrayList<>(2);
     float totalHeight = 0;
     float longestWidth = 0;
     float fontSize = 0.2F;

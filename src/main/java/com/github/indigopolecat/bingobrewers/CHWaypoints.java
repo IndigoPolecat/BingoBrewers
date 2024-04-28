@@ -38,6 +38,8 @@ public class CHWaypoints {
     public  ArrayList<CHChestItem> expandedName;
     public HashSet<CHChestItem> filteredExpandedItems = new HashSet<>();
     public static HashMap<String, CrystalHollowsItemTotal> itemCounts = new HashMap<>(); // # of each item
+    public static HashMap<String, CrystalHollowsItemTotal> collectedItemCounts = new HashMap<>();
+    public static HashMap<String, CrystalHollowsItemTotal> remainingItems = new HashMap<>();
     public static CopyOnWriteArrayList<CHWaypoints> filteredWaypoints = new CopyOnWriteArrayList<>();
     public CHWaypoints(int x, int y, int z, ArrayList<CHChestItem> chest) {
         this.pos = new BlockPos(x, y, z);

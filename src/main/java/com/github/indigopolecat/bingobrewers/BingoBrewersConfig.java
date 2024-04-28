@@ -16,7 +16,7 @@ import net.minecraft.client.Minecraft;
 
 import java.util.*;
 
-import static com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud.filteredItems;
+import static com.github.indigopolecat.bingobrewers.ServerConnection.filteredItems;
 
 public class BingoBrewersConfig extends Config {
     public BingoBrewersConfig() {
@@ -98,14 +98,14 @@ public class BingoBrewersConfig extends Config {
     public static boolean crystalHollowsWaypointsToggle = true;
 
     @HUD(
-            name = "Crystal Hollows Loot HUD",
+            name = "Crystal Hollows Loot",
             category = "Crystal Hollows Waypoints"
     )
     public CrystalHollowsHud CHHud = new CrystalHollowsHud();
 
     @Dropdown(
             name = "Waypoints After Opening",
-            options = {"Strikethrough", "Remove", "Nothing"},
+            options = {"Strikethrough", "Remove", "Do Nothing"},
             category = "Crystal Hollows Waypoints",
             description = "How to display waypoints once you have opened the chest.",
             size = OptionSize.DUAL
@@ -125,7 +125,7 @@ public class BingoBrewersConfig extends Config {
             name = "Goblin Eggs",
             options = {"All", "Blue Only", "None"},
             category = "Crystal Hollows Waypoints",
-            description = "Include all Goblin Eggs.",
+            description = "Include Goblin Eggs.",
             size = OptionSize.DUAL
     )
     public static int goblinEggs = 0;
@@ -134,7 +134,7 @@ public class BingoBrewersConfig extends Config {
             name = "Gemstones",
             options = {"All", "Fine/Flawless Only", "None"},
             category = "Crystal Hollows Waypoints",
-            description = "Include Rough and Flawed gemstones found in chests.",
+            description = "Include gemstones found in chests.",
             size = OptionSize.DUAL
     )
     public static int roughGemstones = 1;
@@ -228,18 +228,25 @@ public class BingoBrewersConfig extends Config {
     public static boolean displayMissingBingoPoints = true;
 
     @Switch(
-            name = "Display Missing Bingoes",
+            name = "Display Missing Bingo Events",
             category = "Misc",
-            description = "Display how many Bingoes are required to buy the item."
+            description = "Display how many Bingo Events are required to buy the item."
     )
     public static boolean displayMissingBingoes = true;
 
     @Switch(
-            name = "Chicken Head Reset Message",
+            name = "Chicken Head Reset Alert",
             category = "Misc",
             description = "Display a message if the Chicken Head cooldown is reset."
     )
     public static boolean displayEggTimerReset = false;
+
+    @Text(
+            name = "Chicken Head Alert Message",
+            category = "Misc",
+            description = "What to display when the Chicken cooldown is reset. (Use & for § in COLOR only codes)"
+    )
+    public static String eggTimerMessage = "&aCrouch";
 
     @Switch(
             name="Chicken Head Reset Sound",
@@ -250,10 +257,13 @@ public class BingoBrewersConfig extends Config {
 
     public static void filterRobotParts() {
         if (robotParts) {
-            System.out.println("Enabling");
             for (String item : CHWaypoints.itemCounts.keySet()) {
                 if ("FTX 3070".equals(item) || "Robotron Reflector".equals(item) || "Control Switch".equals(item) || "Synthetic Heart".equals(item) || "Superlite Motor".equals(item) || "Electron Transmitter".equals(item)) {
-                    filteredItems.add(CHWaypoints.itemCounts.get(item));
+                    if (CrystalHollowsHud.lootCount == 0) {
+                        filteredItems.add(CHWaypoints.itemCounts.get(item));
+                    } else if (CrystalHollowsHud.lootCount == 1) {
+
+                    }
                 }
             }
             for (CHWaypoints waypoint : ServerConnection.waypoints) {
