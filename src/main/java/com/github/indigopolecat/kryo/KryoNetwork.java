@@ -54,6 +54,10 @@ public class KryoNetwork {
         public HashMap<Integer, Integer> bingoRankCosts;
         public int POINTS_PER_BINGO;
         public int POINTS_PER_BINGO_COMMUNITIES;
+        public ArrayList<String> newCHChestItems = new ArrayList<>();
+        public String chItemRegex;
+        public String joinAlertTitle;
+        public String joinAlertChat;
 
     }
 

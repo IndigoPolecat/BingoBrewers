@@ -49,6 +49,7 @@ public class CrystalHollowsHud extends Hud {
 
     @Override
     protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
+        if (!BingoBrewersConfig.crystalHollowsWaypointsToggle) return;
         renderCounter++;
         ConcurrentLinkedDeque<CrystalHollowsItemTotal> items = new ConcurrentLinkedDeque<>();
         if (example && filteredItems.isEmpty()) {

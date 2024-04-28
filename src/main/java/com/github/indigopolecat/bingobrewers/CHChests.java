@@ -26,17 +26,21 @@ public class CHChests {
     private static boolean expectingHardstoneLoot;
     public static HashMap<String, ArrayList<String>> visitedChests = new HashMap<>();
     // Regex made with the help of Aerh
-    // TODO: make this originate from the server
-    public static Pattern ITEM_PATTERN = Pattern.compile("§[0-9a-fk-or]§[0-9a-fk-or]You received §[0-9a-fk-or](§[0-9a-fk-or])\\+?([\\d,]{1,5})\\s(?:§[0-9a-fk-or](§[0-9a-fk-or])*)?(?:.\\s)?(.+?)?(?:§[0-9a-fk-or])*\\.", Pattern.CASE_INSENSITIVE);
+    public static String regex = "§[0-9a-fk-or]§[0-9a-fk-or]You received §[0-9a-fk-or](§[0-9a-fk-or])\\+?([\\d,]{1,5})\\s(?:§[0-9a-fk-or](§[0-9a-fk-or])*)?(?:.\\s)?(.+?)?(?:§[0-9a-fk-or])*\\.";
+    public static Pattern ITEM_PATTERN = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
     // potentially store this as a constant in the server that is downloaded on launch
 
 
     @SubscribeEvent
     public void onRightClickChest(PlayerInteractEvent event) {
         if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) return;
+        System.out.println("right click");
         if (!event.world.getBlockState(event.pos).getBlock().getUnlocalizedName().contains("chest")) return;
+        System.out.println("chest");
+        if (!BingoBrewersConfig.crystalHollowsWaypointsToggle) return;
         // Add the chest to the list of chests to listen for
         if (!Packets.hardstone.containsKey(event.pos.toString())) {
+            System.out.println("not hardstone");
             ArrayList<String> lobbyVisitedChests = visitedChests.get(PlayerInfo.currentServer);
             if (lobbyVisitedChests == null) {
                 lobbyVisitedChests = new ArrayList<>();
@@ -48,6 +52,7 @@ public class CHChests {
                 visitedChests.put(PlayerInfo.currentServer, lobbyVisitedChests);
             }
         } else {
+            System.out.println("expecting hardstone");
             lastHardstoneChest = System.currentTimeMillis();
             expectingHardstoneLoot = true;
         }

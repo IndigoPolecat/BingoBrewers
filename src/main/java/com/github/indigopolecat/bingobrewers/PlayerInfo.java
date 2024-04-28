@@ -3,10 +3,12 @@ package com.github.indigopolecat.bingobrewers;
 
 import com.esotericsoftware.kryonet.Server;
 import com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud;
+import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -83,9 +85,7 @@ public class PlayerInfo {
 
                         World world = Minecraft.getMinecraft().theWorld;
                         long worldTime = world.getWorldTime();
-                        System.out.println("worldTime: " + worldTime);
                         day = (int) (worldTime / 24000);
-                        System.out.println("days: " + day);
                     }
                 }
             }
@@ -110,6 +110,20 @@ public class PlayerInfo {
                 readyToNotify = false;
                 ServerConnection serverConnection = new ServerConnection();
                 serverConnection.notification(splashHubNumberForNotification, readyToNotifyDungeon);
+            }
+
+            if (ServerConnection.joinTitle != null && Minecraft.getMinecraft().thePlayer != null) {
+                BingoBrewers.activeTitle = new TitleHud(ServerConnection.joinTitle);
+                ServerConnection.joinTitle = null;
+            } else {
+                System.out.println("nulled");
+            }
+            if (ServerConnection.joinChat != null && Minecraft.getMinecraft().thePlayer != null) {
+                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(ServerConnection.joinChat));
+                ServerConnection.joinChat = null;
+            } else {
+                System.out.println("nulled");
+
             }
         }
     }

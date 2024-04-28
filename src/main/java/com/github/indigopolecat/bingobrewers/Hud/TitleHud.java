@@ -18,6 +18,13 @@ public class TitleHud {
         this.color = color;
     }
 
+    public TitleHud(TitleHud hud) {
+        this.startTime = System.currentTimeMillis();
+        this.title = hud.title;
+        this.displayTime = hud.displayTime;
+        this.color = hud.color;
+    }
+
     public void drawTitle() {
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.theWorld == null || mc.thePlayer == null) return;

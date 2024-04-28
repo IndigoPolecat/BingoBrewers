@@ -45,7 +45,7 @@ public class SplashHud extends Hud {
             scale = 0.3f;
         }
         ArrayList<HashMap<String, ArrayList<String>>> infoPanel = new ArrayList<>();
-        if(!onBingo && !BingoBrewersConfig.splashNotificationsInBingo && !example) return;
+        if(!onBingo && !example) return; // non-profile bingo splashes setting was here
         if(!SplashHud.inSkyblockorPTLobby && !BingoBrewersConfig.splashNotificationsOutsideSkyblock && !example) return;
         if(!BingoBrewers.onHypixel) return;
         if (example && (ServerConnection.mapList.isEmpty() || !BingoBrewersConfig.splashNotificationsEnabled)) {

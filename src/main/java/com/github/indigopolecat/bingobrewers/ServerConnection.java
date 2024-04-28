@@ -17,6 +17,7 @@ import com.github.indigopolecat.kryo.KryoNetwork.ConnectionIgn;
 import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.util.ChatComponentText;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -45,10 +46,10 @@ public class ServerConnection extends Listener implements Runnable {
     public static ArrayList<String> hubList = new ArrayList<>();
     long originalTime = -1;
     public static CopyOnWriteArrayList<CHWaypoints> waypoints = new CopyOnWriteArrayList<>();
-
-    //TODO: add this constant
-    // if new CH items are added, I can add them server side and they will be able to be shown
+    // if new ch items are added, they will be in this list
     public static ArrayList<String> newMiscCHItems = new ArrayList<>();
+    public static TitleHud joinTitle;
+    public static String joinChat;
 
 
     @Override
@@ -126,6 +127,17 @@ public class ServerConnection extends Listener implements Runnable {
                 } else if (object instanceof receiveConstantsOnStartup) {
                     receiveConstantsOnStartup request = (receiveConstantsOnStartup) object;
                     ChestInventories.rankPriceMap = request.bingoRankCosts;
+                    CHChests.regex = request.chItemRegex;
+                    newMiscCHItems = request.newCHChestItems;
+                    System.out.println("joinchat " + request.joinAlertChat);
+                    System.out.println("joinTitle " + request.joinAlertTitle);
+                    if (request.joinAlertChat != null) {
+                        joinChat = request.joinAlertChat;
+                    }
+                    if (request.joinAlertTitle != null) {
+                        joinTitle = new TitleHud(request.joinAlertTitle, 0xFF5555, 10000);
+                    }
+
                 } else if (object instanceof receiveCHItems) {
                     receiveCHItems CHItems = (receiveCHItems) object;
                     System.out.println("Received CH Chests for " + CHItems.server);
@@ -288,7 +300,7 @@ public class ServerConnection extends Listener implements Runnable {
     // This is called onTickEvent in PlayerInfo when the player is not null
     public synchronized void notification(String hub, boolean dungeonHub) {
         if (!BingoBrewersConfig.splashNotificationsEnabled) return;
-        if(!SplashHud.onBingo && !BingoBrewersConfig.splashNotificationsInBingo) return;
+        if(!SplashHud.onBingo) return; // non-profile bingo splashes setting was here
         if(!SplashHud.inSkyblockorPTLobby && !BingoBrewersConfig.splashNotificationsOutsideSkyblock) return;
         if(!BingoBrewers.onHypixel) return;
         EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;

@@ -99,23 +99,24 @@ public class Packets {
                 }
 
                 if (PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows") && !PlayerInfo.subscribedToCurrentCHServer) {
-                    // update day
-                    World world = Minecraft.getMinecraft().theWorld;
-                    long worldTime = world.getWorldTime();
-                    System.out.println("worldTime: " + worldTime);
-                    PlayerInfo.day = (int) (worldTime / 24000);
-                    System.out.println("days: " + PlayerInfo.day);
+                    if (BingoBrewersConfig.crystalHollowsWaypointsToggle) {
+                        // update day
+                        World world = Minecraft.getMinecraft().theWorld;
+                        long worldTime = world.getWorldTime();
+                        PlayerInfo.day = (int) (worldTime / 24000);
 
-                    KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
-                    CHRequest.server = PlayerInfo.currentServer;
-                    System.out.println(PlayerInfo.day);
-                    CHRequest.day = PlayerInfo.day;
-                    ServerConnection.SubscribeToCHServer(CHRequest);
-
+                        KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
+                        CHRequest.server = PlayerInfo.currentServer;
+                        System.out.println(PlayerInfo.day);
+                        CHRequest.day = PlayerInfo.day;
+                        ServerConnection.SubscribeToCHServer(CHRequest);
+                    }
                 }
 
             } else if (message.contains("You received") && PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
-                CHChests.addChatMessage(formattedMessage);
+                if (BingoBrewersConfig.crystalHollowsWaypointsToggle) {
+                    CHChests.addChatMessage(formattedMessage);
+                }
             }
 
         }
@@ -125,7 +126,7 @@ public class Packets {
 
             // Remove keys greater than 60 seconds in age
             hardstone.entrySet().removeIf(entry -> System.currentTimeMillis() - entry.getValue() > 60000);
-
+            if (!BingoBrewersConfig.crystalHollowsWaypointsToggle) return;
             for (int i = 0; i < blockUpdateData.length; i++) {
                 BlockPos coords = blockUpdateData[i].getPos();
                 // get old block
@@ -138,6 +139,7 @@ public class Packets {
         }
 
         if (event.getPacket() instanceof S23PacketBlockChange) {
+            if (!BingoBrewersConfig.crystalHollowsWaypointsToggle) return;
             // coordinates of the block that changed
             BlockPos coords = ((S23PacketBlockChange) event.getPacket()).getBlockPosition();
             // old block

@@ -16,7 +16,10 @@ import net.minecraft.client.Minecraft;
 
 import java.util.*;
 
+import static com.github.indigopolecat.bingobrewers.CHWaypoints.filteredWaypoints;
+import static com.github.indigopolecat.bingobrewers.CHWaypoints.itemCounts;
 import static com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud.filteredItems;
+import static com.github.indigopolecat.bingobrewers.ServerConnection.waypoints;
 
 public class BingoBrewersConfig extends Config {
     public BingoBrewersConfig() {
@@ -35,6 +38,7 @@ public class BingoBrewersConfig extends Config {
         addListener("roughGemstones", BingoBrewersConfig::filterRoughGemstones);
         addListener("jasperGemstones", BingoBrewersConfig::filterJasperGemstones);
         addListener("junk", BingoBrewersConfig::filterMisc);
+        addListener("crystalHollowsWaypointsToggle", BingoBrewersConfig::SubscribeToServer);
 
     }
 
@@ -46,20 +50,20 @@ public class BingoBrewersConfig extends Config {
     )
     public static boolean splashNotificationsEnabled = true;
 
-    @Info(
+    /*@Info(
             text = "Leeching splashes on high level profiles is not allowed!",
             type = InfoType.ERROR,
             category = "Splash Notifications",
             size = OptionSize.DUAL
     )
-    public static boolean ignored;
+    public static boolean ignored;*/
 
-    @Switch(
+    /*@Switch(
             name = "Show Splash Notifications on Non-Bingo Profiles",
             category = "Splash Notifications",
             description = "Whether to show splash notifications regardless of your last active profile."
     )
-    public static boolean splashNotificationsInBingo = true;
+    public static boolean splashNotificationsInBingo = true;*/
 
     @Switch(
             name = "Show Splash Notifications outside of Skyblock",
@@ -251,12 +255,12 @@ public class BingoBrewersConfig extends Config {
     public static void filterRobotParts() {
         if (robotParts) {
             System.out.println("Enabling");
-            for (String item : CHWaypoints.itemCounts.keySet()) {
+            for (String item : itemCounts.keySet()) {
                 if ("FTX 3070".equals(item) || "Robotron Reflector".equals(item) || "Control Switch".equals(item) || "Synthetic Heart".equals(item) || "Superlite Motor".equals(item) || "Electron Transmitter".equals(item)) {
-                    filteredItems.add(CHWaypoints.itemCounts.get(item));
+                    filteredItems.add(itemCounts.get(item));
                 }
             }
-            for (CHWaypoints waypoint : ServerConnection.waypoints) {
+            for (CHWaypoints waypoint : waypoints) {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if ("FTX 3070".equals(item.name) || "Robotron Reflector".equals(item.name) || "Control Switch".equals(item.name) || "Synthetic Heart".equals(item.name) || "Superlite Motor".equals(item.name) || "Electron Transmitter".equals(item.name)) {
                         waypoint.filteredExpandedItems.add(item);
@@ -270,7 +274,7 @@ public class BingoBrewersConfig extends Config {
             System.out.println("Disabling");
             filteredItems.removeIf(item -> "FTX 3070".equals(item.itemName) || "Robotron Reflector".equals(item.itemName) || "Control Switch".equals(item.itemName) || "Synthetic Heart".equals(item.itemName) || "Superlite Motor".equals(item.itemName) || "Electron Transmitter".equals(item.itemName));
 
-            for (CHWaypoints waypoint : ServerConnection.waypoints) {
+            for (CHWaypoints waypoint : waypoints) {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if ("FTX 3070".equals(item.name) || "Robotron Reflector".equals(item.name) || "Control Switch".equals(item.name) || "Synthetic Heart".equals(item.name) || "Superlite Motor".equals(item.name) || "Electron Transmitter".equals(item.name)) {
                         waypoint.filteredExpandedItems.remove(item);
@@ -282,7 +286,7 @@ public class BingoBrewersConfig extends Config {
     }
     public static void filterPowder() {
         filteredItems.removeIf(entry -> entry.itemName.contains(" Powder"));
-        for (CHWaypoints waypoint : ServerConnection.waypoints) {
+        for (CHWaypoints waypoint : waypoints) {
             for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                 if (item.name.contains(" Powder")) {
                     waypoint.filteredExpandedItems.remove(item);
@@ -291,13 +295,13 @@ public class BingoBrewersConfig extends Config {
         }
         if (powder == 2) {
             System.out.println("Enabling");
-            for (String item : CHWaypoints.itemCounts.keySet()) {
+            for (String item : itemCounts.keySet()) {
                 if (item.contains(" Powder")) {
-                    filteredItems.add(CHWaypoints.itemCounts.get(item));
+                    filteredItems.add(itemCounts.get(item));
                 }
             }
 
-            for (CHWaypoints waypoint : ServerConnection.waypoints) {
+            for (CHWaypoints waypoint : waypoints) {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if (item.name.contains(" Powder")) {
                         System.out.println("adding " + item.name);
@@ -309,7 +313,7 @@ public class BingoBrewersConfig extends Config {
                 }
             }
         } else if (powder == 1) {
-            for (CHWaypoints waypoint : ServerConnection.waypoints) {
+            for (CHWaypoints waypoint : waypoints) {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if (!item.count.contains("-")) continue;
                     if (item.name.contains(" Powder") && Integer.parseInt(item.count.split("-")[1]) > 1200) {
@@ -346,7 +350,7 @@ public class BingoBrewersConfig extends Config {
     }
     public static void filterPrehistoricEggs() {
         filteredItems.removeIf(entry -> "Prehistoric Egg".equals(entry.itemName));
-        for (CHWaypoints waypoint : ServerConnection.waypoints) {
+        for (CHWaypoints waypoint : waypoints) {
             for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                 if ("Prehistoric Egg".equals(item.name)) {
                     waypoint.filteredExpandedItems.remove(item);
@@ -355,13 +359,13 @@ public class BingoBrewersConfig extends Config {
         }
         if (prehistoricEggs) {
             System.out.println("Enabling");
-            for (String item : CHWaypoints.itemCounts.keySet()) {
+            for (String item : itemCounts.keySet()) {
                 if ("Prehistoric Egg".equals(item)) {
-                    filteredItems.add(CHWaypoints.itemCounts.get(item));
+                    filteredItems.add(itemCounts.get(item));
                 }
             }
 
-            for (CHWaypoints waypoint : ServerConnection.waypoints) {
+            for (CHWaypoints waypoint : waypoints) {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if ("Prehistoric Egg".equals(item.name)) {
                         waypoint.filteredExpandedItems.add(item);
@@ -377,7 +381,7 @@ public class BingoBrewersConfig extends Config {
     }
     public static void filterPickonimbus() {
         filteredItems.removeIf(entry -> entry.itemName.equals("Pickonimbus"));
-        for (CHWaypoints waypoint : ServerConnection.waypoints) {
+        for (CHWaypoints waypoint : waypoints) {
             for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                 if (item.name.contains("Pickonimbus")) {
                     waypoint.filteredExpandedItems.remove(item);
@@ -386,13 +390,13 @@ public class BingoBrewersConfig extends Config {
         }
         if (pickonimbus) {
             System.out.println("Enabling");
-            for (String item : CHWaypoints.itemCounts.keySet()) {
+            for (String item : itemCounts.keySet()) {
                 if (item.contains("Pickonimbus")) {
-                    filteredItems.add(CHWaypoints.itemCounts.get(item));
+                    filteredItems.add(itemCounts.get(item));
                 }
             }
 
-            for (CHWaypoints waypoint : ServerConnection.waypoints) {
+            for (CHWaypoints waypoint : waypoints) {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if (item.name.contains("Pickonimbus")) {
                         waypoint.filteredExpandedItems.add(item);
@@ -408,7 +412,7 @@ public class BingoBrewersConfig extends Config {
     }
     public static void filterGoblinEggs() {
         filteredItems.removeIf(entry -> entry.itemName.equals("Goblin Egg"));
-        for (CHWaypoints waypoint : ServerConnection.waypoints) {
+        for (CHWaypoints waypoint : waypoints) {
             for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                 if (item.name.contains("Goblin Egg")) {
                     waypoint.filteredExpandedItems.remove(item);
@@ -417,13 +421,13 @@ public class BingoBrewersConfig extends Config {
         }
         if (goblinEggs == 0) {
             System.out.println("Enabling");
-            for (String item : CHWaypoints.itemCounts.keySet()) {
+            for (String item : itemCounts.keySet()) {
                 if (item.contains("Goblin Egg")) {
-                    filteredItems.add(CHWaypoints.itemCounts.get(item));
+                    filteredItems.add(itemCounts.get(item));
                 }
             }
 
-            for (CHWaypoints waypoint : ServerConnection.waypoints) {
+            for (CHWaypoints waypoint : waypoints) {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if (item.name.contains("Goblin Egg")) {
                         waypoint.filteredExpandedItems.add(item);
@@ -434,13 +438,13 @@ public class BingoBrewersConfig extends Config {
                 }
             }
         } else if (goblinEggs == 1) {
-            for (String item : CHWaypoints.itemCounts.keySet()) {
+            for (String item : itemCounts.keySet()) {
                 if ("Blue Goblin Egg".equals(item)) {
-                    filteredItems.add(CHWaypoints.itemCounts.get(item));
+                    filteredItems.add(itemCounts.get(item));
                 }
             }
 
-            for (CHWaypoints waypoint : ServerConnection.waypoints) {
+            for (CHWaypoints waypoint : waypoints) {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if ("Blue Goblin Egg".equals(item.name)) {
                         waypoint.filteredExpandedItems.add(item);
@@ -456,7 +460,7 @@ public class BingoBrewersConfig extends Config {
     }
     public static void filterRoughGemstones() {
         filteredItems.removeIf(entry -> entry.itemName.contains("Gemstone") && !entry.itemName.contains("Powder"));
-        for (CHWaypoints waypoint : ServerConnection.waypoints) {
+        for (CHWaypoints waypoint : waypoints) {
             for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                 if (item.name.contains("Gemstone") && !item.name.contains("Powder")) {
                     waypoint.filteredExpandedItems.remove(item);
@@ -465,13 +469,13 @@ public class BingoBrewersConfig extends Config {
         }
         if (roughGemstones == 0) {
             System.out.println("Enabling");
-            for (String item : CHWaypoints.itemCounts.keySet()) {
+            for (String item : itemCounts.keySet()) {
                 if (item.contains("Gemstone") && !item.contains("Powder")) {
-                    filteredItems.add(CHWaypoints.itemCounts.get(item));
+                    filteredItems.add(itemCounts.get(item));
                 }
             }
 
-            for (CHWaypoints waypoint : ServerConnection.waypoints) {
+            for (CHWaypoints waypoint : waypoints) {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if (item.name.contains("Gemstone") && !item.name.contains("Powder")) {
                         waypoint.filteredExpandedItems.add(item);
@@ -483,13 +487,13 @@ public class BingoBrewersConfig extends Config {
             }
         } else if (roughGemstones == 1) {
             System.out.println("Enabling");
-            for (String item : CHWaypoints.itemCounts.keySet()) {
+            for (String item : itemCounts.keySet()) {
                 if (item.contains("Fine") || item.contains("Flawless")) {
-                    filteredItems.add(CHWaypoints.itemCounts.get(item));
+                    filteredItems.add(itemCounts.get(item));
                 }
             }
 
-            for (CHWaypoints waypoint : ServerConnection.waypoints) {
+            for (CHWaypoints waypoint : waypoints) {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if (item.name.contains("Fine") || item.name.contains("Flawless")) {
                         waypoint.filteredExpandedItems.add(item);
@@ -505,7 +509,7 @@ public class BingoBrewersConfig extends Config {
     }
     public static void filterJasperGemstones() {
         filteredItems.removeIf(entry -> entry.itemName.contains("Jasper"));
-        for (CHWaypoints waypoint : ServerConnection.waypoints) {
+        for (CHWaypoints waypoint : waypoints) {
             for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                 if (item.name.contains("Jasper")) {
                     waypoint.filteredExpandedItems.remove(item);
@@ -514,13 +518,13 @@ public class BingoBrewersConfig extends Config {
         }
         if (jasperGemstones && roughGemstones != 0) {
             System.out.println("Enabling");
-            for (String item : CHWaypoints.itemCounts.keySet()) {
+            for (String item : itemCounts.keySet()) {
                 if (item.contains("Jasper")) {
-                    filteredItems.add(CHWaypoints.itemCounts.get(item));
+                    filteredItems.add(itemCounts.get(item));
                 }
             }
 
-            for (CHWaypoints waypoint : ServerConnection.waypoints) {
+            for (CHWaypoints waypoint : waypoints) {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if (item.name.contains("Jasper")) {
                         waypoint.filteredExpandedItems.add(item);
@@ -536,7 +540,7 @@ public class BingoBrewersConfig extends Config {
     }
     public static void filterMisc() {
         filteredItems.removeIf(entry -> "Wishing Compass".equals(entry.itemName) || "Treasurite".equals(entry.itemName) || "Jungle Heart".equals(entry.itemName) || "Oil Barrel".equals(entry.itemName) || "Sludge Juice".equals(entry.itemName) || "Ascension Rope".equals(entry.itemName) || "Yoggie".equals(entry.itemName) || ServerConnection.newMiscCHItems.contains(entry.itemName));
-        for (CHWaypoints waypoint : ServerConnection.waypoints) {
+        for (CHWaypoints waypoint : waypoints) {
             for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                 if ("Wishing Compass".equals(item.name) || "Treasurite".equals(item.name) || "Jungle Heart".equals(item.name) || "Oil Barrel".equals(item.name) || "Sludge Juice".equals(item.name) || "Ascension Rope".equals(item.name) || "Yoggie".equals(item.name) || ServerConnection.newMiscCHItems.contains(item.name)) {
                     waypoint.filteredExpandedItems.remove(item);
@@ -545,13 +549,13 @@ public class BingoBrewersConfig extends Config {
         }
         if (junk) {
             System.out.println("Enabling");
-            for (String item : CHWaypoints.itemCounts.keySet()) {
+            for (String item : itemCounts.keySet()) {
                 if ("Wishing Compass".equals(item) || "Treasurite".equals(item) || "Jungle Heart".equals(item) || "Oil Barrel".equals(item) || "Sludge Juice".equals(item) || "Ascension Rope".equals(item) || "Yoggie".equals(item) || ServerConnection.newMiscCHItems.contains(item)) {
-                    filteredItems.add(CHWaypoints.itemCounts.get(item));
+                    filteredItems.add(itemCounts.get(item));
                 }
             }
 
-            for (CHWaypoints waypoint : ServerConnection.waypoints) {
+            for (CHWaypoints waypoint : waypoints) {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if ("Wishing Compass".equals(item.name) || "Treasurite".equals(item.name) || "Jungle Heart".equals(item.name) || "Oil Barrel".equals(item.name) || "Sludge Juice".equals(item.name) || "Ascension Rope".equals(item.name) || "Yoggie".equals(item.name) || ServerConnection.newMiscCHItems.contains(item.name)) {
                         waypoint.filteredExpandedItems.add(item);
@@ -564,6 +568,27 @@ public class BingoBrewersConfig extends Config {
         }
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
 
+    }
+
+    public static void SubscribeToServer() {
+        if (crystalHollowsWaypointsToggle) {
+            KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
+            CHRequest.server = PlayerInfo.currentServer;
+            System.out.println(PlayerInfo.day);
+            CHRequest.day = PlayerInfo.day;
+            ServerConnection.SubscribeToCHServer(CHRequest);
+        } else {
+            waypoints.clear();
+            itemCounts.clear();
+            filteredItems.clear();
+            filteredWaypoints.clear();
+            KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
+            CHRequest.server = PlayerInfo.currentServer;
+            System.out.println(PlayerInfo.day);
+            CHRequest.day = PlayerInfo.day;
+            CHRequest.unsubscribe = true;
+            ServerConnection.SubscribeToCHServer(CHRequest);
+        }
     }
 
 

@@ -74,6 +74,7 @@ public class CHWaypoints {
     }
 
     public static void renderPointLabel(CHWaypoints label, BlockPos thisPoint, Float partialTicks) {
+        if (!BingoBrewersConfig.crystalHollowsWaypointsToggle) return;
         ArrayList<String> lobbyVisitedChests = CHChests.visitedChests.get(PlayerInfo.currentServer);
         if (lobbyVisitedChests != null) {
             if (lobbyVisitedChests.contains(label.id) && BingoBrewersConfig.waypointFate == 1) return;
