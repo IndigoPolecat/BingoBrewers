@@ -4,6 +4,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.EndPoint;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public class KryoNetwork {
@@ -24,6 +25,7 @@ public class KryoNetwork {
         kryo.register(SubscribeToCHServer.class);
         kryo.register(ChestInfo.class);
         kryo.register(CHChestItem.class);
+        kryo.register(LinkedHashSet.class);
     }
 
     public static class ConnectionIgn {
@@ -58,6 +60,7 @@ public class KryoNetwork {
         public String chItemRegex;
         public String joinAlertTitle;
         public String joinAlertChat;
+        public LinkedHashSet<String> CHItemOrder = new LinkedHashSet<>();
 
     }
 

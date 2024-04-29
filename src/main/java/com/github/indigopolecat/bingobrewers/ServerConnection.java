@@ -6,7 +6,6 @@ import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.minlog.Log;
-import com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud;
 import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
 import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
@@ -17,16 +16,13 @@ import com.github.indigopolecat.kryo.KryoNetwork.ConnectionIgn;
 import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.util.ChatComponentText;
 
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.esotericsoftware.minlog.Log.*;
-import static com.github.indigopolecat.bingobrewers.CHWaypoints.itemCounts;
+import static com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud.filteredItems;
 import static java.lang.String.valueOf;
 
 public class ServerConnection extends Listener implements Runnable {
@@ -50,6 +46,7 @@ public class ServerConnection extends Listener implements Runnable {
     public static ArrayList<String> newMiscCHItems = new ArrayList<>();
     public static TitleHud joinTitle;
     public static String joinChat;
+    public static ArrayList<String> CHItemOrder = new ArrayList<>();
 
 
     @Override
@@ -129,14 +126,13 @@ public class ServerConnection extends Listener implements Runnable {
                     ChestInventories.rankPriceMap = request.bingoRankCosts;
                     CHChests.regex = request.chItemRegex;
                     newMiscCHItems = request.newCHChestItems;
-                    System.out.println("joinchat " + request.joinAlertChat);
-                    System.out.println("joinTitle " + request.joinAlertTitle);
                     if (request.joinAlertChat != null) {
                         joinChat = request.joinAlertChat;
                     }
                     if (request.joinAlertTitle != null) {
                         joinTitle = new TitleHud(request.joinAlertTitle, 0xFF5555, 10000);
                     }
+                    CHItemOrder = new ArrayList<>(request.CHItemOrder);
 
                 } else if (object instanceof receiveCHItems) {
                     receiveCHItems CHItems = (receiveCHItems) object;
@@ -168,6 +164,25 @@ public class ServerConnection extends Listener implements Runnable {
                             BingoBrewersConfig.filterPrehistoricEggs();
                             BingoBrewersConfig.filterPickonimbus();
                             BingoBrewersConfig.filterMisc();
+
+                            ArrayList<Integer> orderedIndexes = new ArrayList<>();
+                            for (CrystalHollowsItemTotal total : filteredItems) {
+                                String item = total.itemName;
+                                orderedIndexes.add(CHItemOrder.indexOf(item));
+                                Collections.sort(orderedIndexes);
+                            }
+                            orderedIndexes.removeIf(index -> index == -1);
+
+                            ConcurrentLinkedDeque<CrystalHollowsItemTotal> sortedDeque = new ConcurrentLinkedDeque<>(filteredItems);
+                            filteredItems.clear();
+                            for (Integer index : orderedIndexes) {
+                                String item = CHItemOrder.get(index);
+                                for (CrystalHollowsItemTotal total : sortedDeque) {
+                                    if (total.itemName.equalsIgnoreCase(item)) {
+                                        filteredItems.add(total);
+                                    }
+                                }
+                            }
                         }
 
                     }

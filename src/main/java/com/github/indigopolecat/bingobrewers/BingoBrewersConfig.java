@@ -15,6 +15,7 @@ import com.github.indigopolecat.kryo.KryoNetwork;
 import net.minecraft.client.Minecraft;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import static com.github.indigopolecat.bingobrewers.CHWaypoints.filteredWaypoints;
 import static com.github.indigopolecat.bingobrewers.CHWaypoints.itemCounts;
@@ -571,7 +572,7 @@ public class BingoBrewersConfig extends Config {
     }
 
     public static void SubscribeToServer() {
-        if (crystalHollowsWaypointsToggle) {
+        if (crystalHollowsWaypointsToggle && PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
             KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
             CHRequest.server = PlayerInfo.currentServer;
             System.out.println(PlayerInfo.day);
