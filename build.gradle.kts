@@ -107,7 +107,7 @@ dependencies {
     modCompileOnly("cc.polyfrost:oneconfig-1.8.9-forge:0.2.2-alpha+") // Should not be included in jar
     // include should be replaced with a configuration that includes this in the jar
     shadowImpl("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+") // Should be included in jar
-    shadowImpl("moe.nea:libautoupdate:1.3.1") // Should be included in jar
+    shadowImpl("moe.nea:libautoupdate:1.2.0") // Should be included in jar
 }
 
 // Tasks:
