@@ -411,7 +411,7 @@ public class BingoBrewersConfig extends Config {
 
     }
     public static void filterGoblinEggs() {
-        filteredItems.removeIf(entry -> entry.itemName.equals("Goblin Egg"));
+        filteredItems.removeIf(entry -> entry.itemName.contains("Goblin Egg"));
         for (CHWaypoints waypoint : waypoints) {
             for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                 if (item.name.contains("Goblin Egg")) {
