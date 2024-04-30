@@ -1,13 +1,9 @@
 package com.conutik.bingobrewers;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.networking.v1.ClientLoginConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
 
 public class BingoBrewersClient implements ClientModInitializer {
     @Override
@@ -20,10 +16,5 @@ public class BingoBrewersClient implements ClientModInitializer {
                 MinecraftClient.getInstance().player.sendMessage(Text.of("Hello!"), true);
             }
         });
-    }
-
-    @Subscribe
-    public void onSocketOpen(SocketOpen event) {
-        System.out.println("Socket opened!");
     }
 }
