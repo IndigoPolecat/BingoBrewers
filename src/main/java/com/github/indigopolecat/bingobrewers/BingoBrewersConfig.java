@@ -32,14 +32,14 @@ public class BingoBrewersConfig extends Config {
             addDependency(option, "crystalHollowsWaypointsToggle");
         }
         addDependency("justifySeparation", "justifyAlignmentCHHud");
-        addListener("robotParts", BingoBrewersConfig::filterRobotParts);
-        addListener("powder", BingoBrewersConfig::filterPowder);
-        addListener("prehistoricEggs", BingoBrewersConfig::filterPrehistoricEggs);
-        addListener("pickonimbus", BingoBrewersConfig::filterPickonimbus);
-        addListener("goblinEggs", BingoBrewersConfig::filterGoblinEggs);
-        addListener("roughGemstones", BingoBrewersConfig::filterRoughGemstones);
-        addListener("jasperGemstones", BingoBrewersConfig::filterJasperGemstones);
-        addListener("junk", BingoBrewersConfig::filterMisc);
+        addListener("robotParts", BingoBrewersConfig::robotPartsCall);
+        addListener("powder", BingoBrewersConfig::powderCall);
+        addListener("prehistoricEggs", BingoBrewersConfig::prehistoricEggsCall);
+        addListener("pickonimbus", BingoBrewersConfig::pickonimbusCall);
+        addListener("goblinEggs", BingoBrewersConfig::goblinEggsCall);
+        addListener("roughGemstones", BingoBrewersConfig::roughCall);
+        addListener("jasperGemstones", BingoBrewersConfig::jasperCall);
+        addListener("junk", BingoBrewersConfig::miscCall);
         addListener("crystalHollowsWaypointsToggle", BingoBrewersConfig::SubscribeToServer);
 
     }
@@ -254,6 +254,11 @@ public class BingoBrewersConfig extends Config {
     )
     public static boolean playEggTimerResetSound = false;
 
+    public static void robotPartsCall() {
+        filterRobotParts();
+        organizeWaypoints();
+    }
+
     public static void filterRobotParts() {
         if (robotParts) {
             for (String item : itemCounts.keySet()) {
@@ -283,6 +288,11 @@ public class BingoBrewersConfig extends Config {
             }
         }
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
+        organizeWaypoints();
+    }
+
+    public static void powderCall() {
+        filterPowder();
         organizeWaypoints();
     }
     public static void filterPowder() {
@@ -345,6 +355,11 @@ public class BingoBrewersConfig extends Config {
         organizeWaypoints();
 
     }
+
+    public static void prehistoricEggsCall() {
+        filterPrehistoricEggs();
+        organizeWaypoints();
+    }
     public static void filterPrehistoricEggs() {
         filteredItems.removeIf(entry -> "Prehistoric Egg".equals(entry.itemName));
         for (CHWaypoints waypoint : waypoints) {
@@ -376,6 +391,11 @@ public class BingoBrewersConfig extends Config {
         organizeWaypoints();
 
     }
+
+    public static void pickonimbusCall() {
+        filterPickonimbus();
+        organizeWaypoints();
+    }
     public static void filterPickonimbus() {
         filteredItems.removeIf(entry -> entry.itemName.equals("Pickonimbus"));
         for (CHWaypoints waypoint : waypoints) {
@@ -406,6 +426,11 @@ public class BingoBrewersConfig extends Config {
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
         organizeWaypoints();
 
+    }
+
+    public static void goblinEggsCall() {
+        filterGoblinEggs();
+        organizeWaypoints();
     }
     public static void filterGoblinEggs() {
         filteredItems.removeIf(entry -> entry.itemName.contains("Goblin Egg"));
@@ -455,6 +480,11 @@ public class BingoBrewersConfig extends Config {
         organizeWaypoints();
 
     }
+
+    public static void roughCall() {
+        filterRoughGemstones();
+        organizeWaypoints();
+    }
     public static void filterRoughGemstones() {
         filteredItems.removeIf(entry -> entry.itemName.contains("Gemstone") && !entry.itemName.contains("Powder"));
         for (CHWaypoints waypoint : waypoints) {
@@ -503,6 +533,11 @@ public class BingoBrewersConfig extends Config {
         organizeWaypoints();
 
     }
+
+    public static void jasperCall() {
+        filterJasperGemstones();
+        organizeWaypoints();
+    }
     public static void filterJasperGemstones() {
         filteredItems.removeIf(entry -> entry.itemName.contains("Jasper"));
         for (CHWaypoints waypoint : waypoints) {
@@ -533,6 +568,11 @@ public class BingoBrewersConfig extends Config {
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
         organizeWaypoints();
 
+    }
+
+    public static void miscCall() {
+        filterMisc();
+        organizeWaypoints();
     }
     public static void filterMisc() {
         filteredItems.removeIf(entry -> "Wishing Compass".equals(entry.itemName) || "Treasurite".equals(entry.itemName) || "Jungle Heart".equals(entry.itemName) || "Oil Barrel".equals(entry.itemName) || "Sludge Juice".equals(entry.itemName) || "Ascension Rope".equals(entry.itemName) || "Yoggie".equals(entry.itemName) || ServerConnection.newMiscCHItems.contains(entry.itemName));

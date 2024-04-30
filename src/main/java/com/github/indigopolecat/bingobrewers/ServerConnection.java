@@ -158,6 +158,7 @@ public class ServerConnection extends Listener implements Runnable {
                             BingoBrewersConfig.filterPrehistoricEggs();
                             BingoBrewersConfig.filterPickonimbus();
                             BingoBrewersConfig.filterMisc();
+                            organizeWaypoints();
 
                         }
                     }
