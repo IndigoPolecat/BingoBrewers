@@ -65,11 +65,9 @@ public class BingoBrewers {
 
     public static void createServerThread() {
         try {
-            System.out.println("creating server thread");
             ServerConnection serverConnection = new ServerConnection();
             Thread serverThread = new Thread(serverConnection);
             serverThread.start();
-            System.out.println("server thread started");
         } catch (Exception e) {
             LoggerUtil.LOGGER.info("Server Connection Error: " + e.getMessage());
         }

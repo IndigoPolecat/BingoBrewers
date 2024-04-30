@@ -34,26 +34,21 @@ public class CHChests {
     @SubscribeEvent
     public void onRightClickChest(PlayerInteractEvent event) {
         if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) return;
-        System.out.println("right click");
         if (!event.world.getBlockState(event.pos).getBlock().getUnlocalizedName().contains("chest")) return;
-        System.out.println("chest");
         if (!BingoBrewersConfig.crystalHollowsWaypointsToggle) return;
         // Add the chest to the list of chests to listen for
         if (!Packets.hardstone.containsKey(event.pos.toString())) {
-            System.out.println("not hardstone");
             ArrayList<String> lobbyVisitedChests = visitedChests.get(PlayerInfo.currentServer);
             if (lobbyVisitedChests == null) {
                 lobbyVisitedChests = new ArrayList<>();
             }
             if (!lobbyVisitedChests.contains(event.pos.getX() + event.pos.getY() + event.pos.getZ() + "")) {
-                System.out.println("adding listening chest");
                 listeningChests.put(event.pos.toString(), System.currentTimeMillis());
 
                 lobbyVisitedChests.add(event.pos.getX() + event.pos.getY() + event.pos.getZ() + "");
                 visitedChests.put(PlayerInfo.currentServer, lobbyVisitedChests);
             }
         } else {
-            System.out.println("expecting hardstone");
             lastHardstoneChest = System.currentTimeMillis();
             expectingHardstoneLoot = true;
         }
@@ -140,13 +135,11 @@ public class CHChests {
 
 
             Matcher matcher = ITEM_PATTERN.matcher(message);
-            System.out.println(message);
             try {
                 while (matcher.find()) {
                     chestItem.name = matcher.group(4);
 
                     chestItem.count = matcher.group(2).replaceAll(",", "");
-                    System.out.println(chestItem.count);
 
                     Optional<String> numberColorGroup = Optional.ofNullable(matcher.group(1));
                     Optional<String> itemColorGroup = Optional.ofNullable(matcher.group(3));

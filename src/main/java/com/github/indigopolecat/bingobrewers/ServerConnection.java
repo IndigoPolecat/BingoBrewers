@@ -52,10 +52,8 @@ public class ServerConnection extends Listener implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("Beginning to run server BB");
         Client client1 = new Client();
         setClient(client1);
-        System.out.println("client set BB");
         if (BingoBrewers.client == null) {
             LoggerUtil.LOGGER.info("Client is null");
         }
@@ -140,9 +138,6 @@ public class ServerConnection extends Listener implements Runnable {
                     System.out.println("Received CH Chests for " + CHItems.server);
                     ArrayList<ChestInfo> chests = CHItems.chestMap;
                     if (CHItems.server.equals(PlayerInfo.currentServer)) {
-                        System.out.println(CHItems.day);
-                        System.out.println(PlayerInfo.day);
-                        System.out.println(CHItems.lastReceivedDayInfo);
                         if (CHItems.day - 1 > PlayerInfo.day || System.currentTimeMillis() - (CHItems.lastReceivedDayInfo != null ? CHItems.lastReceivedDayInfo : Long.MAX_VALUE) > 25_200_000) return; // ignore if the server is younger than last known, or it's been more than 7 hours since info was received
                         for (ChestInfo chest : chests) {
                             CHWaypoints chWaypoints = new CHWaypoints(chest.x, chest.y, chest.z, chest.items);
@@ -191,15 +186,12 @@ public class ServerConnection extends Listener implements Runnable {
                                     orderedIndexes.add(CHItemOrder.indexOf(name));
                                 }
                                 Collections.sort(orderedIndexes);
-                                System.out.println(orderedIndexes);
                                 orderedIndexes.removeIf(index -> index == -1);
                                 CopyOnWriteArrayList<CHChestItem> sortedItems = new CopyOnWriteArrayList<>(waypoint.filteredExpandedItems);
                                 waypoint.filteredExpandedItems.clear();
                                 for (Integer index : orderedIndexes) {
                                     String item = CHItemOrder.get(index);
-                                    System.out.println("item: " + item);
                                     for (CHChestItem chestItem : sortedItems) {
-                                        System.out.println("chestitem: " + chestItem.name);
                                         if (chestItem.name.equalsIgnoreCase(item)) {
                                             waypoint.filteredExpandedItems.add(chestItem);
                                         }
@@ -218,7 +210,7 @@ public class ServerConnection extends Listener implements Runnable {
             }
 
         });
-        System.out.println("starting client BB");
+
         BingoBrewers.client.start();
         System.out.println("Client started, Test Instance: " + BingoBrewers.TEST_INSTANCE);
         if (BingoBrewers.TEST_INSTANCE) {

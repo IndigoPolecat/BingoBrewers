@@ -255,7 +255,6 @@ public class BingoBrewersConfig extends Config {
 
     public static void filterRobotParts() {
         if (robotParts) {
-            System.out.println("Enabling");
             for (String item : itemCounts.keySet()) {
                 if ("FTX 3070".equals(item) || "Robotron Reflector".equals(item) || "Control Switch".equals(item) || "Synthetic Heart".equals(item) || "Superlite Motor".equals(item) || "Electron Transmitter".equals(item)) {
                     filteredItems.add(itemCounts.get(item));
@@ -272,7 +271,6 @@ public class BingoBrewersConfig extends Config {
                 }
             }
         } else {
-            System.out.println("Disabling");
             filteredItems.removeIf(item -> "FTX 3070".equals(item.itemName) || "Robotron Reflector".equals(item.itemName) || "Control Switch".equals(item.itemName) || "Synthetic Heart".equals(item.itemName) || "Superlite Motor".equals(item.itemName) || "Electron Transmitter".equals(item.itemName));
 
             for (CHWaypoints waypoint : waypoints) {
@@ -295,7 +293,6 @@ public class BingoBrewersConfig extends Config {
             }
         }
         if (powder == 2) {
-            System.out.println("Enabling");
             for (String item : itemCounts.keySet()) {
                 if (item.contains(" Powder")) {
                     filteredItems.add(itemCounts.get(item));
@@ -305,7 +302,6 @@ public class BingoBrewersConfig extends Config {
             for (CHWaypoints waypoint : waypoints) {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if (item.name.contains(" Powder")) {
-                        System.out.println("adding " + item.name);
                         waypoint.filteredExpandedItems.add(item);
                         if (!CHWaypoints.filteredWaypoints.contains(waypoint)) {
                             CHWaypoints.filteredWaypoints.add(waypoint);
@@ -359,7 +355,6 @@ public class BingoBrewersConfig extends Config {
             }
         }
         if (prehistoricEggs) {
-            System.out.println("Enabling");
             for (String item : itemCounts.keySet()) {
                 if ("Prehistoric Egg".equals(item)) {
                     filteredItems.add(itemCounts.get(item));
@@ -390,7 +385,6 @@ public class BingoBrewersConfig extends Config {
             }
         }
         if (pickonimbus) {
-            System.out.println("Enabling");
             for (String item : itemCounts.keySet()) {
                 if (item.contains("Pickonimbus")) {
                     filteredItems.add(itemCounts.get(item));
@@ -421,7 +415,6 @@ public class BingoBrewersConfig extends Config {
             }
         }
         if (goblinEggs == 0) {
-            System.out.println("Enabling");
             for (String item : itemCounts.keySet()) {
                 if (item.contains("Goblin Egg")) {
                     filteredItems.add(itemCounts.get(item));
@@ -469,7 +462,6 @@ public class BingoBrewersConfig extends Config {
             }
         }
         if (roughGemstones == 0) {
-            System.out.println("Enabling");
             for (String item : itemCounts.keySet()) {
                 if (item.contains("Gemstone") && !item.contains("Powder")) {
                     filteredItems.add(itemCounts.get(item));
@@ -487,7 +479,6 @@ public class BingoBrewersConfig extends Config {
                 }
             }
         } else if (roughGemstones == 1) {
-            System.out.println("Enabling");
             for (String item : itemCounts.keySet()) {
                 if (item.contains("Fine") || item.contains("Flawless")) {
                     filteredItems.add(itemCounts.get(item));
@@ -518,7 +509,6 @@ public class BingoBrewersConfig extends Config {
             }
         }
         if (jasperGemstones && roughGemstones != 0) {
-            System.out.println("Enabling");
             for (String item : itemCounts.keySet()) {
                 if (item.contains("Jasper")) {
                     filteredItems.add(itemCounts.get(item));
@@ -549,7 +539,6 @@ public class BingoBrewersConfig extends Config {
             }
         }
         if (junk) {
-            System.out.println("Enabling");
             for (String item : itemCounts.keySet()) {
                 if ("Wishing Compass".equals(item) || "Treasurite".equals(item) || "Jungle Heart".equals(item) || "Oil Barrel".equals(item) || "Sludge Juice".equals(item) || "Ascension Rope".equals(item) || "Yoggie".equals(item) || ServerConnection.newMiscCHItems.contains(item)) {
                     filteredItems.add(itemCounts.get(item));
@@ -575,7 +564,6 @@ public class BingoBrewersConfig extends Config {
         if (crystalHollowsWaypointsToggle && PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
             KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
             CHRequest.server = PlayerInfo.currentServer;
-            System.out.println(PlayerInfo.day);
             CHRequest.day = PlayerInfo.day;
             ServerConnection.SubscribeToCHServer(CHRequest);
         } else {
@@ -585,7 +573,6 @@ public class BingoBrewersConfig extends Config {
             filteredWaypoints.clear();
             KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
             CHRequest.server = PlayerInfo.currentServer;
-            System.out.println(PlayerInfo.day);
             CHRequest.day = PlayerInfo.day;
             CHRequest.unsubscribe = true;
             ServerConnection.SubscribeToCHServer(CHRequest);
