@@ -23,7 +23,7 @@ public class BingoBrewers {
     public static volatile TitleHud activeTitle;
     public static volatile Client client;
     // controls which server is connected to
-    public static final boolean TEST_INSTANCE = true;
+    public static final boolean TEST_INSTANCE = false;
     public static boolean onHypixel = false;
 
     public static AutoUpdater autoUpdater = new AutoUpdater();
