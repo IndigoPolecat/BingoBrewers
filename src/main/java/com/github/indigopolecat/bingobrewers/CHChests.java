@@ -46,6 +46,7 @@ public class CHChests {
                 lobbyVisitedChests = new ArrayList<>();
             }
             if (!lobbyVisitedChests.contains(event.pos.getX() + event.pos.getY() + event.pos.getZ() + "")) {
+                System.out.println("adding listening chest");
                 listeningChests.put(event.pos.toString(), System.currentTimeMillis());
 
                 lobbyVisitedChests.add(event.pos.getX() + event.pos.getY() + event.pos.getZ() + "");
@@ -82,8 +83,10 @@ public class CHChests {
     }
 
     public static void parseChat() {
+        System.out.println(listeningChests.entrySet());
         // remove old chests
         listeningChests.entrySet().removeIf(entry -> System.currentTimeMillis() - entry.getValue() > 9000);
+        System.out.println(listeningChests.entrySet());
 
         // Create a copy we'll remove entries too new to be valid from, and then use for calculations
         HashMap<String, Long> listeningChestsCopy = new HashMap<>(listeningChests);
@@ -94,6 +97,8 @@ public class CHChests {
             RecentChatMessages.clear();
             return;
         }
+        System.out.println(listeningChestsCopy.entrySet());
+
         long oldest = Long.MAX_VALUE;
         String coords = null;
 

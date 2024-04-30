@@ -14,6 +14,7 @@ import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.*;
 import com.github.indigopolecat.kryo.KryoNetwork.ConnectionIgn;
 import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
+import ibxm.Player;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 
@@ -143,9 +144,7 @@ public class ServerConnection extends Listener implements Runnable {
                         System.out.println(PlayerInfo.day);
                         System.out.println(CHItems.lastReceivedDayInfo);
                         if (CHItems.day - 1 > PlayerInfo.day || System.currentTimeMillis() - (CHItems.lastReceivedDayInfo != null ? CHItems.lastReceivedDayInfo : Long.MAX_VALUE) > 25_200_000) return; // ignore if the server is younger than last known, or it's been more than 7 hours since info was received
-                        System.out.println("chests size: " + CHItems.chestMap.size());
                         for (ChestInfo chest : chests) {
-                            System.out.println("Adding chest " + chest.x + chest.y + chest.z);
                             CHWaypoints chWaypoints = new CHWaypoints(chest.x, chest.y, chest.z, chest.items);
                             waypoints.add(chWaypoints);
 
@@ -165,12 +164,13 @@ public class ServerConnection extends Listener implements Runnable {
                             BingoBrewersConfig.filterPickonimbus();
                             BingoBrewersConfig.filterMisc();
 
+                            // filter the items into the correct order
                             ArrayList<Integer> orderedIndexes = new ArrayList<>();
                             for (CrystalHollowsItemTotal total : filteredItems) {
                                 String item = total.itemName;
                                 orderedIndexes.add(CHItemOrder.indexOf(item));
-                                Collections.sort(orderedIndexes);
                             }
+                            Collections.sort(orderedIndexes);
                             orderedIndexes.removeIf(index -> index == -1);
 
                             ConcurrentLinkedDeque<CrystalHollowsItemTotal> sortedDeque = new ConcurrentLinkedDeque<>(filteredItems);
@@ -183,8 +183,30 @@ public class ServerConnection extends Listener implements Runnable {
                                     }
                                 }
                             }
-                        }
 
+                            for (CHWaypoints waypoint : CHWaypoints.filteredWaypoints) {
+                                orderedIndexes.clear();
+                                for (CHChestItem item : waypoint.filteredExpandedItems) {
+                                    String name = item.name;
+                                    orderedIndexes.add(CHItemOrder.indexOf(name));
+                                }
+                                Collections.sort(orderedIndexes);
+                                System.out.println(orderedIndexes);
+                                orderedIndexes.removeIf(index -> index == -1);
+                                CopyOnWriteArrayList<CHChestItem> sortedItems = new CopyOnWriteArrayList<>(waypoint.filteredExpandedItems);
+                                waypoint.filteredExpandedItems.clear();
+                                for (Integer index : orderedIndexes) {
+                                    String item = CHItemOrder.get(index);
+                                    System.out.println("item: " + item);
+                                    for (CHChestItem chestItem : sortedItems) {
+                                        System.out.println("chestitem: " + chestItem.name);
+                                        if (chestItem.name.equalsIgnoreCase(item)) {
+                                            waypoint.filteredExpandedItems.add(chestItem);
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -367,7 +389,10 @@ public class ServerConnection extends Listener implements Runnable {
         }
         currentClient.sendTCP(server);
         if (!server.unsubscribe) {
+            System.out.println("Subscribing to " + PlayerInfo.currentServer);
             PlayerInfo.subscribedToCurrentCHServer = true;
+        } else {
+            System.out.println("Unsubscribing from " + PlayerInfo.currentServer);
         }
     }
 

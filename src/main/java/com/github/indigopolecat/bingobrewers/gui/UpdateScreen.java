@@ -2,12 +2,17 @@ package com.github.indigopolecat.bingobrewers.gui;
 
 import com.github.indigopolecat.bingobrewers.BingoBrewers;
 import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
+import moe.nea.libautoupdate.UpdateUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import org.lwjgl.input.Mouse;
+
+import javax.net.ssl.HttpsURLConnection;
+
+import static com.github.indigopolecat.bingobrewers.util.AutoUpdater.ctx;
 
 public class UpdateScreen extends GuiScreen {
     private GuiButton updateNowButton;
@@ -18,7 +23,7 @@ public class UpdateScreen extends GuiScreen {
     @Override
     public void initGui() {
         buttonList.clear();
-        updateNowButton = new GuiButton(0, width / 2 - 100, height - 50, "Update and Restart");
+        updateNowButton = new GuiButton(0, width / 2 - 100, height - 50, "Update and Close Game");
         updateLaterButton = new GuiButton(0, width / 2 - 100, height - 25, "Update on Next Launch");
         buttonList.add(updateNowButton);
         buttonList.add(updateLaterButton);
@@ -33,9 +38,19 @@ public class UpdateScreen extends GuiScreen {
     @Override
     protected void actionPerformed(GuiButton button) {
         if (button == updateNowButton) {
+            UpdateUtils.patchConnection(connection -> {
+                if (connection instanceof HttpsURLConnection) {
+                    ((HttpsURLConnection) connection).setSSLSocketFactory(ctx.getSocketFactory());
+                }
+            });
             // Do something when myButton is pressed
             BingoBrewers.autoUpdater.update().thenRunAsync(() -> Minecraft.getMinecraft().shutdown());
         } else if(button == updateLaterButton) {
+            UpdateUtils.patchConnection(connection -> {
+                if (connection instanceof HttpsURLConnection) {
+                    ((HttpsURLConnection) connection).setSSLSocketFactory(ctx.getSocketFactory());
+                }
+            });
             BingoBrewers.autoUpdater.checkUpdate().thenAccept(updateAvailable -> {
                 if(updateAvailable) {
                     BingoBrewers.autoUpdater.update();

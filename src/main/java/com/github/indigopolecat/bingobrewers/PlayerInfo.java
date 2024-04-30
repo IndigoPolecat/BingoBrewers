@@ -49,7 +49,6 @@ public class PlayerInfo {
                 subscribedToCurrentCHServer = false;
                 subscribeToCHServer.server = currentServer;
                 subscribeToCHServer.unsubscribe = true;
-                System.out.println("unsubscribing");
                 ServerConnection.SubscribeToCHServer(subscribeToCHServer);
             }
             playerLocation = "";

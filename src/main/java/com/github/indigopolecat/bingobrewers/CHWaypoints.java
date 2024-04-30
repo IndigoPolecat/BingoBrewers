@@ -36,7 +36,7 @@ public class CHWaypoints {
     public int shortNameColor = 0xAA00AA;
     public String id;
     public  ArrayList<CHChestItem> expandedName;
-    public HashSet<CHChestItem> filteredExpandedItems = new HashSet<>();
+    public CopyOnWriteArrayList<CHChestItem> filteredExpandedItems = new CopyOnWriteArrayList<>();
     public static HashMap<String, CrystalHollowsItemTotal> itemCounts = new HashMap<>(); // # of each item
     public static CopyOnWriteArrayList<CHWaypoints> filteredWaypoints = new CopyOnWriteArrayList<>();
     public CHWaypoints(int x, int y, int z, ArrayList<CHChestItem> chest) {
