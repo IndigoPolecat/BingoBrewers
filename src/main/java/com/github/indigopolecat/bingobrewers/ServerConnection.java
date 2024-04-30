@@ -159,45 +159,6 @@ public class ServerConnection extends Listener implements Runnable {
                             BingoBrewersConfig.filterPickonimbus();
                             BingoBrewersConfig.filterMisc();
 
-                            // filter the items into the correct order
-                            ArrayList<Integer> orderedIndexes = new ArrayList<>();
-                            for (CrystalHollowsItemTotal total : filteredItems) {
-                                String item = total.itemName;
-                                orderedIndexes.add(CHItemOrder.indexOf(item));
-                            }
-                            Collections.sort(orderedIndexes);
-                            orderedIndexes.removeIf(index -> index == -1);
-
-                            ConcurrentLinkedDeque<CrystalHollowsItemTotal> sortedDeque = new ConcurrentLinkedDeque<>(filteredItems);
-                            filteredItems.clear();
-                            for (Integer index : orderedIndexes) {
-                                String item = CHItemOrder.get(index);
-                                for (CrystalHollowsItemTotal total : sortedDeque) {
-                                    if (total.itemName.equalsIgnoreCase(item)) {
-                                        filteredItems.add(total);
-                                    }
-                                }
-                            }
-
-                            for (CHWaypoints waypoint : CHWaypoints.filteredWaypoints) {
-                                orderedIndexes.clear();
-                                for (CHChestItem item : waypoint.filteredExpandedItems) {
-                                    String name = item.name;
-                                    orderedIndexes.add(CHItemOrder.indexOf(name));
-                                }
-                                Collections.sort(orderedIndexes);
-                                orderedIndexes.removeIf(index -> index == -1);
-                                CopyOnWriteArrayList<CHChestItem> sortedItems = new CopyOnWriteArrayList<>(waypoint.filteredExpandedItems);
-                                waypoint.filteredExpandedItems.clear();
-                                for (Integer index : orderedIndexes) {
-                                    String item = CHItemOrder.get(index);
-                                    for (CHChestItem chestItem : sortedItems) {
-                                        if (chestItem.name.equalsIgnoreCase(item)) {
-                                            waypoint.filteredExpandedItems.add(chestItem);
-                                        }
-                                    }
-                                }
-                            }
                         }
                     }
                 }
@@ -237,6 +198,48 @@ public class ServerConnection extends Listener implements Runnable {
         keyOrder.add(LOCATION);
         keyOrder.add(NOTE);
         repeat = false;
+    }
+
+    public static void organizeWaypoints() {
+        // filter the items into the correct order
+        ArrayList<Integer> orderedIndexes = new ArrayList<>();
+        for (CrystalHollowsItemTotal total : filteredItems) {
+            String item = total.itemName;
+            orderedIndexes.add(CHItemOrder.indexOf(item));
+        }
+        Collections.sort(orderedIndexes);
+        orderedIndexes.removeIf(index -> index == -1);
+
+        ConcurrentLinkedDeque<CrystalHollowsItemTotal> sortedDeque = new ConcurrentLinkedDeque<>(filteredItems);
+        filteredItems.clear();
+        for (Integer index : orderedIndexes) {
+            String item = CHItemOrder.get(index);
+            for (CrystalHollowsItemTotal total : sortedDeque) {
+                if (total.itemName.equalsIgnoreCase(item)) {
+                    filteredItems.add(total);
+                }
+            }
+        }
+
+        for (CHWaypoints waypoint : CHWaypoints.filteredWaypoints) {
+            orderedIndexes.clear();
+            for (CHChestItem item : waypoint.filteredExpandedItems) {
+                String name = item.name;
+                orderedIndexes.add(CHItemOrder.indexOf(name));
+            }
+            Collections.sort(orderedIndexes);
+            orderedIndexes.removeIf(index -> index == -1);
+            CopyOnWriteArrayList<CHChestItem> sortedItems = new CopyOnWriteArrayList<>(waypoint.filteredExpandedItems);
+            waypoint.filteredExpandedItems.clear();
+            for (Integer index : orderedIndexes) {
+                String item = CHItemOrder.get(index);
+                for (CHChestItem chestItem : sortedItems) {
+                    if (chestItem.name.equalsIgnoreCase(item)) {
+                        waypoint.filteredExpandedItems.add(chestItem);
+                    }
+                }
+            }
+        }
     }
 
     public synchronized void setClient(Client client) {

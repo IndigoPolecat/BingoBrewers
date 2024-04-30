@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import static com.github.indigopolecat.bingobrewers.CHWaypoints.filteredWaypoints;
 import static com.github.indigopolecat.bingobrewers.CHWaypoints.itemCounts;
 import static com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud.filteredItems;
+import static com.github.indigopolecat.bingobrewers.ServerConnection.organizeWaypoints;
 import static com.github.indigopolecat.bingobrewers.ServerConnection.waypoints;
 
 public class BingoBrewersConfig extends Config {
@@ -281,7 +282,8 @@ public class BingoBrewersConfig extends Config {
                 }
             }
         }
-
+        CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
+        organizeWaypoints();
     }
     public static void filterPowder() {
         filteredItems.removeIf(entry -> entry.itemName.contains(" Powder"));
@@ -330,19 +332,17 @@ public class BingoBrewersConfig extends Config {
                             crystalHollowsItemTotal.itemColor = item.itemColor;
                             crystalHollowsItemTotal.countColor = item.numberColor;
                             filteredItems.add(crystalHollowsItemTotal);
-                            if (!CHWaypoints.filteredWaypoints.contains(waypoint)) {
-                                CHWaypoints.filteredWaypoints.add(waypoint);
-                            }
-                            if (!CHWaypoints.filteredWaypoints.contains(waypoint)) {
-                                CHWaypoints.filteredWaypoints.add(waypoint);
-                            }
                         }
-
+                        waypoint.filteredExpandedItems.add(item);
+                        if (!CHWaypoints.filteredWaypoints.contains(waypoint)) {
+                            CHWaypoints.filteredWaypoints.add(waypoint);
+                        }
                     }
                 }
             }
         }
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
+        organizeWaypoints();
 
     }
     public static void filterPrehistoricEggs() {
@@ -373,6 +373,7 @@ public class BingoBrewersConfig extends Config {
             }
         }
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
+        organizeWaypoints();
 
     }
     public static void filterPickonimbus() {
@@ -403,6 +404,7 @@ public class BingoBrewersConfig extends Config {
             }
         }
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
+        organizeWaypoints();
 
     }
     public static void filterGoblinEggs() {
@@ -450,6 +452,7 @@ public class BingoBrewersConfig extends Config {
             }
         }
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
+        organizeWaypoints();
 
     }
     public static void filterRoughGemstones() {
@@ -497,6 +500,7 @@ public class BingoBrewersConfig extends Config {
             }
         }
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
+        organizeWaypoints();
 
     }
     public static void filterJasperGemstones() {
@@ -527,6 +531,7 @@ public class BingoBrewersConfig extends Config {
             }
         }
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
+        organizeWaypoints();
 
     }
     public static void filterMisc() {
@@ -557,6 +562,7 @@ public class BingoBrewersConfig extends Config {
             }
         }
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
+        organizeWaypoints();
 
     }
 
