@@ -83,21 +83,24 @@ public class CHChests {
     }
 
     public static void parseChat() {
-        System.out.println(listeningChests.entrySet());
         // remove old chests
         listeningChests.entrySet().removeIf(entry -> System.currentTimeMillis() - entry.getValue() > 9000);
-        System.out.println(listeningChests.entrySet());
 
         // Create a copy we'll remove entries too new to be valid from, and then use for calculations
         HashMap<String, Long> listeningChestsCopy = new HashMap<>(listeningChests);
 
+        for(Long time : listeningChestsCopy.values()) {
+            if (System.currentTimeMillis() - time < 4500) {
+                System.out.println("Please report this message to indigo_polecat (CHChests beta 0.3 logging for wrong timing on chest open) time to open: " + (System.currentTimeMillis() - time));
+            }
+        }
+
         // remove chests that were right clicked less than 4.8 seconds ago (temporarily)
-        listeningChestsCopy.values().removeIf(entry -> System.currentTimeMillis() - entry < 4800);
+        listeningChestsCopy.values().removeIf(entry -> System.currentTimeMillis() - entry < 4500);
         if (listeningChestsCopy.isEmpty()) {
             RecentChatMessages.clear();
             return;
         }
-        System.out.println(listeningChestsCopy.entrySet());
 
         long oldest = Long.MAX_VALUE;
         String coords = null;
@@ -111,7 +114,6 @@ public class CHChests {
         }
         if (coords == null) return;
 
-        LoggerUtil.LOGGER.info("structure chest detected");
         listeningChests.remove(coords);
         // add the opened chest to blacklist
         Packets.hardstone.put(coords, Long.MAX_VALUE);
@@ -141,7 +143,6 @@ public class CHChests {
             System.out.println(message);
             try {
                 while (matcher.find()) {
-                    System.out.println("match found");
                     chestItem.name = matcher.group(4);
 
                     chestItem.count = matcher.group(2).replaceAll(",", "");
@@ -151,8 +152,6 @@ public class CHChests {
                     Optional<String> itemColorGroup = Optional.ofNullable(matcher.group(3));
                     chestItem.numberColor = numberColorGroup.map(BingoBrewers.minecraftColors::get).orElse(null);
                     chestItem.itemColor = itemColorGroup.map(BingoBrewers.minecraftColors::get).orElse(chestItem.numberColor);
-                    System.out.println("number color: " + chestItem.numberColor);
-                    System.out.println("item color: " + chestItem.itemColor);
                     if (chestItem.itemColor == null) continue messageLoop;
                 }
 
