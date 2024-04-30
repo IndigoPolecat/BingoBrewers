@@ -1,0 +1,41 @@
+{
+	"schemaVersion": 1,
+	"id": "bingobrewers",
+	"version": "${version}",
+	"name": "Bingo Brewers",
+	"description": "A Mod for Hypixel Skyblock's Bingo Event",
+	"authors": [
+		"IndigoPolecat",
+		"Conutik"
+	],
+	"contact": {
+		"homepage": "https://discord.gg/bingobrewers",
+		"sources": "https://github.com/IndigoPolecat/BingoBrewers"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/bingobrewers/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.conutik.bingobrewers.BingoBrewers"
+		],
+		"client": [
+			"com.conutik.bingobrewers.BingoBrewersClient"
+		],
+		"fabric-datagen": [
+			"com.conutik.bingobrewers.BingoBrewersDataGenerator"
+		]
+	},
+	"mixins": [
+		"bingobrewers.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.15.10",
+		"minecraft": "~1.20.4",
+		"java": ">=17",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
