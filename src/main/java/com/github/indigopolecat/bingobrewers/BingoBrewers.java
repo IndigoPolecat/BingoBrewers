@@ -18,7 +18,7 @@ import java.util.HashMap;
 public class BingoBrewers {
     public static BingoBrewersConfig config;
 
-    public static final String version = "v0.3-beta";
+    public static final String version = "v0.3.1-beta";
 
     public static volatile TitleHud activeTitle;
     public static volatile Client client;
