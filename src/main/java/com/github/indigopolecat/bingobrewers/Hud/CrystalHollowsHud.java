@@ -25,7 +25,6 @@ public class CrystalHollowsHud extends Hud {
     public static ConcurrentLinkedDeque<CrystalHollowsItemTotal> filteredItems = new ConcurrentLinkedDeque<>();
 
     public CrystalHollowsHud() {
-        BingoBrewersConfig.crystalHollowsWaypointsToggle = enabled;
     }
 
     @DualOption(
