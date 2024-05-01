@@ -129,7 +129,7 @@ public class ServerConnection extends Listener implements Runnable {
                         joinChat = request.joinAlertChat;
                     }
                     if (request.joinAlertTitle != null) {
-                        joinTitle = new TitleHud(request.joinAlertTitle, 0xFF5555, 10000);
+                        joinTitle = new TitleHud(request.joinAlertTitle, 0xFF5555, 10000, true);
                     }
                     CHItemOrder = new ArrayList<>(request.CHItemOrder);
 
@@ -343,7 +343,7 @@ public class ServerConnection extends Listener implements Runnable {
             } else {
                 hub = "Hub " + hub;
             }
-            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000);
+            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000, false);
             setActiveHud(titleHud);
         } else {
             if (hub.equalsIgnoreCase("Unknown Hub")) {
@@ -351,7 +351,7 @@ public class ServerConnection extends Listener implements Runnable {
             } else {
                 hub = "Dungeon Hub " + hub;
             }
-            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000);
+            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000, false);
             setActiveHud(titleHud);
         }
 

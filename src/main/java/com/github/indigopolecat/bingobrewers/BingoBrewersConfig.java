@@ -104,14 +104,14 @@ public class BingoBrewersConfig extends Config {
     public static boolean crystalHollowsWaypointsToggle = true;
 
     @HUD(
-            name = "Crystal Hollows Loot HUD",
+            name = "Crystal Hollows Loot",
             category = "Crystal Hollows Waypoints"
     )
     public CrystalHollowsHud CHHud = new CrystalHollowsHud();
 
     @Dropdown(
             name = "Waypoints After Opening",
-            options = {"Strikethrough", "Remove", "Nothing"},
+            options = {"Strikethrough", "Remove", "Do Nothing"},
             category = "Crystal Hollows Waypoints",
             description = "How to display waypoints once you have opened the chest.",
             size = OptionSize.DUAL
@@ -131,7 +131,7 @@ public class BingoBrewersConfig extends Config {
             name = "Goblin Eggs",
             options = {"All", "Blue Only", "None"},
             category = "Crystal Hollows Waypoints",
-            description = "Include all Goblin Eggs.",
+            description = "Include Goblin Eggs.",
             size = OptionSize.DUAL
     )
     public static int goblinEggs = 0;
@@ -140,7 +140,7 @@ public class BingoBrewersConfig extends Config {
             name = "Gemstones",
             options = {"All", "Fine/Flawless Only", "None"},
             category = "Crystal Hollows Waypoints",
-            description = "Include Rough and Flawed gemstones found in chests.",
+            description = "Include gemstones found in chests.",
             size = OptionSize.DUAL
     )
     public static int roughGemstones = 1;
@@ -241,11 +241,18 @@ public class BingoBrewersConfig extends Config {
     public static boolean displayMissingBingoes = true;
 
     @Switch(
-            name = "Chicken Head Reset Message",
+            name = "Chicken Head Reset Alert",
             category = "Misc",
             description = "Display a message if the Chicken Head cooldown is reset."
     )
     public static boolean displayEggTimerReset = false;
+
+    @Text(
+            name = "Chicken Head Alert Message",
+            category = "Misc",
+            description = "What to display when the Chicken cooldown is reset. (Use & for § in COLOR only codes)"
+    )
+    public static String eggTimerMessage = "&aCrouch";
 
     @Switch(
             name="Chicken Head Reset Sound",
