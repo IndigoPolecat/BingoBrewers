@@ -120,12 +120,12 @@ public class BingoBrewersConfig extends Config {
 
     @Dropdown(
             name = "Powder",
-            options = {"None", "Only 1200+ Powder", "All"},
+            options = {"All", "Only 1200+ Powder", "None"},
             category = "Crystal Hollows Waypoints",
             description = "Include Mithril and Gemstone powder.",
             size = OptionSize.DUAL
     )
-    public static int powder = 2;
+    public static int powder = 0;
 
     @Dropdown(
             name = "Goblin Eggs",
@@ -311,7 +311,7 @@ public class BingoBrewersConfig extends Config {
                 }
             }
         }
-        if (powder == 2) {
+        if (powder == 0) {
             for (String item : itemCounts.keySet()) {
                 if (item.contains(" Powder")) {
                     filteredItems.add(itemCounts.get(item));
