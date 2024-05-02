@@ -267,6 +267,15 @@ public class BingoBrewersConfig extends Config {
     }
 
     public static void filterRobotParts() {
+        filteredItems.removeIf(item -> "FTX 3070".equals(item.itemName) || "Robotron Reflector".equals(item.itemName) || "Control Switch".equals(item.itemName) || "Synthetic Heart".equals(item.itemName) || "Superlite Motor".equals(item.itemName) || "Electron Transmitter".equals(item.itemName));
+
+        for (CHWaypoints waypoint : waypoints) {
+            for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
+                if ("FTX 3070".equals(item.name) || "Robotron Reflector".equals(item.name) || "Control Switch".equals(item.name) || "Synthetic Heart".equals(item.name) || "Superlite Motor".equals(item.name) || "Electron Transmitter".equals(item.name)) {
+                    waypoint.filteredExpandedItems.remove(item);
+                }
+            }
+        }
         if (robotParts) {
             for (String item : itemCounts.keySet()) {
                 if ("FTX 3070".equals(item) || "Robotron Reflector".equals(item) || "Control Switch".equals(item) || "Synthetic Heart".equals(item) || "Superlite Motor".equals(item) || "Electron Transmitter".equals(item)) {
@@ -283,19 +292,8 @@ public class BingoBrewersConfig extends Config {
                     }
                 }
             }
-        } else {
-            filteredItems.removeIf(item -> "FTX 3070".equals(item.itemName) || "Robotron Reflector".equals(item.itemName) || "Control Switch".equals(item.itemName) || "Synthetic Heart".equals(item.itemName) || "Superlite Motor".equals(item.itemName) || "Electron Transmitter".equals(item.itemName));
-
-            for (CHWaypoints waypoint : waypoints) {
-                for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
-                    if ("FTX 3070".equals(item.name) || "Robotron Reflector".equals(item.name) || "Control Switch".equals(item.name) || "Synthetic Heart".equals(item.name) || "Superlite Motor".equals(item.name) || "Electron Transmitter".equals(item.name)) {
-                        waypoint.filteredExpandedItems.remove(item);
-                    }
-                }
-            }
         }
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
-        organizeWaypoints();
     }
 
     public static void powderCall() {
@@ -359,7 +357,6 @@ public class BingoBrewersConfig extends Config {
             }
         }
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
-        organizeWaypoints();
 
     }
 
@@ -395,7 +392,6 @@ public class BingoBrewersConfig extends Config {
             }
         }
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
-        organizeWaypoints();
 
     }
 
@@ -431,7 +427,6 @@ public class BingoBrewersConfig extends Config {
             }
         }
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
-        organizeWaypoints();
 
     }
 
@@ -484,7 +479,6 @@ public class BingoBrewersConfig extends Config {
             }
         }
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
-        organizeWaypoints();
 
     }
 
@@ -537,7 +531,6 @@ public class BingoBrewersConfig extends Config {
             }
         }
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
-        organizeWaypoints();
 
     }
 
@@ -573,7 +566,6 @@ public class BingoBrewersConfig extends Config {
             }
         }
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
-        organizeWaypoints();
 
     }
 
@@ -609,7 +601,6 @@ public class BingoBrewersConfig extends Config {
             }
         }
         CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
-        organizeWaypoints();
 
     }
 

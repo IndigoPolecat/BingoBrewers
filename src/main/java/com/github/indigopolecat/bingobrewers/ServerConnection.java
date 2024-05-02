@@ -150,6 +150,7 @@ public class ServerConnection extends Listener implements Runnable {
                             for (CHWaypoints waypoint : CHWaypoints.filteredWaypoints) {
                                 waypoint.filteredExpandedItems.clear();
                             }
+
                             BingoBrewersConfig.filterPowder();
                             BingoBrewersConfig.filterGoblinEggs();
                             BingoBrewersConfig.filterRoughGemstones();
