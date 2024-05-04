@@ -139,7 +139,7 @@ public class CHWaypoints {
         float screenY = (1 - textPosition.y) * screenHeight / 2;
 
 // Check if the text is near the center of  the screen
-        float centerThreshold = 50; // Adjust this value as needed
+        float centerThreshold = 30; // Adjust this value as needed
         float centerX = (float) screenWidth / 2;
         float centerY = (float) screenHeight / 2;
         boolean nearCenter = Math.abs(screenX - centerX) < centerThreshold && Math.abs(screenY - centerY) < centerThreshold;
