@@ -2,6 +2,8 @@ package com.github.indigopolecat.bingobrewers.util;
 
 import com.github.indigopolecat.kryo.KryoNetwork;
 
+import java.util.Arrays;
+
 import static com.github.indigopolecat.bingobrewers.CHWaypoints.itemCounts;
 
 public class CrystalHollowsItemTotal {
@@ -44,6 +46,7 @@ public class CrystalHollowsItemTotal {
         try {
             String[] range = item.count.split("-");
             if (range.length != 2) {
+                System.out.println("range.length: " + range.length + " item: " + item.name + " count: " + item.count + "range: " + Arrays.toString(range));
                 System.out.println("Something went wrong, CH Item count range doesn't contain 2 numbers");
                 return itemTotal;
             }
@@ -52,6 +55,7 @@ public class CrystalHollowsItemTotal {
 
             String[] currentRange = itemCountExisting.split("-");
             if (currentRange.length != 2) {
+                System.out.println("currentRange.length: " + currentRange.length + " item: " + item.name + " count: " + itemCountExisting + "range: " + Arrays.toString(currentRange));
                 System.out.println("Something went wrong, _existing_ CH Item count range doesn't contain 2 numbers");
                 return itemTotal;
             }
