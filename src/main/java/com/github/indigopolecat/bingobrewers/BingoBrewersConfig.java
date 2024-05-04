@@ -401,7 +401,7 @@ public class BingoBrewersConfig extends Config {
         organizeWaypoints();
     }
     public static void filterPickonimbus() {
-        filteredItems.removeIf(entry -> entry.itemName.equals("Pickonimbus"));
+        filteredItems.removeIf(entry -> entry.itemName.contains("Pickonimbus"));
         for (CHWaypoints waypoint : waypoints) {
             for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                 if (item.name.contains("Pickonimbus")) {
