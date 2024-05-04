@@ -73,7 +73,7 @@ public class UpdateScreen extends GuiScreen {
         int textWidth = fontRendererObj.getStringWidth(text);
 
             // Convert markdown to Minecraft formatting codes
-            changelog = changelog.replaceAll("###", "§l"); // Bold
+            changelog = changelog.replaceAll("#+\\s+", "§l"); // Bold
             changelog = changelog.replaceAll("\r", ""); // Remove carriage returns
             changelog = changelog.replaceAll("-\\s+", "• "); // Remove carriage returns
         changelog = changelog.replaceAll("\\s+-\\s+", "○ "); // Remove carriage returns
