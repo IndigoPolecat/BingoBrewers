@@ -52,7 +52,7 @@ public class ServerConnection extends Listener implements Runnable {
 
     @Override
     public void run() {
-        Client client1 = new Client();
+        Client client1 = new Client(100000, 100000);
         setClient(client1);
         if (BingoBrewers.client == null) {
             LoggerUtil.LOGGER.info("Client is null");
@@ -207,6 +207,7 @@ public class ServerConnection extends Listener implements Runnable {
         ArrayList<Integer> orderedIndexes = new ArrayList<>();
         for (CrystalHollowsItemTotal total : filteredItems) {
             String item = total.itemName;
+            if (orderedIndexes.contains(CHItemOrder.indexOf(item))) continue;
             orderedIndexes.add(CHItemOrder.indexOf(item));
         }
         Collections.sort(orderedIndexes);

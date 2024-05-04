@@ -335,6 +335,7 @@ public class BingoBrewersConfig extends Config {
                         for (CrystalHollowsItemTotal itemTotal : filteredItems) {
                             if (itemTotal.itemName.equals(item.name)) {
                                 String itemCountExisting = itemTotal.itemCount;
+                                filteredItems.remove(itemTotal);
                                 filteredItems.add(CrystalHollowsItemTotal.sumPowder(itemCountExisting, item, itemTotal));
                                 summed = true;
                             }
