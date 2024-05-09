@@ -7,7 +7,7 @@ import cc.polyfrost.oneconfig.config.elements.BasicOption;
 import cc.polyfrost.oneconfig.config.elements.OptionPage;
 import cc.polyfrost.oneconfig.hud.HUDUtils;
 import cc.polyfrost.oneconfig.hud.Hud;
-import cc.polyfrost.oneconfig.internal.hud.HudCore;
+import com.github.indigopolecat.bingobrewers.util.HudCore;
 import com.github.indigopolecat.bingobrewers.BingoBrewersConfig;
 import com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud;
 import org.spongepowered.asm.mixin.Mixin;

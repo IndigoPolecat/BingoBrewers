@@ -63,6 +63,16 @@ loom {
 
 sourceSets.main {
     output.setResourcesDir(sourceSets.main.flatMap { it.java.classesDirectory })
+
+}
+
+sourceSets {
+    val dummy by creating
+    main {
+        dummy.compileClasspath += compileClasspath
+        compileClasspath += dummy.output
+        output.setResourcesDir(java.classesDirectory)
+    }
 }
 
 val shade: Configuration by configurations.creating {

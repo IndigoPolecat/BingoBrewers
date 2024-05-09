@@ -32,6 +32,7 @@ public class TitleHud {
         this.title = hud.title;
         this.displayTime = hud.displayTime;
         this.color = hud.color;
+        this.allowColorsFromText = hud.allowColorsFromText;
     }
 
     public void drawTitle() {
