@@ -381,6 +381,7 @@ public class ServerConnection extends Listener implements Runnable {
 
     public static synchronized void SubscribeToCHServer(SubscribeToCHServer server) {
         Client currentClient = getClient();
+
         if (currentClient == null) {
             LoggerUtil.LOGGER.info("Client is null");
             return;

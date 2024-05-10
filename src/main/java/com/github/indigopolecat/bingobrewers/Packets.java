@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
+import ibxm.Player;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.play.server.*;
@@ -105,9 +106,9 @@ public class Packets {
                         long worldTime = world.getWorldTime();
                         PlayerInfo.day = (int) (worldTime / 24000);
 
+                        if (PlayerInfo.currentServer == null) return;
                         KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
                         CHRequest.server = PlayerInfo.currentServer;
-                        System.out.println(PlayerInfo.day);
                         CHRequest.day = PlayerInfo.day;
                         ServerConnection.SubscribeToCHServer(CHRequest);
                     }
