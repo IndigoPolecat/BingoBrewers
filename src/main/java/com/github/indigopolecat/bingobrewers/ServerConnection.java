@@ -6,6 +6,7 @@ import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.minlog.Log;
+import com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud;
 import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
 import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
@@ -388,6 +389,10 @@ public class ServerConnection extends Listener implements Runnable {
         }
         currentClient.sendTCP(server);
         if (!server.unsubscribe) {
+            ServerConnection.waypoints.clear();
+            CHWaypoints.filteredWaypoints.clear();
+            CrystalHollowsHud.filteredItems.clear();
+            CHWaypoints.itemCounts.clear();
             System.out.println("Subscribing to " + PlayerInfo.currentServer);
             PlayerInfo.subscribedToCurrentCHServer = true;
         } else {
