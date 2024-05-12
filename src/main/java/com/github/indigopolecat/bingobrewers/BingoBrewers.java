@@ -63,6 +63,7 @@ public class BingoBrewers {
         minecraftColors.put("§f", 0xFFFFFF);  // White
     }
 
+
     public static void createServerThread() {
         try {
             ServerConnection serverConnection = new ServerConnection();

@@ -85,13 +85,13 @@ public class CHChests {
         HashMap<String, Long> listeningChestsCopy = new HashMap<>(listeningChests);
 
         for(Long time : listeningChestsCopy.values()) {
-            if (System.currentTimeMillis() - time < 4500) {
-                System.out.println("Please report this message to indigo_polecat (CHChests beta 0.3 logging for wrong timing on chest open) time to open: " + (System.currentTimeMillis() - time));
+            if (System.currentTimeMillis() - time < 4200) {
+                System.out.println("Please report this message to indigo_polecat (CHChests beta 0.3+ logging for wrong timing on chest open) time to open: " + (System.currentTimeMillis() - time) + " Expected greater than 4200");
             }
         }
 
         // remove chests that were right clicked less than 4.8 seconds ago (temporarily)
-        listeningChestsCopy.values().removeIf(entry -> System.currentTimeMillis() - entry < 4500);
+        listeningChestsCopy.values().removeIf(entry -> System.currentTimeMillis() - entry < 4200);
         if (listeningChestsCopy.isEmpty()) {
             RecentChatMessages.clear();
             return;
