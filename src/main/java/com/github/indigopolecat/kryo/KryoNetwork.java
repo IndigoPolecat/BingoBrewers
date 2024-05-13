@@ -109,4 +109,31 @@ public class KryoNetwork {
         public int z;
         public ArrayList<CHChestItem> items = new ArrayList<>();
     }
+
+    public static class RequestWarpToServer {
+        public String server;
+        public String serverType; // Crystal Hollows, Dwarven Mines, etc.
+    }
+
+    public static class BackgroundWarpTask {
+        public String server; // confirm
+        public String ignToWarp;
+    }
+
+    public static class RegisterToWarpServer {
+        public String server;
+        public boolean unregister = false;
+    }
+
+    public static class DoneWithWarpTask {
+        public boolean successful = true;
+        public String[] ignsWarped;
+    }
+
+    public static class CancelWarpRequest {
+    }
+
+    public static class queuePosition {
+        public int positionInWarpQueue;
+    }
 }
