@@ -2,6 +2,8 @@ package com.github.indigopolecat.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.EndPoint;
+import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -26,6 +28,18 @@ public class KryoNetwork {
         kryo.register(ChestInfo.class);
         kryo.register(CHChestItem.class);
         kryo.register(LinkedHashSet.class);
+        kryo.register(RequestWarpToServer.class);
+        kryo.register(BackgroundWarpTask.class);
+        kryo.register(RegisterToWarpServer.class);
+        kryo.register(DoneWithWarpTask.class);
+        kryo.register(CancelWarpRequest.class);
+        kryo.register(AbortWarpTask.class);
+        kryo.register(QueuePosition.class);
+        kryo.register(ServersSummary.class);
+        kryo.register(UpdateServers.class);
+        kryo.register(RequestLiveUpdatesForServerInfo.class);
+        kryo.register(ServerSummary.class);
+        kryo.register(CondensedItemSummary.class);
     }
 
     public static class ConnectionIgn {
@@ -127,7 +141,7 @@ public class KryoNetwork {
 
     public static class DoneWithWarpTask {
         public boolean successful = true;
-        public ArrayList<String> ignsWarped;
+        public ArrayList<String> ignsWarped = new ArrayList<>();
     }
 
     public static class CancelWarpRequest {
@@ -138,7 +152,19 @@ public class KryoNetwork {
         public String ign;
     }
 
-    public static class queuePosition {
+    public static class QueuePosition {
         public int positionInWarpQueue;
+    }
+
+    public static class ServersSummary {
+        public HashMap<String, ServerSummary> serverInfo = new HashMap<>();
+    }
+
+    public static class UpdateServers {
+        public HashMap<String, Long> serversAndLastUpdatedTime = new HashMap<>();
+    }
+
+    public static class RequestLiveUpdatesForServerInfo {
+        public boolean unrequest;
     }
 }
