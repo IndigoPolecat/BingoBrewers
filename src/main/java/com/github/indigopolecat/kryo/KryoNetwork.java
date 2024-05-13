@@ -127,10 +127,15 @@ public class KryoNetwork {
 
     public static class DoneWithWarpTask {
         public boolean successful = true;
-        public String[] ignsWarped;
+        public ArrayList<String> ignsWarped;
     }
 
     public static class CancelWarpRequest {
+        public String server;
+    }
+
+    public static class AbortWarpTask {
+        public String ign;
     }
 
     public static class queuePosition {
