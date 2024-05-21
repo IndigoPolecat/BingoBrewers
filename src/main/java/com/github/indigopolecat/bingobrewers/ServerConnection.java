@@ -15,11 +15,13 @@ import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.*;
 import com.github.indigopolecat.kryo.KryoNetwork.ConnectionIgn;
 import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
+import com.github.indigopolecat.kryo.ServerSummary;
 import ibxm.Player;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -49,11 +51,11 @@ public class ServerConnection extends Listener implements Runnable {
     public static TitleHud joinTitle;
     public static String joinChat;
     public static ArrayList<String> CHItemOrder = new ArrayList<>();
-
+    public static ConcurrentHashMap<String, ServerSummary> serverSummaries = new ConcurrentHashMap<>();
 
     @Override
     public void run() {
-        Client client1 = new Client(100000, 100000);
+        Client client1 = new Client(16384, 16384);
         setClient(client1);
         if (BingoBrewers.client == null) {
             LoggerUtil.LOGGER.info("Client is null");
@@ -164,6 +166,9 @@ public class ServerConnection extends Listener implements Runnable {
 
                         }
                     }
+                } else if (object instanceof ServersSummary) {
+                    ServersSummary servers = (ServersSummary) object;
+                    serverSummaries.putAll(servers.serverInfo);
                 }
             }
 
@@ -398,6 +403,26 @@ public class ServerConnection extends Listener implements Runnable {
         } else {
             System.out.println("Unsubscribing from " + PlayerInfo.currentServer);
         }
+    }
+
+    public static synchronized void requestUpdatedServerSummaries(UpdateServers update) {
+        Client client = getClient();
+
+        if (client == null) {
+            LoggerUtil.LOGGER.info("Client is null");
+            return;
+        }
+        client.sendTCP(update);
+    }
+
+    public static synchronized void requestLiveUpdates(RequestLiveUpdatesForServerInfo request) {
+        Client client = getClient();
+
+        if (client == null) {
+            LoggerUtil.LOGGER.info("Client is null");
+            return;
+        }
+        client.sendTCP(request);
     }
 
     public void reconnect() {

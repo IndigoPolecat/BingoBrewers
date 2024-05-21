@@ -39,7 +39,6 @@ public class KryoNetwork {
         kryo.register(UpdateServers.class);
         kryo.register(RequestLiveUpdatesForServerInfo.class);
         kryo.register(ServerSummary.class);
-        kryo.register(CondensedItemSummary.class);
     }
 
     public static class ConnectionIgn {
