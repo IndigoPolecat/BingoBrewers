@@ -34,6 +34,8 @@ public class PlayerInfo {
     public static int tickCounter = 0;
     public static int day;
     public static boolean subscribedToCurrentCHServer;
+    public static boolean inParty;
+    public static boolean registeredToWarp;
     public volatile static boolean readyToNotify = false;
     public volatile static String splashHubNumberForNotification = null;
     public volatile static boolean readyToNotifyDungeon = false;

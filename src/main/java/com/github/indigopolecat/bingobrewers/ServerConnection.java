@@ -172,6 +172,8 @@ public class ServerConnection extends Listener implements Runnable {
                 } else if (object instanceof QueuePosition) {
                     // if you have to wait in the queue, this will give you your current position
                     // gonna leave it for you to implement because I think the permanent value should be stored in the class for rendering the menu
+                } else if (object instanceof BackgroundWarpTask) {
+
                 }
             }
 
@@ -196,7 +198,8 @@ public class ServerConnection extends Listener implements Runnable {
         // send server player ign and version
         ConnectionIgn response = new ConnectionIgn();
         String ign = Minecraft.getMinecraft().getSession().getUsername();
-        response.hello = ign + "|v0.3.3|Beta";
+        String uuid = Minecraft.getMinecraft().getSession().getPlayerID();
+        response.hello = ign + "|v0.3.3|Beta|" + uuid;
         System.out.println("sending " + response.hello);
         BingoBrewers.client.sendTCP(response);
         System.out.println("sent");

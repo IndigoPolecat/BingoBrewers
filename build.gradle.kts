@@ -91,6 +91,7 @@ repositories {
     // If you don't want to log in with your real minecraft account, remove this line
     maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
     maven("https://repo.nea.moe/releases")
+    maven("https://repo.hypixel.net/repository/Hypixel/")
 }
 
 val shadowImpl: Configuration by configurations.creating {
@@ -117,6 +118,7 @@ dependencies {
     // include should be replaced with a configuration that includes this in the jar
     shadowImpl("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+") // Should be included in jar
     shadowImpl("moe.nea:libautoupdate:1.3.1") // Should be included in jar
+    implementation("net.hypixel:mod-api:0.4.0")
 }
 
 // Tasks:

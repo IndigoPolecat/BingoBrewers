@@ -130,7 +130,7 @@ public class KryoNetwork {
 
     public static class BackgroundWarpTask {
         public String server; // confirm
-        public String ignToWarp;
+        public HashMap<String, String> accountsToWarp;
     }
 
     public static class RegisterToWarpServer {
