@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.lwjgl.input.Keyboard;
 
 import java.text.DecimalFormat;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,13 +43,13 @@ public class ChestInventories {
     private static boolean hubSelectorOpen = false;
     private static boolean dungeonHubSelectorOpen = false;
     private static boolean shiftToggled = false;
-    private static boolean waitingForLbinMap = false;
+    private static boolean waitingForLbinMap = true;
     private static long lastCalculated = 0;
     private static ContainerChest containerChest = null;
     private static int currentPoints = 0;
     private static int currentRank = 0;
     private static final ArrayList<BingoShopItem> shopItems = new ArrayList<>();
-    public static HashMap<String, Integer> lbinMap = new HashMap<>();
+    public static ConcurrentHashMap<String, Integer> lbinMap = new ConcurrentHashMap<>();
 
 
     @SubscribeEvent
@@ -175,7 +176,8 @@ public class ChestInventories {
         if(currentPoints == -1 || !BingoBrewersConfig.displayMissingBingoPoints || !BingoBrewersConfig.displayMissingBingoes) {
             return;
         }
-        int toolTipIndex = item.itemStack.getTagCompound().getCompoundTag("display").getTagList("Lore", 8).tagCount() - 2;
+        //int toolTipIndex = item.itemStack.getTagCompound().getCompoundTag("display").getTagList("Lore", 8).tagCount() - 3;
+        int toolTipIndex = item.itemStack.getTagCompound().getCompoundTag("display").getTagList("Lore", 8).tagCount() - 1;
         int pointsPerBingo;
         // controls the text in the toggle to switch
         String withOrWithout = "";
@@ -202,21 +204,21 @@ public class ChestInventories {
         String bingoesRequired = df.format( pointsLeftToAffordItem / pointsPerBingo);
 
         if (pointsLeftToAffordItem > 0 && BingoBrewersConfig.displayMissingBingoPoints) {
-            event.toolTip.add(toolTipIndex, "");
-            event.toolTip.add(toolTipIndex + 1,"§7Points Missing: §c" + pointsLeftToAffordItem);
+            event.toolTip.add(0, "");
+            event.toolTip.add(0, "§7Points Missing: §c" + pointsLeftToAffordItem);
             toolTipIndex++;
         }
 
         if (Double.parseDouble(bingoesRequired) > 0 && BingoBrewersConfig.displayMissingBingoes) {
-            event.toolTip.add(toolTipIndex + 1,"§7Events Remaining" + withOrWithout + ": §c" + bingoesRequired);
-            event.toolTip.add(toolTipIndex, "§8[SHIFT FOR " + withOrWithout2 + " POINTS/BINGO]");
+            event.toolTip.add("§8[SHIFT FOR " + withOrWithout2 + " POINTS/BINGO]");
+            event.toolTip.add("§7Events Remaining" + withOrWithout + ": §c" + bingoesRequired);
         }
 
     }
 
     @SubscribeEvent
     public void onItemTooltip(ItemTooltipEvent event) {
-        if (!waitingForLbinMap) return;
+        if (waitingForLbinMap) return;
         DecimalFormat decimalFormat = new DecimalFormat("#,###");
         for (BingoShopItem item : shopItems) {
             if (!item.itemName.equals(removeFormatting(event.itemStack.getDisplayName()))) continue;
@@ -224,6 +226,8 @@ public class ChestInventories {
                 if (!item.extraCost.isEmpty()) {
                     int totalCost = 0;
                     for (String s : item.extraCost) {
+                        System.out.println("string: " + s);
+                        System.out.println(lbinMap.toString());
                         if (lbinMap.containsKey(s)) {
                             totalCost += lbinMap.get(s);
                             item.extraCostMap.put(s, lbinMap.get(s));
@@ -245,8 +249,9 @@ public class ChestInventories {
                     System.out.println("lore " + lore);
                     System.out.println("extraCostIndex " + item.extraCostIndex.get(i));
                     System.out.println("extraCost " + item.extraCost.get(i));
-                    System.out.println("extraCostMap " + item.extraCostMap.get(item.extraCost.get(i)));
-                    System.out.println("extraCostIndex " + item.extraCostIndex.get(i) + 1);
+                    System.out.println("Extra Cost Map: " + item.extraCostMap.toString());
+                    System.out.println("extraCostItem " + item.extraCostMap.get(item.extraCost.get(i)));
+                    System.out.println("extraCostIndex " + (item.extraCostIndex.get(i) + 1));
                     System.out.println(event.toolTip);
                     event.toolTip.add(item.extraCostIndex.get(i) + 1, lore + "§6(" + formatNumber(item.extraCostMap.get(item.extraCost.get(i))) + ")");
                     if (i == item.extraCostIndex.size() - 1) {

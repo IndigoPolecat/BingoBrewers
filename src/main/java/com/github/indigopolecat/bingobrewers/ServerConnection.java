@@ -115,7 +115,7 @@ public class ServerConnection extends Listener implements Runnable {
                     ChestInventories.POINTS_PER_BINGO_COMMUNITIES = request.POINTS_PER_BINGO_COMMUNITIES;
                 } else if (object instanceof KryoNetwork.sendLbin) {
                     KryoNetwork.sendLbin request = (KryoNetwork.sendLbin) object;
-                    ChestInventories.lbinMap = request.lbinMap;
+                    ChestInventories.lbinMap.putAll(request.lbinMap);
                 }
             }
 
