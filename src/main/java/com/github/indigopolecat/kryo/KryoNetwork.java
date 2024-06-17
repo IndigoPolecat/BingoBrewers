@@ -39,6 +39,7 @@ public class KryoNetwork {
         kryo.register(UpdateServers.class);
         kryo.register(RequestLiveUpdatesForServerInfo.class);
         kryo.register(ServerSummary.class);
+        kryo.register(WarningBannerInfo.class);
     }
 
     public static class ConnectionIgn {
@@ -165,5 +166,10 @@ public class KryoNetwork {
 
     public static class RequestLiveUpdatesForServerInfo {
         public boolean unrequest;
+    }
+    public static class WarningBannerInfo {
+        public String text;
+        public Integer textColor = 0xFFFFFF;
+        public Integer backgroundColor = 0x000000;
     }
 }

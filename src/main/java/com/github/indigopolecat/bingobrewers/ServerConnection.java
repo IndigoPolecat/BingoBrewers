@@ -2,6 +2,7 @@ package com.github.indigopolecat.bingobrewers;
 
 import java.io.IOException;
 
+import akka.event.Logging;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
@@ -173,6 +174,8 @@ public class ServerConnection extends Listener implements Runnable {
                     // if you have to wait in the queue, this will give you your current position
                     // gonna leave it for you to implement because I think the permanent value should be stored in the class for rendering the menu
                 } else if (object instanceof BackgroundWarpTask) {
+
+                } else if (object instanceof WarningBannerInfo) {
 
                 }
             }
