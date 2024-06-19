@@ -2,7 +2,6 @@ package com.github.indigopolecat.bingobrewers;
 
 import java.io.IOException;
 
-import akka.event.Logging;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
@@ -17,7 +16,6 @@ import com.github.indigopolecat.kryo.KryoNetwork.*;
 import com.github.indigopolecat.kryo.KryoNetwork.ConnectionIgn;
 import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import com.github.indigopolecat.kryo.ServerSummary;
-import ibxm.Player;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 
@@ -290,7 +288,7 @@ public class ServerConnection extends Listener implements Runnable {
         // This should always be "Bea House" but is hard coded server side incase it ever needs to change quickly
         String location = notif.location;
 
-        HashMap<String, ArrayList<String>> splashInfo = new HashMap<String, ArrayList<String>>();
+        HashMap<String, ArrayList<String>> splashInfo = new HashMap<>();
 
         ArrayList<String> hubInfo = new ArrayList<>();
         if (!notif.dungeonHub) {
@@ -424,7 +422,9 @@ public class ServerConnection extends Listener implements Runnable {
         client.sendTCP(update);
     }
 
-    public static synchronized void requestLiveUpdates(RequestLiveUpdatesForServerInfo request) {
+    public static synchronized void requestLiveUpdates(boolean unrequest) {
+        RequestLiveUpdatesForServerInfo request = new RequestLiveUpdatesForServerInfo();
+        request.unrequest = unrequest;
         Client client = getClient();
 
         if (client == null) {
@@ -459,7 +459,7 @@ public class ServerConnection extends Listener implements Runnable {
                 }
                 if (waitTime < 60000) {
                     waitTime *= 2;
-                } else if (waitTime >= 60000) {
+                } else {
                     waitTime = 60000;
                 }
                 System.out.println("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
