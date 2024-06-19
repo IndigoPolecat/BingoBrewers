@@ -168,6 +168,12 @@ public class ServerConnection extends Listener implements Runnable {
                 } else if (object instanceof ServersSummary) {
                     ServersSummary servers = (ServersSummary) object;
                     serverSummaries.putAll(servers.serverInfo);
+                    // remove outdated entries
+                    for (ServerSummary server : serverSummaries.values()) {
+                        if (server.serverType == null) {
+                            serverSummaries.remove(server.server);
+                        }
+                    }
                 } else if (object instanceof QueuePosition) {
                     // if you have to wait in the queue, this will give you your current position
                     // gonna leave it for you to implement because I think the permanent value should be stored in the class for rendering the menu
