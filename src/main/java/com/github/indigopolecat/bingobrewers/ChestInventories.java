@@ -1,6 +1,7 @@
 package com.github.indigopolecat.bingobrewers;
 
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
+import com.github.indigopolecat.events.Packets;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerChest;
 import net.minecraftforge.client.event.GuiOpenEvent;
@@ -11,7 +12,6 @@ import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 
-import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -19,7 +19,6 @@ import java.util.concurrent.CompletableFuture;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraftforge.fml.common.gameevent.InputEvent;
 import org.lwjgl.input.Keyboard;
 
 import java.text.DecimalFormat;

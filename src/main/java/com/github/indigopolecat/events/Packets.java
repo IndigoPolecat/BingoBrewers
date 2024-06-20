@@ -1,5 +1,6 @@
-package com.github.indigopolecat.bingobrewers;
+package com.github.indigopolecat.events;
 
+import com.github.indigopolecat.bingobrewers.*;
 import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.google.gson.Gson;

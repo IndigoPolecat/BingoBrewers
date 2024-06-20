@@ -7,6 +7,7 @@ import com.github.indigopolecat.bingobrewers.commands.ConfigCommand;
 import com.github.indigopolecat.bingobrewers.util.AutoUpdater;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.github.indigopolecat.events.HypixelPackets;
+import com.github.indigopolecat.events.Packets;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;

@@ -1,11 +1,9 @@
 package com.github.indigopolecat.bingobrewers;
 
-import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
+import com.github.indigopolecat.events.Packets;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.CHChestItem;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.IChatComponent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
