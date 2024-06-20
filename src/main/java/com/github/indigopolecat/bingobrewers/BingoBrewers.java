@@ -6,12 +6,15 @@ import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
 import com.github.indigopolecat.bingobrewers.commands.ConfigCommand;
 import com.github.indigopolecat.bingobrewers.util.AutoUpdater;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
+import com.github.indigopolecat.events.HypixelPackets;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import net.hypixel.modapi.HypixelModAPI;
 import net.hypixel.modapi.packet.HypixelPacket;
+import net.hypixel.modapi.packet.impl.clientbound.ClientboundPartyInfoPacket;
+import net.hypixel.modapi.packet.impl.clientbound.ClientboundPingPacket;
 import net.hypixel.modapi.serializer.PacketSerializer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -24,11 +27,13 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.common.MinecraftForge;
 import com.github.indigopolecat.events.PacketListener;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 
 import java.util.HashMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Mod(modid = "bingobrewers", version = "0.3.3", useMetadata = true)
 public class BingoBrewers {
@@ -39,7 +44,7 @@ public class BingoBrewers {
     public static volatile TitleHud activeTitle;
     public static volatile Client client;
     // controls which server is connected to
-    public static final boolean TEST_INSTANCE = false;
+    public static final boolean TEST_INSTANCE = true;
     public static boolean onHypixel = false;
 
     public static AutoUpdater autoUpdater = new AutoUpdater();
@@ -57,6 +62,7 @@ public class BingoBrewers {
         MinecraftForge.EVENT_BUS.register(new SplashHud());
         MinecraftForge.EVENT_BUS.register(new ChatTextUtil());
         MinecraftForge.EVENT_BUS.register(autoUpdater);
+        MinecraftForge.EVENT_BUS.register(this);
         config = new BingoBrewersConfig();
         createServerThread();
         ClientCommandHandler.instance.registerCommand(new ConfigCommand());
@@ -78,7 +84,9 @@ public class BingoBrewers {
         minecraftColors.put("§e", 0xFFFF55);  // Yellow
         minecraftColors.put("§f", 0xFFFFFF);  // White
 
-        HypixelModAPI.getInstance().setPacketSender(BingoBrewers::sendPacket);
+        HypixelModAPI.getInstance().registerHandler(ClientboundPingPacket.class, HypixelPackets::onPingPacket);
+        HypixelModAPI.getInstance().registerHandler(ClientboundPartyInfoPacket.class, HypixelPackets::onPartyInfoPacket);
+        HypixelModAPI.getInstance().setPacketSender(this::sendPacket);
     }
 
 
@@ -92,17 +100,29 @@ public class BingoBrewers {
         }
     }
 
-    @SubscribeEvent
+
+    private static final Logger LOGGER = Logger.getLogger("HypixelModAPI");
+    private NetHandlerPlayClient netHandler;
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onServerConnect(FMLNetworkEvent.ClientConnectedToServerEvent event) {
+        netHandler = (NetHandlerPlayClient) event.handler;
         event.manager.channel().pipeline().addBefore("packet_handler", "hypixel_mod_api_packet_handler", HypixelPacketHandler.INSTANCE);
     }
 
-    private static boolean sendPacket(HypixelPacket packet) {
-        NetHandlerPlayClient netHandler = Minecraft.getMinecraft().getNetHandler();
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onServerDisconnect(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
+        netHandler = null;
+    }
+
+    private boolean sendPacket(HypixelPacket packet) {
         if (netHandler == null) {
             return false;
         }
-
+        if (!netHandler.getNetworkManager().isChannelOpen()) {
+            LOGGER.warning("Attempted to send packet while channel is closed!");
+            netHandler = null;
+            return false;
+        }
         PacketBuffer buf = new PacketBuffer(Unpooled.buffer());
         PacketSerializer serializer = new PacketSerializer(buf);
         packet.write(serializer);
@@ -128,11 +148,17 @@ public class BingoBrewers {
                 return;
             }
 
-            try {
-                HypixelModAPI.getInstance().handle(identifier, new PacketSerializer(packet.getBufferData()));
-            } catch (Exception e) {
-                LoggerUtil.LOGGER.log(Level.WARNING, "Failed to handle packet " + identifier, e);
-            }
+            PacketBuffer buffer = packet.getBufferData();
+            buffer.retain();
+            Minecraft.getMinecraft().addScheduledTask(() -> {
+                try {
+                    HypixelModAPI.getInstance().handle(identifier, new PacketSerializer(buffer));
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Failed to handle packet " + identifier, e);
+                } finally {
+                    buffer.release();
+                }
+            });
         }
     }
 }

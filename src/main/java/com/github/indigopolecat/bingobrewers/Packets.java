@@ -9,6 +9,7 @@ import com.google.gson.reflect.TypeToken;
 import ibxm.Player;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.play.client.C17PacketCustomPayload;
 import net.minecraft.network.play.server.*;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
@@ -34,6 +35,9 @@ public class Packets {
 
     @SubscribeEvent
     public void onPacketReceived(PacketEvent.Received event) {
+        if (event.getPacket() instanceof S3FPacketCustomPayload) {
+            System.out.println("AHHHH");
+        }
 
         if (event.getPacket() instanceof S38PacketPlayerListItem) {
             if (System.currentTimeMillis() - PlayerInfo.lastSplashHubUpdate > 120000) {
