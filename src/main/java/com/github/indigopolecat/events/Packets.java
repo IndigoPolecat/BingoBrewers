@@ -36,10 +36,6 @@ public class Packets {
 
     @SubscribeEvent
     public void onPacketReceived(PacketEvent.Received event) {
-        if (event.getPacket() instanceof S3FPacketCustomPayload) {
-            System.out.println("AHHHH");
-        }
-
         if (event.getPacket() instanceof S38PacketPlayerListItem) {
             if (System.currentTimeMillis() - PlayerInfo.lastSplashHubUpdate > 120000) {
                 PlayerInfo.inSplashHub = false;
