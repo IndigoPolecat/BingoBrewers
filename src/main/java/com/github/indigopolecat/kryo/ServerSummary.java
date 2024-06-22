@@ -17,6 +17,6 @@ public class ServerSummary {
         for (ServerSummary summary : ServerConnection.serverSummaries.values()) {
             updateServers.serversAndLastUpdatedTime.put(summary.server, summary.lastUpdated);
         }
-        ServerConnection.requestUpdatedServerSummaries(updateServers);
+        ServerConnection.sendTCP(updateServers);
     }
 }

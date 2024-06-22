@@ -165,7 +165,7 @@ public class CHChests {
             }
         }
         if (!chestLoot.items.isEmpty()) {
-            ServerConnection.sendCHItems(chestLoot);
+            ServerConnection.sendTCP(chestLoot);
         }
         RecentChatMessages.clear();
     }
