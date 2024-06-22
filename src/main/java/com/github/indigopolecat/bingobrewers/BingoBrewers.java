@@ -62,6 +62,7 @@ public class BingoBrewers {
         MinecraftForge.EVENT_BUS.register(new PlayerInfo());
         MinecraftForge.EVENT_BUS.register(new SplashHud());
         MinecraftForge.EVENT_BUS.register(new ChatTextUtil());
+        MinecraftForge.EVENT_BUS.register(new Warping());
         MinecraftForge.EVENT_BUS.register(autoUpdater);
         MinecraftForge.EVENT_BUS.register(this);
         config = new BingoBrewersConfig();
@@ -115,7 +116,7 @@ public class BingoBrewers {
         netHandler = null;
     }
 
-    private boolean sendPacket(HypixelPacket packet) {
+    public boolean sendPacket(HypixelPacket packet) {
         if (netHandler == null) {
             return false;
         }

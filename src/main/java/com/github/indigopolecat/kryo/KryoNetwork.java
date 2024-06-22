@@ -150,6 +150,7 @@ public class KryoNetwork {
 
     public static class AbortWarpTask {
         public String ign;
+        public boolean ineligible;
     }
 
     public static class QueuePosition {
