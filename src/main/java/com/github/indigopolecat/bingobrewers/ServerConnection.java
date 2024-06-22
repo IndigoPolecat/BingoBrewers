@@ -389,15 +389,6 @@ public class ServerConnection extends Listener implements Runnable {
         currentClient.sendUDP(count);
     }
 
-    public static synchronized void sendCHItems(KryoNetwork.sendCHItems items) {
-        Client currentClient = getClient();
-        if (currentClient == null) {
-            LoggerUtil.LOGGER.info("Client is null");
-            return;
-        }
-        currentClient.sendTCP(items);
-    }
-
     public static synchronized void SubscribeToCHServer(SubscribeToCHServer server) {
         Client currentClient = getClient();
 
@@ -418,16 +409,6 @@ public class ServerConnection extends Listener implements Runnable {
         }
     }
 
-    public static synchronized void requestUpdatedServerSummaries(UpdateServers update) {
-        Client client = getClient();
-
-        if (client == null) {
-            LoggerUtil.LOGGER.info("Client is null");
-            return;
-        }
-        client.sendTCP(update);
-    }
-
     public static synchronized void requestLiveUpdates(boolean unrequest) {
         RequestLiveUpdatesForServerInfo request = new RequestLiveUpdatesForServerInfo();
         request.unrequest = unrequest;
@@ -439,6 +420,17 @@ public class ServerConnection extends Listener implements Runnable {
         }
         client.sendTCP(request);
     }
+
+    public static synchronized void sendTCP(Object object) {
+        Client client = getClient();
+
+        if (client == null) {
+            LoggerUtil.LOGGER.info("Client is null");
+            return;
+        }
+        client.sendTCP(object);
+    }
+
 
 
 
