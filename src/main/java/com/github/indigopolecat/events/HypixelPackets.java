@@ -44,6 +44,7 @@ public class HypixelPackets {
                         Warping.warp();
                     } else if (!Warping.accountsToWarp.keySet().containsAll(uuids)) { // there is someone who isn't supposed to be warped in the party
                         Warping.requestLiveParty = false;
+                        Warping.PARTY_EMPTY_KICK = true;
                         Warping.abort(true);
                     } else {
                         Warping.requestLiveParty = true;

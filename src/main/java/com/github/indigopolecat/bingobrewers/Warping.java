@@ -23,6 +23,7 @@ public class Warping {
     public static boolean waitingOnLocation;
     public static boolean partyReady;
     public static PARTY_PACKET_INTENT intent;
+    public static boolean PARTY_EMPTY_KICK = false;
 
     public static boolean kickParty;
     public static int ticksSinceLastKick = 8;
@@ -60,7 +61,9 @@ public class Warping {
                     intent = PARTY_PACKET_INTENT.CHECK_MEMBERS_JOINED;
                 }
             }
-            if (kickParty && ticksSinceLastKick >= TICKS_BETWEEN_KICKS) {
+            if (kickParty && !PARTY_EMPTY_KICK) {
+                Minecraft.getMinecraft().thePlayer.sendChatMessage("/p disband");
+            } else if (kickParty && ticksSinceLastKick >= TICKS_BETWEEN_KICKS && PARTY_EMPTY_KICK) {
                 ticksSinceLastKick = 0;
                 String accountToKickUUID = accountsToWarp.keySet().toArray(new String[0])[0];
                 String accountToKick = accountsToWarp.get(accountToKickUUID);
@@ -70,7 +73,6 @@ public class Warping {
                     kickParty = false;
                     ticksSinceLastKick = TICKS_BETWEEN_KICKS;
                 }
-
             } else if (kickParty) {
                 ticksSinceLastKick++;
             }
