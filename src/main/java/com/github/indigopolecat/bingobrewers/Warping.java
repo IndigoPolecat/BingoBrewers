@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Warping {
     public static ConcurrentHashMap<String, String> accountsToWarp = new ConcurrentHashMap<>();
+    public static boolean invite;
     public static String server;
     // when the party invite was sent out
     public static long inviteSent;
@@ -75,6 +76,13 @@ public class Warping {
                 }
             } else if (kickParty) {
                 ticksSinceLastKick++;
+            }
+            if (invite && !accountsToWarp.isEmpty()) {
+                StringBuilder inviteCommand = new StringBuilder("/p invite");
+                for (String ign : accountsToWarp.values()) {
+                    inviteCommand.append(" ").append(ign);
+                }
+                Minecraft.getMinecraft().thePlayer.sendChatMessage(inviteCommand.toString());
             }
         }
     }

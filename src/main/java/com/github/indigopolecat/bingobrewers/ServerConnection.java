@@ -178,9 +178,20 @@ public class ServerConnection extends Listener implements Runnable {
                     // if you have to wait in the queue, this will give you your current position
                     // gonna leave it for you to implement because I think the permanent value should be stored in the class for rendering the menu
                 } else if (object instanceof BackgroundWarpTask) {
-
+                    BackgroundWarpTask warpTask = (BackgroundWarpTask) object;
+                    if (warpTask.server.equals(PlayerInfo.currentServer) && !warpTask.accountsToWarp.isEmpty() && Warping.accountsToWarp.isEmpty()) {
+                        Warping.accountsToWarp = new ConcurrentHashMap<>(warpTask.accountsToWarp);
+                        Warping.server = warpTask.server;
+                    }
                 } else if (object instanceof WarningBannerInfo) {
 
+                } else if (object instanceof AbortWarpTask) {
+                    Warping.PARTY_EMPTY_KICK = false;
+                    Warping.kickParty = true;
+                    Warping.accountsToWarp.clear();
+                    Warping.requestLiveParty = false;
+                    Warping.partyReady = false;
+                    Warping.waitingOnLocation = true;
                 }
             }
 
