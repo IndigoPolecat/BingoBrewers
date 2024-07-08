@@ -1,4 +1,4 @@
-![Ekxb59A](https://github.com/IndigoPolecat/BingoBrewers/assets/115671621/efe8afe3-400a-4249-9c2e-b70a597d7f3c)# Introducing The Bingo Brewers Mod Public Beta
+# Introducing The Bingo Brewers Mod Public Beta
 [Bingo Brewers](https://github.com/IndigoPolecat/BingoBrewers) is an open source mod intended to help with bingo, it is currently under development and has 3 key features.
 
 ## Splash Notifications
