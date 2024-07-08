@@ -41,4 +41,7 @@ The mod comes with an "auto" updater which will prompt you with patch notes when
 - Nope, you can read the source and compile yourself at https://github.com/IndigoPolecat/BingoBrewers.
 
 # Upcoming Features
-The next feature I expect to release will be a Crystal Hollows loot tracker that will display crowdsourced Crystal Hollows loot for the server you're in. This feature may be ready by next bingo but no guarantees.
+- Port the mod to Fabric, we believe that the foraging update is coming sooner rather than later and want the mod to be available for it on release.
+- Warp network of sorts, utilizing clients that have enabled the setting to warp people into crystal hollows lobbies with items they want.
+- Adding support for other CH related elements to be shared (structure locations, key guardian)
+- Improve Bingo Shop calculator
