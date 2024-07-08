@@ -1,5 +1,5 @@
-# Introducing The Bingo Brewers Mod Public Beta
-[Bingo Brewers](https://github.com/IndigoPolecat/BingoBrewers) is an open source mod intended to help with bingo, it is currently under development and has 2 key features.
+![Ekxb59A](https://github.com/IndigoPolecat/BingoBrewers/assets/115671621/efe8afe3-400a-4249-9c2e-b70a597d7f3c)# Introducing The Bingo Brewers Mod Public Beta
+[Bingo Brewers](https://github.com/IndigoPolecat/BingoBrewers) is an open source mod intended to help with bingo, it is currently under development and has 3 key features.
 
 ## Splash Notifications
 When a splasher splashes in #splashes, your client will be sent a notification including the:
@@ -14,9 +14,20 @@ https://i.imgur.com/ipDvQdy.jpeg
 Any client inside of the splash hub will be communicating the current player count to my server, which will broadcast the current player count of the splash hub to all clients every 2 seconds.
 https://i.imgur.com/bliIBRX.png
 
-## Coins/Bingo Point Calculator
+## Crystal Hollows Crowdsourced Chest Waypoints
+This feature crowdsources loot from chests in the Crystal Hollows and displays it to all mod users when they join a lobby. There are filters and other settings allowing you to customize what you see.
+![Ekxb59A](https://github.com/IndigoPolecat/BingoBrewers/assets/115671621/406b8652-72a9-4c4d-b200-f73b670b04e8)
+The accompanying HUD also comes with a justify setting, allowing you to place it anywhere on the screen.
+
+## Minor Features
+### Coins/Bingo Point Calculator
 This is the original feature I created for the mod when I was first learning java in December, it displays the Coins/Bingo Point for any item in the bazaar or auction house that has price data. It isn't perfect for every use. It takes the lowest BIN, subtracts the cost of the lower talisman tier (for example a Bingo Ring) if necessary, then divides by the number of bingo points.
-https://i.imgur.com/9vGIZQ5.png
+
+### Chicken Head Reminder
+Reminds you to crouch every 5 seconds.
+
+### Auto Updater
+The mod comes with an "auto" updater which will prompt you with patch notes when a new update is available. The feature allows you to easily update your JAR by clicking a single button ingame. This feature can be made fully automatic, or completely disabled depending on your preferences.
 
 # Potential Concerns
 
