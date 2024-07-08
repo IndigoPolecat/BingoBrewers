@@ -1,5 +1,5 @@
 # Introducing The Bingo Brewers Mod Public Beta
-[Bingo Brewers](https://github.com/IndigoPolecat/BingoBrewers) is an open source mod intended to help with bingo, it is currently under development and has 3 key features.
+[Bingo Brewers](https://github.com/IndigoPolecat/BingoBrewers) is an open source mod intended to help with bingo, it is currently under development and has 2 key features.
 
 ## Splash Notifications
 When a splasher splashes in #splashes, your client will be sent a notification including the:
