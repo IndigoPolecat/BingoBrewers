@@ -26,6 +26,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.esotericsoftware.minlog.Log.*;
 import static com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud.filteredItems;
+import static com.github.indigopolecat.bingobrewers.Warping.accountsToWarp;
 import static java.lang.String.valueOf;
 
 public class ServerConnection extends Listener implements Runnable {
@@ -179,19 +180,31 @@ public class ServerConnection extends Listener implements Runnable {
                     // gonna leave it for you to implement because I think the permanent value should be stored in the class for rendering the menu
                 } else if (object instanceof BackgroundWarpTask) {
                     BackgroundWarpTask warpTask = (BackgroundWarpTask) object;
-                    if (warpTask.server.equals(PlayerInfo.currentServer) && !warpTask.accountsToWarp.isEmpty() && Warping.accountsToWarp.isEmpty()) {
-                        Warping.accountsToWarp = new ConcurrentHashMap<>(warpTask.accountsToWarp);
+                    if (warpTask.server.equals(PlayerInfo.currentServer) && !warpTask.accountsToWarp.isEmpty() && accountsToWarp.isEmpty()) {
+                        accountsToWarp = new ConcurrentHashMap<>(warpTask.accountsToWarp);
                         Warping.server = warpTask.server;
+
+                        if (accountsToWarp.isEmpty()) {
+                            Warping.abort(false);
+                            return;
+                        }
+
+                        if (Warping.warpThread != null) {
+                            Warping.warpThread.end();
+                            Warping.warpThread = new BackgroundWarpThread();
+                            Thread warpThread = new Thread(Warping.warpThread);
+                            warpThread.start();
+                        }
                     }
                 } else if (object instanceof WarningBannerInfo) {
 
                 } else if (object instanceof AbortWarpTask) {
                     Warping.PARTY_EMPTY_KICK = false;
                     Warping.kickParty = true;
-                    Warping.accountsToWarp.clear();
-                    Warping.requestLiveParty = false;
+                    accountsToWarp.clear();
                     Warping.partyReady = false;
                     Warping.waitingOnLocation = true;
+                    Warping.warpThread.stop = true;
                 }
             }
 

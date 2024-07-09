@@ -1,6 +1,7 @@
 package com.github.indigopolecat.bingobrewers;
 
 
+import cc.polyfrost.oneconfig.libs.checker.units.qual.A;
 import com.esotericsoftware.kryonet.Server;
 import com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud;
 import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
@@ -14,6 +15,7 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -40,6 +42,7 @@ public class PlayerInfo {
     public volatile static String splashHubNumberForNotification = null;
     public volatile static boolean readyToNotifyDungeon = false;
     public volatile static long lastNotification = 0;
+    public volatile static ArrayList<String> partyMembers = new ArrayList<>(); // uuids, leader not included
 
     @SubscribeEvent
     public void onWorldJoin(WorldEvent event) {

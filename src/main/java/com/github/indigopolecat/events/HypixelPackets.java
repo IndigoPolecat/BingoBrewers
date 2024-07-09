@@ -27,39 +27,17 @@ public class HypixelPackets {
 
     public static void onPartyInfoPacket(ClientboundPartyInfoPacket packet) {
         PlayerInfo.inParty = packet.isInParty();
-        if (Warping.intent == Warping.PARTY_PACKET_INTENT.CHECK_MEMBERS_JOINED) {
-            if (PlayerInfo.inParty && PlayerInfo.registeredToWarp) {
-                if (!Warping.accountsToWarp.isEmpty()) {
-                    Map<UUID, ClientboundPartyInfoPacket.PartyMember> party = packet.getMemberMap();
-                    ArrayList<String> uuids = new ArrayList<>();
+        Map<UUID, ClientboundPartyInfoPacket.PartyMember> party = packet.getMemberMap();
+        ArrayList<String> uuids = new ArrayList<>();
 
-                    for (UUID uuid : party.keySet()) {
-                        if (party.get(uuid).getRole().equals(ClientboundPartyInfoPacket.PartyRole.LEADER)) continue;
-                        else uuids.add(uuid.toString());
-                    }
-
-                    if (Warping.accountsToWarp.keySet().containsAll(uuids) && uuids.containsAll(Warping.accountsToWarp.keySet())) { // everyone is in the party
-                        Warping.warp();
-                    } else if (Warping.accountsToWarp.keySet().containsAll(uuids) && Warping.inviteSent + 5000 < System.currentTimeMillis()) { // warp after 5 seconds even if the party isn't full
-                        Warping.warp();
-                    } else if (!Warping.accountsToWarp.keySet().containsAll(uuids)) { // there is someone who isn't supposed to be warped in the party
-                        Warping.requestLiveParty = false;
-                        Warping.PARTY_EMPTY_KICK = true;
-                        Warping.abort(true);
-                    } else {
-                        Warping.requestLiveParty = true;
-                        Warping.lastPartyUpdate = System.currentTimeMillis();
-                        BingoBrewers bb = new BingoBrewers();
-                        bb.sendPacket(new ServerboundPartyInfoPacket());
-                    }
-                } else {
-                    KryoNetwork.RegisterToWarpServer register = new KryoNetwork.RegisterToWarpServer();
-                    register.server = PlayerInfo.currentServer;
-                    register.unregister = true;
-                    ServerConnection.sendTCP(register);
-                }
-            }
+        for (UUID uuid : party.keySet()) {
+            if (party.get(uuid).getRole().equals(ClientboundPartyInfoPacket.PartyRole.LEADER)) continue;
+            else uuids.add(uuid.toString());
         }
+        PlayerInfo.partyMembers.addAll(uuids);
+
+        if (Warping.warpThread != null) Warping.warpThread.resume();
+
     }
 
     public void onPlayerInfoPacket(ClientboundPlayerInfoPacket packet) {
