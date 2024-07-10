@@ -21,7 +21,7 @@ public class CHChests {
     static long lastMessageTime = 0;
     public static boolean addMessages = false;
     private static long lastHardstoneChest = 0;
-    private static boolean expectingHardstoneLoot;
+    public static boolean expectingHardstoneLoot;
     public static HashMap<String, ArrayList<String>> visitedChests = new HashMap<>();
     public static String regex = "^§[0-9a-fk-or]\\s+§[0-9a-fk-or](§[0-9a-fk-or])(.\\s)?([\\w\\s]+?)(\\s§[0-9a-fk-or]§[0-9a-fk-or]x([\\d,]{1,5}))?§[0-9a-fk-or]";
     public static int itemNameRegexGroup = 3;
@@ -60,11 +60,6 @@ public class CHChests {
     @SubscribeEvent
     public void clientTick(TickEvent.ClientTickEvent event) {
         if (System.currentTimeMillis() - lastHardstoneChest > 500) expectingHardstoneLoot = false;
-        if (System.currentTimeMillis() - lastMessageTime > 100 && addMessages) {
-            parseChat();
-            addMessages = false;
-            expectingHardstoneLoot = false;
-        }
     }
 
     public static void addChatMessage(String message) {

@@ -120,7 +120,9 @@ public class Packets {
                     CHChests.addChatMessage(formattedMessage);
                 }
             } else if (formattedMessage.equals(CHChests.signalLootChatMessageEnd)) {
+                CHChests.parseChat();
                 CHChests.addMessages = false;
+                CHChests.expectingHardstoneLoot = false;
             }
 
         }
