@@ -40,6 +40,8 @@ public class KryoNetwork {
         kryo.register(RequestLiveUpdatesForServerInfo.class);
         kryo.register(ServerSummary.class);
         kryo.register(WarningBannerInfo.class);
+        kryo.register(ReceiveConstantsOnStartupModern.class);
+        kryo.register(JoinAlert.class);
     }
 
     public static class ConnectionIgn {
@@ -172,5 +174,13 @@ public class KryoNetwork {
         public String text;
         public Integer textColor = 0xFFFFFF;
         public Integer backgroundColor = 0x000000;
+    }
+    public static class ReceiveConstantsOnStartupModern {
+        public HashMap<String, Object> constants = new HashMap<>();
+    }
+
+    public static class JoinAlert {
+        public String joinAlertChat;
+        public String joinAlertTitle;
     }
 }

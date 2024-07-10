@@ -19,12 +19,14 @@ public class CHChests {
     public static List<String> RecentChatMessages = new ArrayList<>();
     public static ConcurrentHashMap<String, Long> listeningChests = new ConcurrentHashMap<>();
     static long lastMessageTime = 0;
-    static boolean addMessages = false;
+    public static boolean addMessages = false;
     private static long lastHardstoneChest = 0;
     private static boolean expectingHardstoneLoot;
     public static HashMap<String, ArrayList<String>> visitedChests = new HashMap<>();
-    // Regex made with the help of Aerh
-    public static String regex = "§[0-9a-fk-or]§[0-9a-fk-or]You received §[0-9a-fk-or](§[0-9a-fk-or])\\+?([\\d,]{1,5})\\s(?:§[0-9a-fk-or](§[0-9a-fk-or])*)?(?:.\\s)?(.+?)?(?:§[0-9a-fk-or])*\\.";
+    public static String regex = "^§[0-9a-fk-or]\\s+§[0-9a-fk-or]§[0-9a-fk-or](.\\s)?([\\w\\s]+?)(\\s§[0-9a-fk-or]§[0-9a-fk-or]x([\\d,]{1,5}))?§[0-9a-fk-or]";
+    public static int itemNameRegexGroup = 2;
+    public static int itemCountRegexGroup = 4;
+    public static String signalLootChatMessage = "§r  §r§5§lLOOT CHEST COLLECTED §r";
     public static Pattern ITEM_PATTERN = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
     // potentially store this as a constant in the server that is downloaded on launch
 
@@ -64,7 +66,7 @@ public class CHChests {
     }
 
     public static void addChatMessage(String message) {
-        if (message.contains("You received")) {
+        if (message.contains(signalLootChatMessage)) {
             if (!expectingHardstoneLoot) {
                 addMessages = true;
                 RecentChatMessages.add(message);
@@ -135,9 +137,9 @@ public class CHChests {
             Matcher matcher = ITEM_PATTERN.matcher(message);
             try {
                 while (matcher.find()) {
-                    chestItem.name = matcher.group(4);
+                    chestItem.name = matcher.group(itemNameRegexGroup);
 
-                    chestItem.count = matcher.group(2).replaceAll(",", "");
+                    chestItem.count = matcher.group(itemCountRegexGroup).replaceAll(",", "");
 
                     Optional<String> numberColorGroup = Optional.ofNullable(matcher.group(1));
                     Optional<String> itemColorGroup = Optional.ofNullable(matcher.group(3));

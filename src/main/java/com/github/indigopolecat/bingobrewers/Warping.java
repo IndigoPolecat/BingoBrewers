@@ -81,6 +81,7 @@ public class Warping {
             if (((S02PacketChat) event.getPacket()).getType() == 2) return;
             String message = ((S02PacketChat) event.getPacket()).getChatComponent().getUnformattedText();
             if (message.equals("-----------------------------------------------------")) {
+
                 event.setCanceled(true);
                 lookForEndingMessage = !lookForEndingMessage;
             } else if (message.equals("-----------------------------")) {

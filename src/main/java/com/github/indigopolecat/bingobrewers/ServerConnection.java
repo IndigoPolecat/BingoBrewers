@@ -27,6 +27,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import static com.esotericsoftware.minlog.Log.*;
 import static com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud.filteredItems;
 import static com.github.indigopolecat.bingobrewers.Warping.accountsToWarp;
+import static com.github.indigopolecat.bingobrewers.Warping.chatMessageHold;
+import static java.lang.String.join;
 import static java.lang.String.valueOf;
 
 public class ServerConnection extends Listener implements Runnable {
@@ -123,18 +125,66 @@ public class ServerConnection extends Listener implements Runnable {
                             }
                         }
                     }
-                } else if (object instanceof receiveConstantsOnStartup) {
-                    receiveConstantsOnStartup request = (receiveConstantsOnStartup) object;
-                    ChestInventories.rankPriceMap = request.bingoRankCosts;
-                    CHChests.regex = request.chItemRegex;
-                    newMiscCHItems = request.newCHChestItems;
-                    if (request.joinAlertChat != null) {
-                        joinChat = request.joinAlertChat;
+                } else if (object instanceof ReceiveConstantsOnStartupModern) {
+                    ReceiveConstantsOnStartupModern request = (ReceiveConstantsOnStartupModern) object;
+                    HashMap<String, Object> constants = request.constants;
+
+                    if (constants.get("bingoRankCosts") != null && constants.get("bingoRankCosts") instanceof HashMap) {
+                        boolean nope = false;
+                        for (Map.Entry<?, ?> entry : ((HashMap<?, ?>) constants.get("bingoRankCosts")).entrySet()) {
+                            if (!(entry.getValue() instanceof Integer) || !(entry.getKey() instanceof Integer)) {
+                                nope = true;
+                                break;
+                            }
+                        }
+                        if (!nope) {
+                            ChestInventories.rankPriceMap = (HashMap<Integer, Integer>) constants.get("bingoRankCosts");
+                        }
                     }
-                    if (request.joinAlertTitle != null) {
-                        joinTitle = new TitleHud(request.joinAlertTitle, 0xFF5555, 10000, true);
+                    if (constants.get("chItemRegex") != null && constants.get("chItemRegex") instanceof String) {
+                        CHChests.regex = (String) constants.get("chItemRegex");
                     }
-                    CHItemOrder = new ArrayList<>(request.CHItemOrder);
+                    if (constants.get("newMiscCHItems") != null && constants.get("newMiscCHItems") instanceof ArrayList) {
+                        boolean nope = false;
+                        for (Object string : (ArrayList<Object>) constants.get("newMiscCHItems")) {
+                            if (!(string instanceof String)) {
+                                nope = true;
+                                break;
+                            }
+                        }
+                        if (!nope) {
+                            newMiscCHItems = (ArrayList<String>) constants.get("newMiscCHItems");
+                        }
+                    }
+                    if (constants.get("joinAlert"+BingoBrewers.version) != null && constants.get("joinAlert"+BingoBrewers.version) instanceof JoinAlert) {
+                        JoinAlert joinAlert = (JoinAlert) constants.get("joinAlert"+BingoBrewers.version);
+                        if (joinAlert.joinAlertChat != null) {
+                            joinChat = joinAlert.joinAlertChat;
+                        }
+                        if (joinAlert.joinAlertTitle != null) {
+                            joinTitle = new TitleHud(joinAlert.joinAlertTitle, 0xFF5555, 10000, true);
+                        }
+                    }
+
+                    if (constants.get("CHItemOrder") != null && constants.get("CHItemOrder") instanceof LinkedHashSet) {
+                        boolean nope = false;
+                        for (Object string : (LinkedHashSet<Object>) constants.get("CHItemOrder")) {
+                            if (!(string instanceof String)) {
+                                nope = true;
+                                break;
+                            }
+                        }
+                        if (!nope) {
+                            CHItemOrder = new ArrayList<>((LinkedHashSet<String>) constants.get("CHItemOrder"));
+                        }
+                    }
+
+                    if (constants.get("itemNameRegexGroup") != null && constants.get("itemNameRegexGroup") instanceof Integer) {
+                        if (constants.get("itemCountRegexGroup") != null && constants.get("itemCountRegexGroup") instanceof Integer)
+                            CHChests.itemCountRegexGroup = (Integer) constants.get("itemCountRegexGroup");
+                            CHChests.itemNameRegexGroup = (Integer) constants.get("itemNameRegexGroup");
+                    }
+
 
                 } else if (object instanceof receiveCHItems) {
                     receiveCHItems CHItems = (receiveCHItems) object;
