@@ -63,13 +63,11 @@ public class CHChests {
     }
 
     public static void addChatMessage(String message) {
-        if (message.contains(signalLootChatMessage)) {
-            if (!expectingHardstoneLoot) {
-                addMessages = true;
-                RecentChatMessages.add(message);
-            }
-            lastMessageTime = System.currentTimeMillis();
+        if (!expectingHardstoneLoot) {
+            addMessages = true;
+            RecentChatMessages.add(message);
         }
+        lastMessageTime = System.currentTimeMillis();
 
 
     }
@@ -133,15 +131,24 @@ public class CHChests {
 
             Matcher matcher = ITEM_PATTERN.matcher(message);
             try {
-                while (matcher.find()) {
+                if (matcher.find()) {
                     chestItem.name = matcher.group(itemNameRegexGroup);
+                    if (chestItem.name == null) {
+                        System.out.println("skipping, name is null");
+                    }
 
-                    chestItem.count = matcher.group(itemCountRegexGroup).replaceAll(",", "");
-
+                    chestItem.count = matcher.group(itemCountRegexGroup);
+                    if (chestItem.count == null) {
+                        chestItem.count = "1";
+                    } else {
+                        chestItem.count = chestItem.count.replaceAll(",", "");
+                    }
 
                     Optional<String> itemColorGroup = Optional.ofNullable(matcher.group(itemNameColorRegexGroup));
                     chestItem.itemColor = itemColorGroup.map(BingoBrewers.minecraftColors::get).orElse(chestItem.numberColor);
                     if (chestItem.itemColor == null) continue messageLoop;
+                } else {
+                    continue messageLoop;
                 }
 
                 for (int i = 0; i < chestLoot.items.size(); i++) {
