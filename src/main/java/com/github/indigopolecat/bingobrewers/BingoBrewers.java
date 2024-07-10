@@ -36,16 +36,16 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@Mod(modid = "bingobrewers", version = "0.3.3", useMetadata = true)
+@Mod(modid = "bingobrewers", version = "0.3.4", useMetadata = true)
 public class BingoBrewers {
     public static BingoBrewersConfig config;
 
-    public static final String version = "v0.3.3-beta";
+    public static final String version = "v0.3.4-beta";
 
     public static volatile TitleHud activeTitle;
     public static volatile Client client;
     // controls which server is connected to
-    public static final boolean TEST_INSTANCE = false;
+    public static final boolean TEST_INSTANCE = true;
     public static boolean onHypixel = false;
 
     public static AutoUpdater autoUpdater = new AutoUpdater();

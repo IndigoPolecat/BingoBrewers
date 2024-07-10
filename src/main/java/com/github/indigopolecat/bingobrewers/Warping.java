@@ -79,7 +79,7 @@ public class Warping {
     public void onPacketReceived(PacketEvent.Received event) {
         if (event.getPacket() instanceof S02PacketChat) {
             if (((S02PacketChat) event.getPacket()).getType() == 2) return;
-            String message = ((S02PacketChat) event.getPacket()).getChatComponent().getUnformattedText();
+            /*String message = ((S02PacketChat) event.getPacket()).getChatComponent().getUnformattedText();
             if (message.equals("-----------------------------------------------------")) {
 
                 event.setCanceled(true);
@@ -89,7 +89,7 @@ public class Warping {
                 lookForEndingMessage = !lookForEndingMessage;
             } else if (lookForEndingMessage) {
                 event.setCanceled(true);
-            }
+            }*/
         }
     }
 

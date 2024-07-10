@@ -181,8 +181,11 @@ public class ServerConnection extends Listener implements Runnable {
 
                     if (constants.get("itemNameRegexGroup") != null && constants.get("itemNameRegexGroup") instanceof Integer) {
                         if (constants.get("itemCountRegexGroup") != null && constants.get("itemCountRegexGroup") instanceof Integer)
-                            CHChests.itemCountRegexGroup = (Integer) constants.get("itemCountRegexGroup");
-                            CHChests.itemNameRegexGroup = (Integer) constants.get("itemNameRegexGroup");
+                            if (constants.get("itemNameColorRegexGroup") != null && constants.get("itemNameColorRegexGroup") instanceof Integer) {
+                                CHChests.itemCountRegexGroup = (Integer) constants.get("itemCountRegexGroup");
+                                CHChests.itemNameRegexGroup = (Integer) constants.get("itemNameRegexGroup");
+                                CHChests.itemNameColorRegexGroup = (Integer) constants.get("itemNameColorRegexGroup");
+                            }
                     }
 
 

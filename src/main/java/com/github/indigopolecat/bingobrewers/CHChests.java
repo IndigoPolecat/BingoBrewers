@@ -23,9 +23,10 @@ public class CHChests {
     private static long lastHardstoneChest = 0;
     private static boolean expectingHardstoneLoot;
     public static HashMap<String, ArrayList<String>> visitedChests = new HashMap<>();
-    public static String regex = "^§[0-9a-fk-or]\\s+§[0-9a-fk-or]§[0-9a-fk-or](.\\s)?([\\w\\s]+?)(\\s§[0-9a-fk-or]§[0-9a-fk-or]x([\\d,]{1,5}))?§[0-9a-fk-or]";
-    public static int itemNameRegexGroup = 2;
-    public static int itemCountRegexGroup = 4;
+    public static String regex = "^§[0-9a-fk-or]\\s+§[0-9a-fk-or](§[0-9a-fk-or])(.\\s)?([\\w\\s]+?)(\\s§[0-9a-fk-or]§[0-9a-fk-or]x([\\d,]{1,5}))?§[0-9a-fk-or]";
+    public static int itemNameRegexGroup = 3;
+    public static int itemCountRegexGroup = 5;
+    public static int itemNameColorRegexGroup = 1;
     public static String signalLootChatMessage = "§r  §r§5§lLOOT CHEST COLLECTED §r";
     public static Pattern ITEM_PATTERN = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
     // potentially store this as a constant in the server that is downloaded on launch
@@ -141,9 +142,8 @@ public class CHChests {
 
                     chestItem.count = matcher.group(itemCountRegexGroup).replaceAll(",", "");
 
-                    Optional<String> numberColorGroup = Optional.ofNullable(matcher.group(1));
-                    Optional<String> itemColorGroup = Optional.ofNullable(matcher.group(3));
-                    chestItem.numberColor = numberColorGroup.map(BingoBrewers.minecraftColors::get).orElse(null);
+
+                    Optional<String> itemColorGroup = Optional.ofNullable(matcher.group(itemNameColorRegexGroup));
                     chestItem.itemColor = itemColorGroup.map(BingoBrewers.minecraftColors::get).orElse(chestItem.numberColor);
                     if (chestItem.itemColor == null) continue messageLoop;
                 }
