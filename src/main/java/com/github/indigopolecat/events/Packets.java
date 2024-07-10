@@ -115,11 +115,11 @@ public class Packets {
                     }
                 }
 
-            } else if ((CHChests.addMessages || message.startsWith(CHChests.signalLootChatMessage)) && PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
+            } else if ((CHChests.addMessages || formattedMessage.startsWith(CHChests.signalLootChatMessage)) && PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
                 if (BingoBrewersConfig.crystalHollowsWaypointsToggle) {
                     CHChests.addChatMessage(formattedMessage);
                 }
-            } else if (message.equals("&r&d&l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬&r")) {
+            } else if (formattedMessage.equals(CHChests.signalLootChatMessageEnd)) {
                 CHChests.addMessages = false;
             }
 

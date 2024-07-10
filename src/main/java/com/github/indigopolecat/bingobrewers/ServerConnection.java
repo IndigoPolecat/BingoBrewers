@@ -188,6 +188,14 @@ public class ServerConnection extends Listener implements Runnable {
                             }
                     }
 
+                    if (constants.get("signalLootChatMessage") != null && constants.get("signalLootChatMessage") instanceof String) {
+                        CHChests.signalLootChatMessage = (String) constants.get("signalLootChatMessage");
+                    }
+
+                    if (constants.get("signalLootChatMessageEnd") != null && constants.get("signalLootChatMessageEnd") instanceof String) {
+                        CHChests.signalLootChatMessageEnd = (String) constants.get("signalLootChatMessageEnd");
+                    }
+
 
                 } else if (object instanceof receiveCHItems) {
                     receiveCHItems CHItems = (receiveCHItems) object;

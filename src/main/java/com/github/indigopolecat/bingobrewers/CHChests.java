@@ -28,6 +28,7 @@ public class CHChests {
     public static int itemCountRegexGroup = 5;
     public static int itemNameColorRegexGroup = 1;
     public static String signalLootChatMessage = "§r  §r§5§lLOOT CHEST COLLECTED §r";
+    public static String signalLootChatMessageEnd = "§r§d§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬§r";
     public static Pattern ITEM_PATTERN = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
     // potentially store this as a constant in the server that is downloaded on launch
 
