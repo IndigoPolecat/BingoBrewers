@@ -58,6 +58,7 @@ public class Packets {
 
         if (event.getPacket() instanceof S02PacketChat) {
             S02PacketChat packet = (S02PacketChat) event.getPacket();
+            if (packet.getType() == 2) return;
             String message = packet.getChatComponent().getUnformattedText();
             String formattedMessage = packet.getChatComponent().getFormattedText();
             if (message.startsWith("{") && message.endsWith("}")) {
@@ -116,13 +117,15 @@ public class Packets {
                 }
 
             } else if ((CHChests.addMessages || formattedMessage.startsWith(CHChests.signalLootChatMessage)) && PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
+                if (formattedMessage.equals(CHChests.signalLootChatMessageEnd)) {
+                    CHChests.parseChat();
+                    CHChests.addMessages = false;
+                    CHChests.expectingHardstoneLoot = false;
+                    return;
+                }
                 if (BingoBrewersConfig.crystalHollowsWaypointsToggle) {
                     CHChests.addChatMessage(formattedMessage);
                 }
-            } else if (formattedMessage.equals(CHChests.signalLootChatMessageEnd)) {
-                CHChests.parseChat();
-                CHChests.addMessages = false;
-                CHChests.expectingHardstoneLoot = false;
             }
 
         }
