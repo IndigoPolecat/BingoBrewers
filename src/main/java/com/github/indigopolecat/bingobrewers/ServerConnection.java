@@ -54,6 +54,8 @@ public class ServerConnection extends Listener implements Runnable {
     public static String joinChat;
     public static ArrayList<String> CHItemOrder = new ArrayList<>();
     public static ConcurrentHashMap<String, ServerSummary> serverSummaries = new ConcurrentHashMap<>();
+    private String ign = "";
+    private String uuid = "";
 
     @Override
     public void run() {
@@ -250,6 +252,15 @@ public class ServerConnection extends Listener implements Runnable {
                             return;
                         }
 
+                        Client client = getClient();
+                        if (client != null) {
+                            BackgroundWarpTask confirm = new BackgroundWarpTask();
+                            confirm.accountsToWarp = new HashMap<>();
+                            confirm.accountsToWarp.put(uuid, ign);
+                            confirm.server = PlayerInfo.currentServer;
+                            client.sendTCP(confirm);
+                        }
+
                         if (Warping.warpThread != null) {
                             Warping.warpThread.end();
                             Warping.warpThread = new BackgroundWarpThread();
@@ -289,8 +300,8 @@ public class ServerConnection extends Listener implements Runnable {
         System.out.println("Connected to server.");
         // send server player ign and version
         ConnectionIgn response = new ConnectionIgn();
-        String ign = Minecraft.getMinecraft().getSession().getUsername();
-        String uuid = Minecraft.getMinecraft().getSession().getProfile().getId().toString();
+        ign = Minecraft.getMinecraft().getSession().getUsername();
+        uuid = Minecraft.getMinecraft().getSession().getProfile().getId().toString();
         response.hello = ign + "|v0.3.4|Beta|" + uuid;
         System.out.println("sending " + response.hello);
         BingoBrewers.client.sendTCP(response);

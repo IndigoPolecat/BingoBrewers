@@ -42,6 +42,8 @@ public class KryoNetwork {
         kryo.register(WarningBannerInfo.class);
         kryo.register(ReceiveConstantsOnStartupModern.class);
         kryo.register(JoinAlert.class);
+        kryo.register(WarperInfo.class);
+        kryo.register(PollQueuePosition.class);
     }
 
     public static class ConnectionIgn {
@@ -182,5 +184,11 @@ public class KryoNetwork {
     public static class JoinAlert {
         public String joinAlertChat;
         public String joinAlertTitle;
+    }
+    public static class WarperInfo {
+        public String ign;
+    }
+    public static class PollQueuePosition {
+        public String server;
     }
 }
