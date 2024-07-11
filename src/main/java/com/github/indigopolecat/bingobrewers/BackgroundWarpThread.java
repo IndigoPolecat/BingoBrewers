@@ -1,5 +1,6 @@
 package com.github.indigopolecat.bingobrewers;
 
+import net.hypixel.modapi.HypixelModAPI;
 import net.hypixel.modapi.packet.impl.serverbound.ServerboundPartyInfoPacket;
 import net.minecraft.client.Minecraft;
 
@@ -51,8 +52,7 @@ public class BackgroundWarpThread implements Runnable {
 
             } else {
                 kickParty = false;
-                BingoBrewers bb = new BingoBrewers();
-                bb.sendPacket(new ServerboundPartyInfoPacket());
+                BingoBrewers.INSTANCE.sendPacket(new ServerboundPartyInfoPacket());
 
                 try {
                     this.wait();
@@ -76,8 +76,7 @@ public class BackgroundWarpThread implements Runnable {
             while (PlayerInfo.inParty) {
                 Warping.sendChatMessage("/p disband");
                 kickParty = false;
-                BingoBrewers bb = new BingoBrewers();
-                bb.sendPacket(new ServerboundPartyInfoPacket());
+                BingoBrewers.INSTANCE.sendPacket(new ServerboundPartyInfoPacket());
 
                 try {
                     this.wait();
@@ -101,8 +100,7 @@ public class BackgroundWarpThread implements Runnable {
     public void waitForJoinAndWarp() {
         Warping.PHASE = WARP;
         if (inviteSent == 0) return;
-        BingoBrewers bb = new BingoBrewers();
-        bb.sendPacket(new ServerboundPartyInfoPacket());
+        BingoBrewers.INSTANCE.sendPacket(new ServerboundPartyInfoPacket());
 
         try {
             this.wait();

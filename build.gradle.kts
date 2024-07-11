@@ -118,7 +118,8 @@ dependencies {
     // include should be replaced with a configuration that includes this in the jar
     shadowImpl("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+") // Should be included in jar
     shadowImpl("moe.nea:libautoupdate:1.3.1") // Should be included in jar
-    shadowImpl("net.hypixel:mod-api:0.5.0")
+    implementation("net.hypixel:mod-api:1.0")
+
 }
 
 // Tasks:

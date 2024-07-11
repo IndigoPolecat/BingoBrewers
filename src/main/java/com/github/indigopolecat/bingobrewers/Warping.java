@@ -41,8 +41,7 @@ public class Warping {
 
     public static void abort(boolean ineligible) {
         kickParty = true;
-        BingoBrewers bb = new BingoBrewers();
-        bb.sendPacket(new ServerboundPartyInfoPacket());
+        BingoBrewers.INSTANCE.sendPacket(new ServerboundPartyInfoPacket());
 
 
         KryoNetwork.AbortWarpTask abort = new KryoNetwork.AbortWarpTask();
