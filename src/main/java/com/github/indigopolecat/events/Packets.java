@@ -116,15 +116,15 @@ public class Packets {
                     }
                 }
 
-            } else if ((CHChests.addMessages || formattedMessage.startsWith(CHChests.signalLootChatMessage)) && PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
-                if (formattedMessage.equals(CHChests.signalLootChatMessageEnd)) {
+            } else if ((CHChests.addMessages || formattedMessage.matches(CHChests.signalLootChatMessage)) && PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
+                if (BingoBrewersConfig.crystalHollowsWaypointsToggle) {
+                    CHChests.addChatMessage(formattedMessage);
+                }
+                if (formattedMessage.matches(CHChests.signalLootChatMessageEnd)) {
                     CHChests.parseChat();
                     CHChests.addMessages = false;
                     CHChests.expectingHardstoneLoot = false;
                     return;
-                }
-                if (BingoBrewersConfig.crystalHollowsWaypointsToggle) {
-                    CHChests.addChatMessage(formattedMessage);
                 }
             }
 
