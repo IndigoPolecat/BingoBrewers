@@ -52,10 +52,11 @@ public class HypixelPackets {
 
     public static void onLocationEvent(ClientboundLocationPacket packet) {
 
-        PlayerInfo.playerGameType = packet.getServerType().toString();
-        if (PlayerInfo.playerGameType == null) return;
+        if (!packet.getServerType().isPresent()) return;
+        PlayerInfo.playerGameType = packet.getServerType().get().getName();
         if (PlayerInfo.playerGameType.equalsIgnoreCase("skyblock")) {
-            PlayerInfo.playerLocation = packet.getMode().toString();
+            if (!packet.getMode().isPresent()) return;
+            PlayerInfo.playerLocation = packet.getMode().get();
             // Check if the scoreboard contains "bingo" and set the onBingo flag once we know if we're on skyblock
             SplashHud.onBingo = ScoreBoard.isBingo();
             SplashHud.inSkyblockorPTLobby = true;

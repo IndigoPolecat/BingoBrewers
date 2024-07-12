@@ -23,7 +23,7 @@ public class CHChests {
     private static long lastHardstoneChest = 0;
     public static boolean expectingHardstoneLoot;
     public static HashMap<String, ArrayList<String>> visitedChests = new HashMap<>();
-    public static String regex = "^§[0-9a-fk-or]\\s+§[0-9a-fk-or]*(§[0-9a-fk-or])(.\\s)?([\\w\\s]+?)(\\s§[0-9a-fk-or]§[0-9a-fk-or]x([\\d,]{1,5}))?§[0-9a-fk-or]";
+    public static String regex = "^§[0-9a-fk-or]\\s+(§[0-9a-fk-or])+(.\\s)?([\\w\\s]+?)(\\s§[0-9a-fk-or]§[0-9a-fk-or]x([\\d,]{1,5}))?§[0-9a-fk-or]";
     public static int itemNameRegexGroup = 3;
     public static int itemCountRegexGroup = 5;
     public static int itemNameColorRegexGroup = 1;
