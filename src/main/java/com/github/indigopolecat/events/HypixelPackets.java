@@ -1,10 +1,12 @@
 package com.github.indigopolecat.events;
 
-import com.github.indigopolecat.bingobrewers.BingoBrewers;
-import com.github.indigopolecat.bingobrewers.PlayerInfo;
-import com.github.indigopolecat.bingobrewers.ServerConnection;
-import com.github.indigopolecat.bingobrewers.Warping;
+import com.github.indigopolecat.bingobrewers.*;
+import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
 import com.github.indigopolecat.kryo.KryoNetwork;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 import net.hypixel.modapi.handler.ClientboundPacketHandler;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundHelloPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPartyInfoPacket;
@@ -12,8 +14,12 @@ import net.hypixel.modapi.packet.impl.clientbound.ClientboundPingPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPlayerInfoPacket;
 import net.hypixel.modapi.packet.impl.clientbound.event.ClientboundLocationPacket;
 import net.hypixel.modapi.packet.impl.serverbound.ServerboundPartyInfoPacket;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.World;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -41,8 +47,57 @@ public class HypixelPackets {
     }
 
     public void onPlayerInfoPacket(ClientboundPlayerInfoPacket packet) {
+
     }
 
-    public void onLocationEvent(ClientboundLocationPacket packet) {
+    public static void onLocationEvent(ClientboundLocationPacket packet) {
+
+        PlayerInfo.playerGameType = packet.getServerType().toString();
+        if (PlayerInfo.playerGameType == null) return;
+        if (PlayerInfo.playerGameType.equalsIgnoreCase("skyblock")) {
+            PlayerInfo.playerLocation = packet.getMode().toString();
+            // Check if the scoreboard contains "bingo" and set the onBingo flag once we know if we're on skyblock
+            SplashHud.onBingo = ScoreBoard.isBingo();
+            SplashHud.inSkyblockorPTLobby = true;
+        } else if (PlayerInfo.playerGameType.equalsIgnoreCase("prototype")) {
+            SplashHud.inSkyblockorPTLobby = true;
+        } else {
+            SplashHud.inSkyblockorPTLobby = false;
+        }
+
+
+        PlayerInfo.currentServer = packet.getServerName();
+        if (PlayerInfo.currentServer != null) {
+            PlayerInfo.playerHubNumber = PlayerInfo.hubServerMap.get(PlayerInfo.currentServer);
+
+            // This is checking without "DH" tag that dungeon hubs have, unimportant but commenting for clarity
+            if (PlayerInfo.playerHubNumber != null && ServerConnection.hubList.contains(PlayerInfo.playerHubNumber)) {
+                PlayerInfo.inSplashHub = true;
+                PlayerInfo.lastSplashHubUpdate = System.currentTimeMillis();
+            } else { // basically if the server isn't a hub, then it might be a dungeon hub so we check that
+                PlayerInfo.playerHubNumber = PlayerInfo.dungeonHubServerMap.get(PlayerInfo.currentServer);
+
+                // DH is a tag added to the hub number so regular hubs and dungeon hubs can be differentiated
+                if (PlayerInfo.playerHubNumber != null && ServerConnection.hubList.contains("DH" + PlayerInfo.playerHubNumber)) {
+                    PlayerInfo.inSplashHub = true;
+                    PlayerInfo.lastSplashHubUpdate = System.currentTimeMillis();
+                }
+            }
+        }
+
+        if (PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows") && !PlayerInfo.subscribedToCurrentCHServer) {
+            if (BingoBrewersConfig.crystalHollowsWaypointsToggle) {
+                // update day
+                World world = Minecraft.getMinecraft().theWorld;
+                long worldTime = world.getWorldTime();
+                PlayerInfo.day = (int) (worldTime / 24000);
+
+                if (PlayerInfo.currentServer == null) return;
+                KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
+                CHRequest.server = PlayerInfo.currentServer;
+                CHRequest.day = PlayerInfo.day;
+                ServerConnection.SubscribeToCHServer(CHRequest);
+            }
+        }
     }
 }

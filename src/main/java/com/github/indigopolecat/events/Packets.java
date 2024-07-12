@@ -61,62 +61,8 @@ public class Packets {
             if (packet.getType() == 2) return;
             String message = packet.getChatComponent().getUnformattedText();
             String formattedMessage = packet.getChatComponent().getFormattedText();
-            if (message.startsWith("{") && message.endsWith("}")) {
 
-                JsonObject locraw = new JsonParser().parse(message).getAsJsonObject();
-                Type type = new TypeToken<HashMap<String, String>>() {
-                }.getType();
-                HashMap<String, String> locrawMap = new Gson().fromJson(locraw, type);
-
-                PlayerInfo.playerGameType = locrawMap.get("gametype");
-                if (PlayerInfo.playerGameType == null) return;
-                if (PlayerInfo.playerGameType.equalsIgnoreCase("skyblock")) {
-                    PlayerInfo.playerLocation = locrawMap.get("mode");
-                    // Check if the scoreboard contains "bingo" and set the onBingo flag once we know if we're on skyblock
-                    SplashHud.onBingo = ScoreBoard.isBingo();
-                    SplashHud.inSkyblockorPTLobby = true;
-                } else if (PlayerInfo.playerGameType.equalsIgnoreCase("prototype")) {
-                    SplashHud.inSkyblockorPTLobby = true;
-                } else {
-                    SplashHud.inSkyblockorPTLobby = false;
-                }
-
-
-                PlayerInfo.currentServer = locrawMap.get("server");
-                if (PlayerInfo.currentServer != null) {
-                    PlayerInfo.playerHubNumber = PlayerInfo.hubServerMap.get(PlayerInfo.currentServer);
-
-                    // This is checking without "DH" tag that dungeon hubs have, unimportant but commenting for clarity
-                    if (PlayerInfo.playerHubNumber != null && ServerConnection.hubList.contains(PlayerInfo.playerHubNumber)) {
-                        PlayerInfo.inSplashHub = true;
-                        PlayerInfo.lastSplashHubUpdate = System.currentTimeMillis();
-                    } else { // basically if the server isn't a hub, then it might be a dungeon hub so we check that
-                        PlayerInfo.playerHubNumber = PlayerInfo.dungeonHubServerMap.get(PlayerInfo.currentServer);
-
-                        // DH is a tag added to the hub number so regular hubs and dungeon hubs can be differentiated
-                        if (PlayerInfo.playerHubNumber != null && ServerConnection.hubList.contains("DH" + PlayerInfo.playerHubNumber)) {
-                            PlayerInfo.inSplashHub = true;
-                            PlayerInfo.lastSplashHubUpdate = System.currentTimeMillis();
-                        }
-                    }
-                }
-
-                if (PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows") && !PlayerInfo.subscribedToCurrentCHServer) {
-                    if (BingoBrewersConfig.crystalHollowsWaypointsToggle) {
-                        // update day
-                        World world = Minecraft.getMinecraft().theWorld;
-                        long worldTime = world.getWorldTime();
-                        PlayerInfo.day = (int) (worldTime / 24000);
-
-                        if (PlayerInfo.currentServer == null) return;
-                        KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
-                        CHRequest.server = PlayerInfo.currentServer;
-                        CHRequest.day = PlayerInfo.day;
-                        ServerConnection.SubscribeToCHServer(CHRequest);
-                    }
-                }
-
-            } else if ((CHChests.addMessages || formattedMessage.matches(CHChests.signalLootChatMessage)) && PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
+            if ((CHChests.addMessages || formattedMessage.matches(CHChests.signalLootChatMessage)) && PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
                 if (BingoBrewersConfig.crystalHollowsWaypointsToggle) {
                     CHChests.addChatMessage(formattedMessage);
                 }
