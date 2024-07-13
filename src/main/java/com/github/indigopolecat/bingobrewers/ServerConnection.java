@@ -308,13 +308,17 @@ public class ServerConnection extends Listener implements Runnable {
         System.out.println("sent");
         PlayerInfo.subscribedToCurrentCHServer = false;
         // List of all keys that may be used in infopanel, in the order they'll be rendered in an element
+        setSplashHudItems();
+        repeat = false;
+    }
+
+    public static void setSplashHudItems() {
         keyOrder.clear(); // clear the list so it doesn't keep adding the same keys every time you reconnect
         keyOrder.add(HUB);
-        keyOrder.add(SPLASHER);
-        keyOrder.add(PARTY);
-        keyOrder.add(LOCATION);
-        keyOrder.add(NOTE);
-        repeat = false;
+        if (BingoBrewersConfig.showSplasher) keyOrder.add(SPLASHER);
+        if (BingoBrewersConfig.showParty) keyOrder.add(PARTY);
+        if (BingoBrewersConfig.showLocation) keyOrder.add(LOCATION);
+        if (BingoBrewersConfig.showNote) keyOrder.add(NOTE);
     }
 
     public static void organizeWaypoints() {

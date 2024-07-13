@@ -20,8 +20,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import static com.github.indigopolecat.bingobrewers.CHWaypoints.filteredWaypoints;
 import static com.github.indigopolecat.bingobrewers.CHWaypoints.itemCounts;
 import static com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud.filteredItems;
-import static com.github.indigopolecat.bingobrewers.ServerConnection.organizeWaypoints;
-import static com.github.indigopolecat.bingobrewers.ServerConnection.waypoints;
+import static com.github.indigopolecat.bingobrewers.ServerConnection.*;
 
 public class BingoBrewersConfig extends Config {
     public BingoBrewersConfig() {
@@ -41,6 +40,11 @@ public class BingoBrewersConfig extends Config {
         addListener("jasperGemstones", BingoBrewersConfig::jasperCall);
         addListener("junk", BingoBrewersConfig::miscCall);
         addListener("crystalHollowsWaypointsToggle", BingoBrewersConfig::SubscribeToServer);
+
+        addListener("showSplasher",  ServerConnection::setSplashHudItems);
+        addListener("showParty",  ServerConnection::setSplashHudItems);
+        addListener("showLocation",  ServerConnection::setSplashHudItems);
+        addListener("showNote",  ServerConnection::setSplashHudItems);
 
     }
 
@@ -70,16 +74,45 @@ public class BingoBrewersConfig extends Config {
     @Switch(
             name = "Show Splash Notifications outside of Skyblock",
             category = "Splash Notifications",
-            description = "Whether to show splash notifications outside of Skyblock AND the Prototype Lobby."
+            description = "Whether to show splash notifications outside of Skyblock AND the Prototype Lobby.",
+            size = OptionSize.DUAL
     )
     public static boolean splashNotificationsOutsideSkyblock = true;
-
 
     @HUD(
             name = "Splash Notification HUD",
             category = "Splash Notifications"
+
     )
     public SplashHud hud = new SplashHud();
+
+    @Checkbox(
+            name = "Show Splasher",
+            category = "Splash Notifications",
+            description = "Include the splasher's IGN in splash notifications"
+    )
+    public static boolean showSplasher = true;
+
+    @Checkbox(
+            name = "Show Party",
+            category = "Splash Notifications",
+            description = "Include the bingo party listed in the splash message in splash notifications"
+    )
+    public static boolean showParty = true;
+
+    @Checkbox(
+            name = "Show Location",
+            category = "Splash Notifications",
+            description = "Include the location in splash notifications"
+    )
+    public static boolean showLocation = true;
+
+    @Checkbox(
+            name = "Show Note",
+            category = "Splash Notifications",
+            description = "Show any extra information the splasher included in the splash notification"
+    )
+    public static boolean showNote = true;
 
     @Slider(
             name = "Notification Volume",
@@ -611,6 +644,11 @@ public class BingoBrewersConfig extends Config {
             CHRequest.server = PlayerInfo.currentServer;
             CHRequest.day = PlayerInfo.day;
             ServerConnection.SubscribeToCHServer(CHRequest);
+
+            KryoNetwork.RegisterToWarpServer register = new KryoNetwork.RegisterToWarpServer();
+            register.unregister = false;
+            register.server = PlayerInfo.currentServer;
+            ServerConnection.sendTCP(register);
         } else {
             waypoints.clear();
             itemCounts.clear();
@@ -621,6 +659,11 @@ public class BingoBrewersConfig extends Config {
             CHRequest.day = PlayerInfo.day;
             CHRequest.unsubscribe = true;
             ServerConnection.SubscribeToCHServer(CHRequest);
+
+            KryoNetwork.RegisterToWarpServer unregister = new KryoNetwork.RegisterToWarpServer();
+            unregister.unregister = true;
+            unregister.server = PlayerInfo.currentServer;
+            ServerConnection.sendTCP(unregister);
         }
     }
 
