@@ -57,7 +57,6 @@ public class PlayerInfo {
                 ServerConnection.SubscribeToCHServer(subscribeToCHServer);
             }
             playerLocation = "";
-            newLoad = true;
             ServerConnection.waypoints.clear();
             CHWaypoints.filteredWaypoints.clear();
             CrystalHollowsHud.filteredItems.clear();
@@ -75,22 +74,12 @@ public class PlayerInfo {
             tickCounter++;
             if (lastWorldLoad == -1 || tickCounter % 20 != 0) return;
             tickCounter = 0;
-            // Temporarily set newLoad to true when we want to update our locraw (updating is likely not necessary but it ensures we are working with the most recent data and does little harm)
-            if (System.currentTimeMillis() - lastPositionUpdate > 30000) newLoad = true;
+
             if (System.currentTimeMillis() - lastWorldLoad > 2000 || System.currentTimeMillis() - lastPositionUpdate > 30000) {
-                if (BingoBrewers.onHypixel && newLoad) {
-                    EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-                    if (player != null) {
-                        player.sendChatMessage("/locraw");
-                        ChatTextUtil.cancelLocRawMessage = true;
-
-                        lastPositionUpdate = System.currentTimeMillis();
-                        newLoad = false;
-
-                        World world = Minecraft.getMinecraft().theWorld;
-                        long worldTime = world.getWorldTime();
-                        day = (int) (worldTime / 24000);
-                    }
+                if (BingoBrewers.onHypixel) {
+                    World world = Minecraft.getMinecraft().theWorld;
+                    long worldTime = world.getWorldTime();
+                    day = (int) (worldTime / 24000);
                 }
             }
             ServerData serverData = Minecraft.getMinecraft().getCurrentServerData();
