@@ -98,6 +98,11 @@ public class HypixelPackets {
                 CHRequest.server = PlayerInfo.currentServer;
                 CHRequest.day = PlayerInfo.day;
                 ServerConnection.SubscribeToCHServer(CHRequest);
+
+                KryoNetwork.RegisterToWarpServer register = new KryoNetwork.RegisterToWarpServer();
+                register.unregister = false;
+                register.server = PlayerInfo.currentServer;
+                ServerConnection.sendTCP(register);
             }
         }
     }

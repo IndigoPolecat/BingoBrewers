@@ -12,10 +12,13 @@ import net.minecraftforge.client.event.sound.PlaySoundEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Warping {
     public static volatile ConcurrentHashMap<String, String> accountsToWarp = new ConcurrentHashMap<>();
@@ -105,5 +108,20 @@ public class Warping {
         INVITE,
         WARP,
         KICK
+    }
+
+    @SubscribeEvent
+    public void serverDisconnect(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
+        if (PlayerInfo.currentNetwork.equalsIgnoreCase("hypixel")) {
+
+            KryoNetwork.RegisterToWarpServer unregister = new KryoNetwork.RegisterToWarpServer();
+            unregister.unregister = true;
+            unregister.server = PlayerInfo.currentServer;
+            ServerConnection.sendTCP(unregister);
+
+            PlayerInfo.currentServer = "";
+        }
+
+        PlayerInfo.currentNetwork = null;
     }
 }
