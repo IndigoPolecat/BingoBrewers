@@ -83,8 +83,10 @@ public class PlayerInfo {
             if (System.currentTimeMillis() - lastWorldLoad > 2000 || System.currentTimeMillis() - lastPositionUpdate > 30000) {
                 if (BingoBrewers.onHypixel) {
                     World world = Minecraft.getMinecraft().theWorld;
-                    long worldTime = world.getWorldTime();
-                    day = (int) (worldTime / 24000);
+                    if (world != null) {
+                        long worldTime = world.getWorldTime();
+                        day = (int) (worldTime / 24000);
+                    }
                 }
             }
             ServerData serverData = Minecraft.getMinecraft().getCurrentServerData();
