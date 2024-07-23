@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import net.hypixel.modapi.handler.ClientboundPacketHandler;
+import net.hypixel.modapi.packet.HypixelPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundHelloPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPartyInfoPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPingPacket;
@@ -16,6 +17,10 @@ import net.hypixel.modapi.packet.impl.clientbound.event.ClientboundLocationPacke
 import net.hypixel.modapi.packet.impl.serverbound.ServerboundPartyInfoPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.World;
+import net.minecraftforge.event.entity.player.PlayerUseItemEvent;
+import net.minecraftforge.event.world.NoteBlockEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -32,6 +37,7 @@ public class HypixelPackets {
     }
 
     public static void onPartyInfoPacket(ClientboundPartyInfoPacket packet) {
+        System.out.println("party packet");
         PlayerInfo.inParty = packet.isInParty();
         Map<UUID, ClientboundPartyInfoPacket.PartyMember> party = packet.getMemberMap();
         ArrayList<String> uuids = new ArrayList<>();
@@ -40,9 +46,11 @@ public class HypixelPackets {
             if (party.get(uuid).getRole().equals(ClientboundPartyInfoPacket.PartyRole.LEADER)) continue;
             else uuids.add(uuid.toString());
         }
-        PlayerInfo.partyMembers.addAll(uuids);
+        PlayerInfo.partyMembers = uuids;
 
-        if (Warping.warpThread != null) Warping.warpThread.resume();
+        if (Warping.warpThread != null) {
+            Warping.warpThread.resume();
+        }
 
     }
 
@@ -99,10 +107,24 @@ public class HypixelPackets {
                 CHRequest.day = PlayerInfo.day;
                 ServerConnection.SubscribeToCHServer(CHRequest);
 
+                System.out.println("Registering to warp for " + PlayerInfo.currentServer);
                 KryoNetwork.RegisterToWarpServer register = new KryoNetwork.RegisterToWarpServer();
                 register.unregister = false;
+                PlayerInfo.registeredToWarp = true;
                 register.server = PlayerInfo.currentServer;
                 ServerConnection.sendTCP(register);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onTick(TickEvent.ClientTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            if (System.currentTimeMillis() - BingoBrewers.lastPacketSentToHypixel > 2000 && !BingoBrewers.packetHold.isEmpty()) {
+                HypixelPacket packet = BingoBrewers.packetHold.get(0);
+                BingoBrewers.INSTANCE.sendPacket(packet);
+                BingoBrewers.packetHold.removeIf(hypixelPacket -> packet.getClass() == hypixelPacket.getClass());
+                BingoBrewers.packetHold.remove(packet);
             }
         }
     }

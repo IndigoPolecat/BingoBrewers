@@ -58,6 +58,7 @@ public class PlayerInfo {
 
                 KryoNetwork.RegisterToWarpServer unregister = new KryoNetwork.RegisterToWarpServer();
                 unregister.unregister = true;
+                PlayerInfo.registeredToWarp = false;
                 unregister.server = PlayerInfo.currentServer;
                 ServerConnection.sendTCP(unregister);
             }

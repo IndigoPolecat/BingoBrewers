@@ -644,11 +644,6 @@ public class BingoBrewersConfig extends Config {
             CHRequest.server = PlayerInfo.currentServer;
             CHRequest.day = PlayerInfo.day;
             ServerConnection.SubscribeToCHServer(CHRequest);
-
-            KryoNetwork.RegisterToWarpServer register = new KryoNetwork.RegisterToWarpServer();
-            register.unregister = false;
-            register.server = PlayerInfo.currentServer;
-            ServerConnection.sendTCP(register);
         } else {
             waypoints.clear();
             itemCounts.clear();
@@ -662,10 +657,21 @@ public class BingoBrewersConfig extends Config {
 
             KryoNetwork.RegisterToWarpServer unregister = new KryoNetwork.RegisterToWarpServer();
             unregister.unregister = true;
+            PlayerInfo.registeredToWarp = false;
             unregister.server = PlayerInfo.currentServer;
             ServerConnection.sendTCP(unregister);
         }
+
+        if (PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
+            KryoNetwork.RegisterToWarpServer register = new KryoNetwork.RegisterToWarpServer();
+            register.unregister = false;
+            PlayerInfo.registeredToWarp = true;
+            register.server = PlayerInfo.currentServer;
+            ServerConnection.sendTCP(register);
+        }
     }
+
+
 
 
 }

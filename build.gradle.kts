@@ -36,7 +36,8 @@ loom {
         "client" {
             // If you don't want mixins, remove these lines
             property("mixin.debug", "true")
-            arg("--tweakClass", "org.spongepowered.asm.launch.MixinTweaker")
+            arg("--tweakClass", "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker")
+
         }
     }
     runConfigs {
@@ -122,19 +123,6 @@ dependencies {
 
 }
 
-// Tasks:
-
-/*tasks {
-    jar { // loads OneConfig at launch. Add these launch attributes but keep your old attributes!
-        manifest.attributes += mapOf(
-                "ModSide" to "CLIENT",
-                "TweakOrder" to 0,
-                "ForceLoadAsMod" to true,
-                "TweakClass" to "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker"
-        )
-    }
-}*/
-
 tasks.withType(JavaCompile::class) {
     options.encoding = "UTF-8"
 }
@@ -144,6 +132,7 @@ tasks.withType(Jar::class) {
     manifest.attributes.run {
         this["FMLCorePluginContainsFMLMod"] = "true"
         this["ForceLoadAsMod"] = "true"
+        this["TweakOrder"] = 0
 
         // If you don't want mixins, remove these lines
         this["TweakClass"] = "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker"

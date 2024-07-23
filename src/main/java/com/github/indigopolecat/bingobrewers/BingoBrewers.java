@@ -1,9 +1,11 @@
 package com.github.indigopolecat.bingobrewers;
 
+import cc.polyfrost.oneconfig.libs.checker.units.qual.A;
 import com.esotericsoftware.kryonet.Client;
 import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
 import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
 import com.github.indigopolecat.bingobrewers.commands.ConfigCommand;
+import com.github.indigopolecat.bingobrewers.commands.TempWarpCommand;
 import com.github.indigopolecat.bingobrewers.util.AutoUpdater;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.github.indigopolecat.events.HypixelPackets;
@@ -19,7 +21,9 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.common.MinecraftForge;
 import com.github.indigopolecat.events.PacketListener;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Mod(modid = "bingobrewers", version = "0.3.4", useMetadata = true)
 public class BingoBrewers {
@@ -52,9 +56,11 @@ public class BingoBrewers {
         MinecraftForge.EVENT_BUS.register(new Warping());
         MinecraftForge.EVENT_BUS.register(autoUpdater);
         MinecraftForge.EVENT_BUS.register(this);
+        MinecraftForge.EVENT_BUS.register(new HypixelPackets());
         config = new BingoBrewersConfig();
         createServerThread();
         ClientCommandHandler.instance.registerCommand(new ConfigCommand());
+        ClientCommandHandler.instance.registerCommand(new TempWarpCommand());
 
         minecraftColors.put("§0", 0x000000);  // Black
         minecraftColors.put("§1", 0x0000AA);  // Dark Blue
@@ -77,6 +83,8 @@ public class BingoBrewers {
         HypixelModAPI.getInstance().registerHandler(ClientboundPartyInfoPacket.class, HypixelPackets::onPartyInfoPacket);
         HypixelModAPI.getInstance().registerHandler(ClientboundLocationPacket.class, HypixelPackets::onLocationEvent);
         HypixelModAPI.getInstance().subscribeToEventPacket(ClientboundLocationPacket.class);
+
+        //Warping.createPartyMessageMatchers();
     }
 
 
@@ -90,7 +98,15 @@ public class BingoBrewers {
         }
     }
 
-    public boolean sendPacket(HypixelPacket packet) {
-        return HypixelModAPI.getInstance().sendPacket(packet);
+    public static long lastPacketSentToHypixel = 0;
+    public static CopyOnWriteArrayList<HypixelPacket> packetHold = new CopyOnWriteArrayList<>();
+    public void sendPacket(HypixelPacket packet) {
+        if (System.currentTimeMillis() - lastPacketSentToHypixel > 2500) {
+            lastPacketSentToHypixel = System.currentTimeMillis();
+            System.out.println("sending packet to hp");
+            HypixelModAPI.getInstance().sendPacket(packet);
+        } else {
+            packetHold.add(packet);
+        }
     }
 }

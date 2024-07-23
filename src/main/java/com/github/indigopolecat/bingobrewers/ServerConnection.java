@@ -18,6 +18,7 @@ import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import com.github.indigopolecat.kryo.ServerSummary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import org.lwjgl.Sys;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,8 +27,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.esotericsoftware.minlog.Log.*;
 import static com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud.filteredItems;
-import static com.github.indigopolecat.bingobrewers.Warping.accountsToWarp;
-import static com.github.indigopolecat.bingobrewers.Warping.chatMessageHold;
+import static com.github.indigopolecat.bingobrewers.Warping.*;
 import static java.lang.String.join;
 import static java.lang.String.valueOf;
 
@@ -76,6 +76,8 @@ public class ServerConnection extends Listener implements Runnable {
     private void connection() throws IOException {
         Log.set(LEVEL_ERROR);
         KryoNetwork.register(BingoBrewers.client);
+
+        BingoBrewersConfig.SubscribeToServer();
         BingoBrewers.client.addListener(new Listener() {
             @Override
             public void received(Connection connection, Object object) {
@@ -241,11 +243,18 @@ public class ServerConnection extends Listener implements Runnable {
                 } else if (object instanceof QueuePosition) {
                     // if you have to wait in the queue, this will give you your current position
                     // gonna leave it for you to implement because I think the permanent value should be stored in the class for rendering the menu
+                    QueuePosition position = (QueuePosition) object;
+                    if (position.positionInWarpQueue == 0) {
+                        // server is telling the client there was an unknown error and there are no available warp clients
+                    }
                 } else if (object instanceof BackgroundWarpTask) {
                     BackgroundWarpTask warpTask = (BackgroundWarpTask) object;
-                    if (warpTask.server.equals(PlayerInfo.currentServer) && !warpTask.accountsToWarp.isEmpty() && accountsToWarp.isEmpty()) {
+
+                    if (warpTask.server.equals(PlayerInfo.currentServer) && !warpTask.accountsToWarp.isEmpty() && accountsToWarp.isEmpty() && !warpTask.accountsToWarp.containsKey(null) && !warpTask.accountsToWarp.containsValue(null)) {
                         accountsToWarp = new ConcurrentHashMap<>(warpTask.accountsToWarp);
                         Warping.server = warpTask.server;
+
+                        System.out.println("Received warp task for: " + accountsToWarp.values());
 
                         if (accountsToWarp.isEmpty()) {
                             Warping.abort(false);
@@ -259,14 +268,21 @@ public class ServerConnection extends Listener implements Runnable {
                             confirm.accountsToWarp.put(uuid, ign);
                             confirm.server = PlayerInfo.currentServer;
                             client.sendTCP(confirm);
+                            System.out.println("confirmed");
                         }
 
                         if (Warping.warpThread != null) {
                             Warping.warpThread.end();
-                            Warping.warpThread = new BackgroundWarpThread();
-                            Thread warpThread = new Thread(Warping.warpThread);
-                            warpThread.start();
                         }
+                        Warping.warpThread = new BackgroundWarpThread();
+                        Thread warpThread = new Thread(Warping.warpThread);
+                        warpThread.start();
+                        System.out.println("warp begun");
+                    } else {
+                        System.out.println("something went wrong");
+                        System.out.println("warpTask Server: " + warpTask.server + " player info server: " + PlayerInfo.currentServer);
+                        System.out.println("current accounts: " + accountsToWarp.toString());
+                        System.out.println("accounts to warp: " + warpTask.accountsToWarp.toString());
                     }
                 } else if (object instanceof WarningBannerInfo) {
 
@@ -276,7 +292,28 @@ public class ServerConnection extends Listener implements Runnable {
                     accountsToWarp.clear();
                     Warping.partyReady = false;
                     Warping.waitingOnLocation = true;
-                    Warping.warpThread.stop = true;
+                    if (Warping.warpThread != null) {
+                        Warping.warpThread.end();
+                    }
+                } else if (object instanceof CancelWarpRequest) {
+                    // sent by server if unable to fulfill a warp
+                } else if (object instanceof WarperInfo) {
+                    WarperInfo warperInfo = (WarperInfo) object;
+
+                    warperIGN = warperInfo.ign;
+                    timeOfInvite = System.currentTimeMillis();
+
+                    if (partyInvites.contains(warperIGN) && System.currentTimeMillis() - timeOfInvite < 5000 ) {
+                        // we have already received the packet telling us the ign and we can safely join
+                        sendChatMessage("/p accept " + warperIGN);
+                        partyInvites = new ArrayList<>();
+                        warperIGN = null;
+                        timeOfInvite = 0;
+                    } else if (System.currentTimeMillis() - timeOfInvite > 5000) {
+                        warperIGN = null;
+                        partyInvites = new ArrayList<>();
+                        timeOfInvite = 0;
+                    }
                 }
             }
 

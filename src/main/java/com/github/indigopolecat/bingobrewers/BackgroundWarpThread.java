@@ -1,11 +1,9 @@
 package com.github.indigopolecat.bingobrewers;
 
-import net.hypixel.modapi.HypixelModAPI;
+import com.github.indigopolecat.kryo.KryoNetwork;
 import net.hypixel.modapi.packet.impl.serverbound.ServerboundPartyInfoPacket;
-import net.minecraft.client.Minecraft;
 
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static com.github.indigopolecat.bingobrewers.Warping.*;
 import static com.github.indigopolecat.bingobrewers.Warping.WARP_PHASE.INVITE;
@@ -13,46 +11,57 @@ import static com.github.indigopolecat.bingobrewers.Warping.WARP_PHASE.WARP;
 
 public class BackgroundWarpThread implements Runnable {
     public volatile boolean stop = false;
-    public static long executionTimeBegan;
+    public long executionTimeBegan;
     public static long timeOfLastKick;
-    public static ConcurrentHashMap<String, String> accountsKicked;
-    public long inviteSent;
+    public KryoNetwork.DoneWithWarpTask conclusion = new KryoNetwork.DoneWithWarpTask();
+    public static long timeOfLastPartyInfo;
+    public long warpTime = 0;
+    public int warpAttempts = 0;
 
 
     @Override
     public void run() {
-        executionTimeBegan = System.currentTimeMillis();
-        Warping.PHASE = INVITE;
-        if (PlayerInfo.currentServer.equals(Warping.server) && PlayerInfo.registeredToWarp) {
-            StringBuilder inviteCommand = new StringBuilder("/p invite");
-            for (String ign : accountsToWarp.values()) {
-                inviteCommand.append(" ").append(ign);
+        synchronized (this) {
+            System.out.println("beginning execution");
+            executionTimeBegan = System.currentTimeMillis();
+            Warping.PHASE = INVITE;
+            if (PlayerInfo.currentServer.equals(Warping.server) && PlayerInfo.registeredToWarp) {
+                StringBuilder inviteCommand = new StringBuilder("/p invite");
+                for (String ign : accountsToWarp.values()) {
+                    inviteCommand.append(" ").append(ign);
+                }
+                System.out.println("sending: " + inviteCommand.toString());
+                Warping.sendChatMessage(inviteCommand.toString());
+                warpTime = System.currentTimeMillis() + 1500;
+            } else {
+                Warping.abort(true);
             }
-            Warping.sendChatMessage(inviteCommand.toString());
-            inviteSent = System.currentTimeMillis();
-        } else {
-            Warping.abort(true);
+            while (!stop) {
+                waitForJoinAndWarp();
+                kickPartyAndVerify();
+            }
+            System.out.println("ending execution");
+            Warping.warpThread = null;
         }
-        while (!stop) {
-            waitForJoinAndWarp();
-            kickPartyAndVerify();
-        }
-        Warping.warpThread = null;
     }
 
     public void kickPartyAndVerify() {
         if (kickParty && PARTY_EMPTY_KICK && timeOfLastKick + 350 <= System.currentTimeMillis()) {
-            if (!accountsToWarp.isEmpty()) {
-                String accountToKickUUID = accountsToWarp.keySet().toArray(new String[0])[0];
-                String accountToKick = accountsToWarp.get(accountToKickUUID);
+            Warping.PHASE = Warping.WARP_PHASE.KICK;
+            if (!accountsToKick.isEmpty()) {
+                String accountToKickUUID = accountsToKick.keySet().toArray(new String[0])[0];
+                String accountToKick = accountsToKick.get(accountToKickUUID);
 
                 Warping.sendChatMessage("/p kick " + accountToKick);
-                accountsToWarp.remove(accountToKickUUID);
+                System.out.println("kicking " + accountToKick);
+                accountsToKick.remove(accountToKickUUID);
                 accountsKicked.put(accountToKickUUID, accountToKick);
 
-            } else {
+            } else if (System.currentTimeMillis() - timeOfLastPartyInfo > 1750) {
+                PHASE = null;
                 kickParty = false;
                 BingoBrewers.INSTANCE.sendPacket(new ServerboundPartyInfoPacket());
+                timeOfLastPartyInfo = System.currentTimeMillis();
 
                 try {
                     this.wait();
@@ -64,17 +73,23 @@ public class BackgroundWarpThread implements Runnable {
                 if (PlayerInfo.inParty) {
                     for (String uuid : PlayerInfo.partyMembers) {
                         if (accountsKicked.containsKey(uuid)) {
+                            System.out.println("failed to kick (rekicking) " + accountsToKick);
                             String ignToRekick = accountsKicked.get(uuid);
-                            accountsToWarp.put(uuid, ignToRekick);
+                            accountsToKick.put(uuid, ignToRekick);
                             kickParty = true;
                         }
                     }
+                    accountsKicked.clear();
                 }
             }
-        } else if (kickParty) {
+
+        } else if (kickParty && (warpAttempts > 1 || accountsToWarp.isEmpty())) {
+            Warping.PHASE = Warping.WARP_PHASE.KICK;
             int loopCounter = 0;
             while (PlayerInfo.inParty) {
                 Warping.sendChatMessage("/p disband");
+
+                PHASE = null;
                 kickParty = false;
                 BingoBrewers.INSTANCE.sendPacket(new ServerboundPartyInfoPacket());
 
@@ -86,7 +101,7 @@ public class BackgroundWarpThread implements Runnable {
                 loopCounter++;
                 if (loopCounter > 3) {
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(1000 * loopCounter);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -94,24 +109,34 @@ public class BackgroundWarpThread implements Runnable {
                     break;
                 }
             }
+        } else if (kickParty) {
+            PARTY_EMPTY_KICK = true;
         }
     }
 
     public void waitForJoinAndWarp() {
         Warping.PHASE = WARP;
-        if (inviteSent == 0) return;
+        System.out.println("current time: " + System.currentTimeMillis() + " warptime: " + warpTime);
+
+        if (System.currentTimeMillis() < warpTime && !accountsToWarp.values().containsAll(PlayerInfo.partyMembers)) return;
+
         BingoBrewers.INSTANCE.sendPacket(new ServerboundPartyInfoPacket());
+
 
         try {
             this.wait();
+            System.out.println("continuing");
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
         ArrayList<String> uuids = PlayerInfo.partyMembers;
 
+        System.out.println("uuids: " + uuids.toString());
+        System.out.println("warp: " + accountsToWarp.toString());
+
         if (Warping.accountsToWarp.keySet().containsAll(uuids) && uuids.containsAll(Warping.accountsToWarp.keySet())) { // everyone is in the party
             Warping.warp();
-        } else if (Warping.accountsToWarp.keySet().containsAll(uuids) && Warping.warpThread.inviteSent + 5000 < System.currentTimeMillis()) { // warp after 5 seconds even if the party isn't full
+        } else if (Warping.accountsToWarp.keySet().containsAll(uuids) && warpTime + 3500 < System.currentTimeMillis()) { // If we're still missing someone after an extra 3.5s, warp anyway
             Warping.warp();
         } else if (!Warping.accountsToWarp.keySet().containsAll(uuids)) { // there is someone who isn't supposed to be warped in the party
             Warping.PARTY_EMPTY_KICK = true;
@@ -119,6 +144,7 @@ public class BackgroundWarpThread implements Runnable {
         } else {
             Warping.lastPartyUpdate = System.currentTimeMillis();
         }
+
     }
 
     public synchronized void resume() {
