@@ -33,6 +33,13 @@ public class BackgroundWarpThread implements Runnable {
                 System.out.println("sending: " + inviteCommand.toString());
                 Warping.sendChatMessage(inviteCommand.toString());
                 warpTime = System.currentTimeMillis() + 1500;
+
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
             } else {
                 Warping.abort(true);
             }
@@ -118,10 +125,9 @@ public class BackgroundWarpThread implements Runnable {
         Warping.PHASE = WARP;
         System.out.println("current time: " + System.currentTimeMillis() + " warptime: " + warpTime);
 
-        if (System.currentTimeMillis() < warpTime && !accountsToWarp.values().containsAll(PlayerInfo.partyMembers)) return;
+        if (System.currentTimeMillis() < warpTime && !PlayerInfo.partyMembers.isEmpty()) return;
 
         BingoBrewers.INSTANCE.sendPacket(new ServerboundPartyInfoPacket());
-
 
         try {
             this.wait();
@@ -129,6 +135,7 @@ public class BackgroundWarpThread implements Runnable {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
         ArrayList<String> uuids = PlayerInfo.partyMembers;
 
         System.out.println("uuids: " + uuids.toString());

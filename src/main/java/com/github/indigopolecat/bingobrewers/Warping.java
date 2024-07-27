@@ -84,7 +84,7 @@ public class Warping {
                 warpThread = null;
             }
 
-            if (!messageQueue.isEmpty() && System.currentTimeMillis() - lastMessageSent > 100) {
+            if (!messageQueue.isEmpty() && System.currentTimeMillis() - lastMessageSent > 100 && Minecraft.getMinecraft().thePlayer != null) {
                 for (String message : messageQueue) {
                     if (message.startsWith("/p") && warpThread != null && !whitelistedMessages.contains(message)) continue;
 
@@ -151,7 +151,7 @@ public class Warping {
 
     public static void createPartyMessageMatchers() {
         try {
-            JsonObject jsonObject = new Gson().fromJson(IOUtils.toString(Objects.requireNonNull(BingoBrewers.class.getResourceAsStream("assets/bingobrewers/dungeon_guide_party_languages.json")), StandardCharsets.UTF_8), JsonObject.class);
+            JsonObject jsonObject = new Gson().fromJson(IOUtils.toString(Objects.requireNonNull(BingoBrewers.class.getResourceAsStream("/assets/bingobrewers/dungeon_guide_party_languages.json")), StandardCharsets.UTF_8), JsonObject.class);
             NOT_IN_PARTY = createMatcher(jsonObject, "not_in_party");
             PARTY_CHANNEL = createMatcher(jsonObject, "party_channel");
             ALL_INVITE_ON = createMatcher(jsonObject, "all_invite_on");
@@ -173,12 +173,14 @@ public class Warping {
     }
 
     private static MessageMatcher createMatcher(JsonObject object, String key) {
+        System.out.println(key);
         JsonArray jsonArray = object.getAsJsonArray(key);
+        System.out.println("json Array: " + jsonArray);
         List<String> list = StreamSupport.stream(jsonArray.spliterator(), false)
                 .filter(JsonElement::isJsonPrimitive)
                 .map(JsonElement::getAsString)
                 .collect(Collectors.toList());
-
+        System.out.println(Arrays.toString(list.toArray()));
         return new MessageMatcher(list);
     }
 
@@ -231,9 +233,22 @@ public class Warping {
                 HashMap<String, String> partyMesageGroups = new HashMap<>();
 
                 if (PARTY_JOIN.match(message, partyMesageGroups)) {
+                    for (Entry<String, String> account : accountsToWarp.entrySet()) {
+                        if (account.getValue().equalsIgnoreCase(partyMesageGroups.get("1"))) {
+                            PlayerInfo.partyMembers.add(account.getKey());
+                        }
+                    }
                     PlayerInfo.partyMembers.add(partyMesageGroups.get("1"));
+                    if (PlayerInfo.partyMembers.containsAll(accountsToWarp.values()) && accountsToWarp.values().containsAll(PlayerInfo.partyMembers)) {
+                        // if the party has all members
+                        warpThread.warpTime = System.currentTimeMillis();
+                    }
                 } else if (PARTY_LEAVE.match(message, partyMesageGroups)) {
-                    PlayerInfo.partyMembers.remove(partyMesageGroups.get("1"));
+                    for (Entry<String, String> account : accountsToWarp.entrySet()) {
+                        if (account.getValue().equalsIgnoreCase(partyMesageGroups.get("1"))) {
+                            PlayerInfo.partyMembers.remove(account.getKey());
+                        }
+                    }
                 }
             }
         }

@@ -11,11 +11,11 @@ import java.util.regex.Pattern;
 
 public class MessageMatcher {
     List<String> simpleEquals = new ArrayList<>();
-    List<PatternData> regexPatterns = new ArrayList<>();
+    public List<PatternData> regexPatterns = new ArrayList<>();
 
     public static class PatternData {
-        private Pattern pattern;
-        private int flags;
+        private final Pattern pattern;
+        private final int flags;
 
         public PatternData(Pattern pattern, int flags) {
             this.pattern = pattern;

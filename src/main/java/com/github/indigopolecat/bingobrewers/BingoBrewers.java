@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-@Mod(modid = "bingobrewers", version = "0.3.4", useMetadata = true)
+@Mod(modid = "bingobrewers", version = "0.3.4", useMetadata = true, dependencies = "required-after:hypixel_mod_api@[1.0.0,)")
 public class BingoBrewers {
     public static BingoBrewersConfig config;
     public static BingoBrewers INSTANCE;
@@ -84,7 +84,7 @@ public class BingoBrewers {
         HypixelModAPI.getInstance().registerHandler(ClientboundLocationPacket.class, HypixelPackets::onLocationEvent);
         HypixelModAPI.getInstance().subscribeToEventPacket(ClientboundLocationPacket.class);
 
-        //Warping.createPartyMessageMatchers();
+        Warping.createPartyMessageMatchers();
     }
 
 
@@ -101,6 +101,7 @@ public class BingoBrewers {
     public static long lastPacketSentToHypixel = 0;
     public static CopyOnWriteArrayList<HypixelPacket> packetHold = new CopyOnWriteArrayList<>();
     public void sendPacket(HypixelPacket packet) {
+        System.out.println("packet time: " + (System.currentTimeMillis() - lastPacketSentToHypixel));
         if (System.currentTimeMillis() - lastPacketSentToHypixel > 2500) {
             lastPacketSentToHypixel = System.currentTimeMillis();
             System.out.println("sending packet to hp");

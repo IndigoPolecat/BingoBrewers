@@ -59,6 +59,8 @@ public class HypixelPackets {
     }
 
     public static void onLocationEvent(ClientboundLocationPacket packet) {
+        System.out.println("packet received");
+        System.out.println(packet.toString());
 
         if (!packet.getServerType().isPresent()) return;
         PlayerInfo.playerGameType = packet.getServerType().get().getName();
@@ -120,7 +122,9 @@ public class HypixelPackets {
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
-            if (System.currentTimeMillis() - BingoBrewers.lastPacketSentToHypixel > 2000 && !BingoBrewers.packetHold.isEmpty()) {
+            if (BingoBrewers.packetHold.isEmpty()) return;
+            System.out.println("packet time22222222: " + (System.currentTimeMillis() - BingoBrewers.lastPacketSentToHypixel));
+            if (System.currentTimeMillis() - BingoBrewers.lastPacketSentToHypixel > 2500 && !BingoBrewers.packetHold.isEmpty()) {
                 HypixelPacket packet = BingoBrewers.packetHold.get(0);
                 BingoBrewers.INSTANCE.sendPacket(packet);
                 BingoBrewers.packetHold.removeIf(hypixelPacket -> packet.getClass() == hypixelPacket.getClass());
