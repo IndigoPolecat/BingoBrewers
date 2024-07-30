@@ -272,7 +272,8 @@ public class ServerConnection extends Listener implements Runnable {
                         }
 
                         if (Warping.warpThread != null) {
-                            Warping.warpThread.end();
+                            warpThread.stop = true;
+                            warpThread.notify();
                         }
                         Warping.warpThread = new BackgroundWarpThread();
                         Thread warpThread = new Thread(Warping.warpThread);
@@ -292,8 +293,9 @@ public class ServerConnection extends Listener implements Runnable {
                     accountsToWarp.clear();
                     Warping.partyReady = false;
                     Warping.waitingOnLocation = true;
-                    if (Warping.warpThread != null) {
-                        Warping.warpThread.end();
+                    if (warpThread != null) {
+                        warpThread.stop = true;
+                        warpThread.notify();
                     }
                 } else if (object instanceof CancelWarpRequest) {
                     // sent by server if unable to fulfill a warp

@@ -16,6 +16,7 @@ public class BackgroundWarpThread implements Runnable {
     public KryoNetwork.DoneWithWarpTask conclusion = new KryoNetwork.DoneWithWarpTask();
     public static long timeOfLastPartyInfo;
     public long warpTime = 0;
+    public boolean chatWarpOverride = false; // if chat says everyone has joined the party we can just warp
     public int warpAttempts = 0;
 
 
@@ -48,11 +49,12 @@ public class BackgroundWarpThread implements Runnable {
                 kickPartyAndVerify();
             }
             System.out.println("ending execution");
-            Warping.warpThread = null;
         }
     }
 
     public void kickPartyAndVerify() {
+        if (stop) return;
+
         if (kickParty && PARTY_EMPTY_KICK && timeOfLastKick + 350 <= System.currentTimeMillis()) {
             Warping.PHASE = Warping.WARP_PHASE.KICK;
             if (!accountsToKick.isEmpty()) {
@@ -72,6 +74,7 @@ public class BackgroundWarpThread implements Runnable {
 
                 try {
                     this.wait();
+                    if (stop) return;
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -94,6 +97,9 @@ public class BackgroundWarpThread implements Runnable {
             Warping.PHASE = Warping.WARP_PHASE.KICK;
             int loopCounter = 0;
             while (PlayerInfo.inParty) {
+                if (stop) return;
+                System.out.println("normal disband");
+
                 Warping.sendChatMessage("/p disband");
 
                 PHASE = null;
@@ -102,6 +108,7 @@ public class BackgroundWarpThread implements Runnable {
 
                 try {
                     this.wait();
+                    if (stop) return;
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -116,24 +123,33 @@ public class BackgroundWarpThread implements Runnable {
                     break;
                 }
             }
+            accountsToWarp.clear();
+            accountsKicked.clear();
+            accountsToKick.clear();
+            stop = true;
         } else if (kickParty) {
             PARTY_EMPTY_KICK = true;
         }
     }
 
     public void waitForJoinAndWarp() {
+        if (stop) return;
         Warping.PHASE = WARP;
-        System.out.println("current time: " + System.currentTimeMillis() + " warptime: " + warpTime);
 
-        if (System.currentTimeMillis() < warpTime && !PlayerInfo.partyMembers.isEmpty()) return;
+        if (System.currentTimeMillis() < warpTime) return;
+        System.out.println("current: " + System.currentTimeMillis() + " warpTime: " + warpTime);
 
-        BingoBrewers.INSTANCE.sendPacket(new ServerboundPartyInfoPacket());
+        if (!chatWarpOverride) {
+            System.out.println("requesting packet");
+            BingoBrewers.INSTANCE.sendPacket(new ServerboundPartyInfoPacket());
 
-        try {
-            this.wait();
-            System.out.println("continuing");
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            try {
+                this.wait();
+                if (stop) return;
+                System.out.println("continuing");
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         ArrayList<String> uuids = PlayerInfo.partyMembers;
@@ -142,8 +158,10 @@ public class BackgroundWarpThread implements Runnable {
         System.out.println("warp: " + accountsToWarp.toString());
 
         if (Warping.accountsToWarp.keySet().containsAll(uuids) && uuids.containsAll(Warping.accountsToWarp.keySet())) { // everyone is in the party
+            System.out.println("normal warp");
             Warping.warp();
         } else if (Warping.accountsToWarp.keySet().containsAll(uuids) && warpTime + 3500 < System.currentTimeMillis()) { // If we're still missing someone after an extra 3.5s, warp anyway
+            System.out.println("3.5s warp");
             Warping.warp();
         } else if (!Warping.accountsToWarp.keySet().containsAll(uuids)) { // there is someone who isn't supposed to be warped in the party
             Warping.PARTY_EMPTY_KICK = true;
@@ -156,8 +174,5 @@ public class BackgroundWarpThread implements Runnable {
 
     public synchronized void resume() {
         this.notify();
-    }
-    public synchronized void end() {
-        stop = true;
     }
 }

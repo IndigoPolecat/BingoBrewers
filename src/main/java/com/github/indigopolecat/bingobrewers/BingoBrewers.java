@@ -1,6 +1,5 @@
 package com.github.indigopolecat.bingobrewers;
 
-import cc.polyfrost.oneconfig.libs.checker.units.qual.A;
 import com.esotericsoftware.kryonet.Client;
 import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
 import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
@@ -21,7 +20,6 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.common.MinecraftForge;
 import com.github.indigopolecat.events.PacketListener;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -98,14 +96,19 @@ public class BingoBrewers {
         }
     }
 
-    public static long lastPacketSentToHypixel = 0;
+
     public static CopyOnWriteArrayList<HypixelPacket> packetHold = new CopyOnWriteArrayList<>();
+    public static HypixelPacket lastPacketSent;
+    public static long lastPacketSentAt = 0;
+    public static boolean waitingForPacketResponse;
     public void sendPacket(HypixelPacket packet) {
-        System.out.println("packet time: " + (System.currentTimeMillis() - lastPacketSentToHypixel));
-        if (System.currentTimeMillis() - lastPacketSentToHypixel > 2500) {
-            lastPacketSentToHypixel = System.currentTimeMillis();
+        System.out.println("packet time: " + (System.currentTimeMillis() - lastPacketSentAt));
+        if (System.currentTimeMillis() - lastPacketSentAt > 2500) {
+            lastPacketSentAt = System.currentTimeMillis();
             System.out.println("sending packet to hp");
             HypixelModAPI.getInstance().sendPacket(packet);
+            lastPacketSent = packet;
+            waitingForPacketResponse = true;
         } else {
             packetHold.add(packet);
         }

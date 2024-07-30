@@ -51,7 +51,7 @@ public class Warping {
         System.out.println("warping");
         sendChatMessage("/p warp");
         timeOfInvite = 0; // reset
-        warpThread.warpAttempts += 1;
+        warpThread.warpTime = Long.MAX_VALUE;
 
         PHASE = WARP_PHASE.VERIFICATION;
     }
@@ -71,7 +71,8 @@ public class Warping {
         waitingOnLocation = true;
 
         if (warpThread != null) {
-            warpThread.end();
+            warpThread.stop = true;
+            warpThread.notify();
         }
     }
 
@@ -80,11 +81,24 @@ public class Warping {
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
         if (event.phase.equals(TickEvent.Phase.END)) {
-            if (warpThread != null && warpThread.stop) {
-                warpThread = null;
+
+            if (warpThread != null && System.currentTimeMillis() - warpThread.executionTimeBegan > 15000) {
+                System.out.println("15s disband");
+                sendChatMessage("/p disband");
+                System.out.println("ending");
+                if (warpThread != null) {
+                    warpThread.stop = true;
+                    warpThread.resume();
+                    System.out.println("thread ended");
+                    warpThread = null;
+                    System.out.println("thread null");
+                } else {
+                    System.out.println ("warp thread is already null");
+                }
+                PHASE = null;
             }
 
-            if (!messageQueue.isEmpty() && System.currentTimeMillis() - lastMessageSent > 100 && Minecraft.getMinecraft().thePlayer != null) {
+            if (!messageQueue.isEmpty() && System.currentTimeMillis() - lastMessageSent > 200 && Minecraft.getMinecraft().thePlayer != null) {
                 for (String message : messageQueue) {
                     if (message.startsWith("/p") && warpThread != null && !whitelistedMessages.contains(message)) continue;
 
@@ -173,14 +187,11 @@ public class Warping {
     }
 
     private static MessageMatcher createMatcher(JsonObject object, String key) {
-        System.out.println(key);
         JsonArray jsonArray = object.getAsJsonArray(key);
-        System.out.println("json Array: " + jsonArray);
         List<String> list = StreamSupport.stream(jsonArray.spliterator(), false)
                 .filter(JsonElement::isJsonPrimitive)
                 .map(JsonElement::getAsString)
                 .collect(Collectors.toList());
-        System.out.println(Arrays.toString(list.toArray()));
         return new MessageMatcher(list);
     }
 
@@ -191,12 +202,12 @@ public class Warping {
         if (event.getPacket() instanceof S02PacketChat) {
             if (((S02PacketChat) event.getPacket()).getType() == 2) return;
             String message = ((S02PacketChat) event.getPacket()).getChatComponent().getFormattedText();
-            if (PHASE == null) return;
-            if (message.equals("§9§m-----------------------------------------------------§r")) {
+            String unformatted = ((S02PacketChat) event.getPacket()).getChatComponent().getUnformattedText();
+            if (message.equals("§9§m-----------------------------------------------------§r") && warpThread != null) {
 
                 //event.setCanceled(true);
                 lookForEndingMessage = !lookForEndingMessage;
-            } else if (message.equals(warpMessageTrigger)) {
+            } else if (message.equals(warpMessageTrigger) && warpThread != null) {
                 //event.setCanceled(true);
                 lookForEndingMessage = !lookForEndingMessage;
 
@@ -208,15 +219,14 @@ public class Warping {
                     warpThread.conclusion.ignsWarped.clear();
                 } else {
                     System.out.println(accountsToWarp.toString());
-                    if (!accountsToWarp.isEmpty()) {
-                        warpThread.warpTime = System.currentTimeMillis() + 5250;
-                    }
+                    warpThread.warpAttempts += 1;
 
                 }
             } else if (lookForEndingMessage) {
-                Matcher playerWarpMatcher = playerWarpPattern.matcher(message);
+                Matcher playerWarpMatcher = playerWarpPattern.matcher(unformatted);
                 if (playerWarpMatcher.find()) {
-                    if (playerWarpMatcher.group(1).equalsIgnoreCase("✮") || playerWarpMatcher.group(1).equalsIgnoreCase("✔") || warpThread.warpAttempts > 1) {
+                    System.out.println("group1: " + playerWarpMatcher.group(1));
+                    if (playerWarpMatcher.group(1).equalsIgnoreCase("✮") || playerWarpMatcher.group(1).equalsIgnoreCase("✔") || (warpThread != null && warpThread.warpAttempts >= 1)) {
                         for (Entry<String, String> player : accountsToWarp.entrySet()) {
                             if (player.getValue().equals(playerWarpMatcher.group(3))) {
                                 System.out.println("removing " + player.getValue() + " from warp accounts");
@@ -226,29 +236,82 @@ public class Warping {
                             }
                         }
                     } else {
-                        warpThread.conclusion.successful = false;
+                        if (warpThread != null) {
+                            warpThread.conclusion.successful = false;
+                            // todo: check for error reason and potentially cancel
+                            System.out.println("5250 til warp");
+                            warpThread.warpTime = System.currentTimeMillis() + 5250;
+                        }
                     }
                 }
 
-                HashMap<String, String> partyMesageGroups = new HashMap<>();
+                HashMap<String, String> partyMessageGroups = new HashMap<>();
+                Pattern accountPattern = Pattern.compile("(§.)?(\\[\\w+\\+*])?\\s*([\\w_]+)");
 
-                if (PARTY_JOIN.match(message, partyMesageGroups)) {
+                if (PARTY_JOIN.match(message, partyMessageGroups)) {
+                    Matcher accountMatcher = accountPattern.matcher(partyMessageGroups.get("1"));
+                    String ign = "";
+                    if (accountMatcher.find()) {
+                        ign = accountMatcher.group(3);
+                    }
+
+                    System.out.println("parsed account: " + ign);
+                    System.out.println("accounts to warp: " + accountsToWarp.toString());
+
+                    boolean warpAccount = false;
                     for (Entry<String, String> account : accountsToWarp.entrySet()) {
-                        if (account.getValue().equalsIgnoreCase(partyMesageGroups.get("1"))) {
+                        if (Objects.equals(account.getValue(), ign)) {
                             PlayerInfo.partyMembers.add(account.getKey());
+                            warpAccount = true;
                         }
                     }
-                    PlayerInfo.partyMembers.add(partyMesageGroups.get("1"));
                     if (PlayerInfo.partyMembers.containsAll(accountsToWarp.values()) && accountsToWarp.values().containsAll(PlayerInfo.partyMembers)) {
                         // if the party has all members
                         warpThread.warpTime = System.currentTimeMillis();
+                        warpThread.chatWarpOverride = true;
                     }
-                } else if (PARTY_LEAVE.match(message, partyMesageGroups)) {
+                    if (!warpAccount) {
+                        // an account that isn't supposed to be in the party has joined
+                        System.out.println("Aborting because an unknown account has joined");
+                        abort(true);
+                    }
+
+                } else if (INVITED.match(message, partyMessageGroups)) {
+                    Matcher accountMatcher = accountPattern.matcher(partyMessageGroups.get("1"));
+                    String ign = "";
+                    if (accountMatcher.find()) {
+                        ign = accountMatcher.group(3);
+                    }
+
+                    System.out.println("accounts to warp: " + accountsToWarp.toString());
+                    System.out.println("parsed account: " + ign);
+
+                    boolean warpAccount = false;
                     for (Entry<String, String> account : accountsToWarp.entrySet()) {
-                        if (account.getValue().equalsIgnoreCase(partyMesageGroups.get("1"))) {
+                        if (Objects.equals(account.getValue(), ign)) {
+                            warpAccount = true;
+                            break;
+                        }
+                    }
+                    if (!warpAccount) {
+                        // an account that isn't supposed to be in the party has been invited
+                        System.out.println("Aborting because an unknown account has joined");
+                        abort(true);
+                    }
+                } else if (PARTY_LEAVE.match(message, partyMessageGroups)) {
+                    Matcher accountMatcher = accountPattern.matcher(partyMessageGroups.get("1"));
+                    String ign = "";
+                    if (accountMatcher.find()) {
+                        ign = accountMatcher.group(3);
+                    }
+
+                    for (Entry<String, String> account : accountsToWarp.entrySet()) {
+                        if (Objects.equals(account.getValue(), ign) ) {
                             PlayerInfo.partyMembers.remove(account.getKey());
                         }
                     }
+                } else if (NOT_IN_PARTY.match(message, partyMessageGroups)) {
+                    PlayerInfo.partyMembers.clear();
                 }
             }
         }

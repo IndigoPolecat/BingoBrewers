@@ -3,11 +3,6 @@ package com.github.indigopolecat.events;
 import com.github.indigopolecat.bingobrewers.*;
 import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
 import com.github.indigopolecat.kryo.KryoNetwork;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
-import net.hypixel.modapi.handler.ClientboundPacketHandler;
 import net.hypixel.modapi.packet.HypixelPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundHelloPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPartyInfoPacket;
@@ -15,16 +10,14 @@ import net.hypixel.modapi.packet.impl.clientbound.ClientboundPingPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPlayerInfoPacket;
 import net.hypixel.modapi.packet.impl.clientbound.event.ClientboundLocationPacket;
 import net.hypixel.modapi.packet.impl.serverbound.ServerboundPartyInfoPacket;
+import net.hypixel.modapi.packet.impl.serverbound.ServerboundPingPacket;
+import net.hypixel.modapi.packet.impl.serverbound.ServerboundPlayerInfoPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.World;
-import net.minecraftforge.event.entity.player.PlayerUseItemEvent;
-import net.minecraftforge.event.world.NoteBlockEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -33,10 +26,18 @@ public class HypixelPackets {
     public void onHelloEvent(ClientboundHelloPacket packet) {
     }
     public static void onPingPacket(ClientboundPingPacket packet) {
+        if (BingoBrewers.lastPacketSent instanceof ServerboundPingPacket) {
+            BingoBrewers.waitingForPacketResponse = false;
+        }
         System.out.println("PING");
     }
 
     public static void onPartyInfoPacket(ClientboundPartyInfoPacket packet) {
+        if (BingoBrewers.lastPacketSent instanceof ServerboundPartyInfoPacket) {
+            BingoBrewers.waitingForPacketResponse = false;
+            System.out.println("no longer waiting");
+        }
+
         System.out.println("party packet");
         PlayerInfo.inParty = packet.isInParty();
         Map<UUID, ClientboundPartyInfoPacket.PartyMember> party = packet.getMemberMap();
@@ -55,7 +56,9 @@ public class HypixelPackets {
     }
 
     public void onPlayerInfoPacket(ClientboundPlayerInfoPacket packet) {
-
+        if (BingoBrewers.lastPacketSent instanceof ServerboundPlayerInfoPacket) {
+            BingoBrewers.waitingForPacketResponse = false;
+        }
     }
 
     public static void onLocationEvent(ClientboundLocationPacket packet) {
@@ -122,9 +125,14 @@ public class HypixelPackets {
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
+            if (System.currentTimeMillis() - BingoBrewers.lastPacketSentAt > 2000 && BingoBrewers.waitingForPacketResponse) {
+                BingoBrewers.packetHold.add(0, BingoBrewers.lastPacketSent);
+                BingoBrewers.waitingForPacketResponse = false;
+            }
+
             if (BingoBrewers.packetHold.isEmpty()) return;
-            System.out.println("packet time22222222: " + (System.currentTimeMillis() - BingoBrewers.lastPacketSentToHypixel));
-            if (System.currentTimeMillis() - BingoBrewers.lastPacketSentToHypixel > 2500 && !BingoBrewers.packetHold.isEmpty()) {
+
+            if (System.currentTimeMillis() - BingoBrewers.lastPacketSentAt > 2500 && !BingoBrewers.packetHold.isEmpty()) {
                 HypixelPacket packet = BingoBrewers.packetHold.get(0);
                 BingoBrewers.INSTANCE.sendPacket(packet);
                 BingoBrewers.packetHold.removeIf(hypixelPacket -> packet.getClass() == hypixelPacket.getClass());
