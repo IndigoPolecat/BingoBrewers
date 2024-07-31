@@ -57,13 +57,14 @@ public class Warping {
     }
 
     public static void abort(boolean ineligible) {
+        if (true) return;
         System.out.println("aborting warp");
         kickParty = true;
         BingoBrewers.INSTANCE.sendPacket(new ServerboundPartyInfoPacket());
 
 
         KryoNetwork.AbortWarpTask abort = new KryoNetwork.AbortWarpTask();
-        abort.ign = Minecraft.getMinecraft().thePlayer.getDisplayNameString();
+        abort.ign = ServerConnection.ign;
         abort.ineligible = ineligible;
         ServerConnection.sendTCP(abort);
         accountsToWarp.clear();
@@ -83,6 +84,7 @@ public class Warping {
         if (event.phase.equals(TickEvent.Phase.END)) {
 
             if (warpThread != null && System.currentTimeMillis() - warpThread.executionTimeBegan > 15000) {
+                if (true) return;
                 System.out.println("15s disband");
                 sendChatMessage("/p disband");
                 System.out.println("ending");
@@ -122,6 +124,7 @@ public class Warping {
 
     @SubscribeEvent
     public void onChatMessage(ClientChatReceivedEvent event) {
+        if (true) return;
         String message = event.message.getUnformattedText();
 
         Matcher partyInviteMatcher = partyInvitePattern.matcher(message);
@@ -199,6 +202,7 @@ public class Warping {
     // cancelling these packets is intentional in an effort to ensure other mods can avoid interacting with them since this is not a party they player will likely notice they're in
     @SubscribeEvent
     public void onPacketReceived(PacketEvent.Received event) {
+        if (true) return;
         if (event.getPacket() instanceof S02PacketChat) {
             if (((S02PacketChat) event.getPacket()).getType() == 2) return;
             String message = ((S02PacketChat) event.getPacket()).getChatComponent().getFormattedText();
@@ -323,7 +327,7 @@ public class Warping {
     public static void sendChatMessage(String message) {
         if (Minecraft.getMinecraft().thePlayer == null) {
             // player is probably swapping worlds, abort
-            Warping.abort(true);
+            if (!accountsToWarp.isEmpty()) abort(true);
         } else {
             whitelistedMessages.add(message);
             Minecraft.getMinecraft().thePlayer.sendChatMessage(message);
@@ -340,6 +344,7 @@ public class Warping {
     @SubscribeEvent
     public void serverDisconnect(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
         messageQueue.clear(); // clear on disconnect
+        if (true) return;
         if (PlayerInfo.currentNetwork.equalsIgnoreCase("hypixel")) {
 
             KryoNetwork.RegisterToWarpServer unregister = new KryoNetwork.RegisterToWarpServer();

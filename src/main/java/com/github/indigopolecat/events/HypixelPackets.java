@@ -33,6 +33,7 @@ public class HypixelPackets {
     }
 
     public static void onPartyInfoPacket(ClientboundPartyInfoPacket packet) {
+        if (true) return;
         if (BingoBrewers.lastPacketSent instanceof ServerboundPartyInfoPacket) {
             BingoBrewers.waitingForPacketResponse = false;
             System.out.println("no longer waiting");
@@ -62,8 +63,6 @@ public class HypixelPackets {
     }
 
     public static void onLocationEvent(ClientboundLocationPacket packet) {
-        System.out.println("packet received");
-        System.out.println(packet.toString());
 
         if (!packet.getServerType().isPresent()) return;
         PlayerInfo.playerGameType = packet.getServerType().get().getName();
@@ -112,12 +111,12 @@ public class HypixelPackets {
                 CHRequest.day = PlayerInfo.day;
                 ServerConnection.SubscribeToCHServer(CHRequest);
 
-                System.out.println("Registering to warp for " + PlayerInfo.currentServer);
+                /*System.out.println("Registering to warp for " + PlayerInfo.currentServer);
                 KryoNetwork.RegisterToWarpServer register = new KryoNetwork.RegisterToWarpServer();
                 register.unregister = false;
                 PlayerInfo.registeredToWarp = true;
                 register.server = PlayerInfo.currentServer;
-                ServerConnection.sendTCP(register);
+                ServerConnection.sendTCP(register);*/
             }
         }
     }

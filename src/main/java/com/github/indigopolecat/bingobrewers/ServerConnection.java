@@ -54,7 +54,7 @@ public class ServerConnection extends Listener implements Runnable {
     public static String joinChat;
     public static ArrayList<String> CHItemOrder = new ArrayList<>();
     public static ConcurrentHashMap<String, ServerSummary> serverSummaries = new ConcurrentHashMap<>();
-    private String ign = "";
+    public static String ign = "";
     private String uuid = "";
 
     @Override
@@ -249,6 +249,7 @@ public class ServerConnection extends Listener implements Runnable {
                     }
                 } else if (object instanceof BackgroundWarpTask) {
                     BackgroundWarpTask warpTask = (BackgroundWarpTask) object;
+                    if (true) return;
 
                     if (warpTask.server.equals(PlayerInfo.currentServer) && !warpTask.accountsToWarp.isEmpty() && accountsToWarp.isEmpty() && !warpTask.accountsToWarp.containsKey(null) && !warpTask.accountsToWarp.containsValue(null)) {
                         accountsToWarp = new ConcurrentHashMap<>(warpTask.accountsToWarp);
@@ -288,6 +289,7 @@ public class ServerConnection extends Listener implements Runnable {
                 } else if (object instanceof WarningBannerInfo) {
 
                 } else if (object instanceof AbortWarpTask) {
+                    if (true) return;
                     Warping.PARTY_EMPTY_KICK = false;
                     Warping.kickParty = true;
                     accountsToWarp.clear();
@@ -300,6 +302,7 @@ public class ServerConnection extends Listener implements Runnable {
                 } else if (object instanceof CancelWarpRequest) {
                     // sent by server if unable to fulfill a warp
                 } else if (object instanceof WarperInfo) {
+                    if (true) return;
                     WarperInfo warperInfo = (WarperInfo) object;
 
                     warperIGN = warperInfo.ign;
