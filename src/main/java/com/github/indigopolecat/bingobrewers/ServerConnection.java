@@ -77,7 +77,6 @@ public class ServerConnection extends Listener implements Runnable {
         Log.set(LEVEL_ERROR);
         KryoNetwork.register(BingoBrewers.client);
 
-        BingoBrewersConfig.SubscribeToServer();
         BingoBrewers.client.addListener(new Listener() {
             @Override
             public void received(Connection connection, Object object) {
@@ -352,6 +351,13 @@ public class ServerConnection extends Listener implements Runnable {
         // List of all keys that may be used in infopanel, in the order they'll be rendered in an element
         setSplashHudItems();
         repeat = false;
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        PlayerInfo.subscribedToCurrentCHServer = false;
+        BingoBrewersConfig.SubscribeToServer();
     }
 
     public static void setSplashHudItems() {
