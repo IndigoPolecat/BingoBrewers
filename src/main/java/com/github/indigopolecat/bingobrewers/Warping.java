@@ -98,7 +98,7 @@ public class Warping {
                 PHASE = null;
             }
 
-            if (!messageQueue.isEmpty() && System.currentTimeMillis() - lastMessageSent > 200 && Minecraft.getMinecraft().thePlayer != null) {
+            if (!messageQueue.isEmpty() && System.currentTimeMillis() - lastMessageSent > 100 && Minecraft.getMinecraft().thePlayer != null) {
                 for (String message : messageQueue) {
                     if (message.startsWith("/p") && warpThread != null && !whitelistedMessages.contains(message)) continue;
 
@@ -339,6 +339,7 @@ public class Warping {
 
     @SubscribeEvent
     public void serverDisconnect(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
+        messageQueue.clear(); // clear on disconnect
         if (PlayerInfo.currentNetwork.equalsIgnoreCase("hypixel")) {
 
             KryoNetwork.RegisterToWarpServer unregister = new KryoNetwork.RegisterToWarpServer();
