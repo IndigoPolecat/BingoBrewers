@@ -1,11 +1,11 @@
 package com.github.indigopolecat.bingobrewers;
 
+import com.github.indigopolecat.events.HypixelPackets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 
 import java.util.ArrayList;
@@ -42,6 +42,11 @@ public class ScoreBoard {
 
     public static boolean isBingo() {
         List<String> scoreBoardLines = getScoreboard();
+        if (scoreBoardLines.isEmpty()) {
+            HypixelPackets.checkScoreboardForBingoTime = System.currentTimeMillis() + 1000;
+            return false;
+        }
+
         int size = scoreBoardLines.size() - 1;
         for (int i = 0; i < scoreBoardLines.size(); i++) {
             String line = EnumChatFormatting.getTextWithoutFormattingCodes(scoreBoardLines.get(size - i).toLowerCase());

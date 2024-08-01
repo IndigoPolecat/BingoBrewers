@@ -62,15 +62,16 @@ public class HypixelPackets {
         }
     }
 
-    public static void onLocationEvent(ClientboundLocationPacket packet) {
+    public static long checkScoreboardForBingoTime = Long.MAX_VALUE; // This variable is not
 
+    public static void onLocationEvent(ClientboundLocationPacket packet) {
+        checkScoreboardForBingoTime = System.currentTimeMillis() + 1500;
         if (!packet.getServerType().isPresent()) return;
         PlayerInfo.playerGameType = packet.getServerType().get().getName();
         if (PlayerInfo.playerGameType.equalsIgnoreCase("skyblock")) {
             if (!packet.getMode().isPresent()) return;
             PlayerInfo.playerLocation = packet.getMode().get();
             // Check if the scoreboard contains "bingo" and set the onBingo flag once we know if we're on skyblock
-            SplashHud.onBingo = ScoreBoard.isBingo();
             SplashHud.inSkyblockorPTLobby = true;
         } else if (PlayerInfo.playerGameType.equalsIgnoreCase("prototype")) {
             SplashHud.inSkyblockorPTLobby = true;
@@ -124,6 +125,11 @@ public class HypixelPackets {
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
+            if (System.currentTimeMillis() > checkScoreboardForBingoTime && BingoBrewers.onHypixel && PlayerInfo.playerGameType.equalsIgnoreCase("skyblock")) {
+                SplashHud.onBingo = ScoreBoard.isBingo();
+                checkScoreboardForBingoTime = Long.MAX_VALUE;
+            }
+
             if (System.currentTimeMillis() - BingoBrewers.lastPacketSentAt > 2000 && BingoBrewers.waitingForPacketResponse) {
                 BingoBrewers.packetHold.add(0, BingoBrewers.lastPacketSent);
                 BingoBrewers.waitingForPacketResponse = false;

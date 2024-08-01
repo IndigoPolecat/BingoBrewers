@@ -649,12 +649,15 @@ public class BingoBrewersConfig extends Config {
             itemCounts.clear();
             filteredItems.clear();
             filteredWaypoints.clear();
-            KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
-            CHRequest.server = PlayerInfo.currentServer;
-            CHRequest.day = PlayerInfo.day;
-            CHRequest.unsubscribe = true;
-            ServerConnection.SubscribeToCHServer(CHRequest);
+            if (!PlayerInfo.playerLocation.isEmpty()) {
+                KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
+                CHRequest.server = PlayerInfo.currentServer;
+                CHRequest.day = PlayerInfo.day;
+                CHRequest.unsubscribe = true;
+                ServerConnection.SubscribeToCHServer(CHRequest);
+            }
 
+            // always unregister, server will remove you from all if it doesn't find you in specified
             /*KryoNetwork.RegisterToWarpServer unregister = new KryoNetwork.RegisterToWarpServer();
             unregister.unregister = true;
             PlayerInfo.registeredToWarp = false;
