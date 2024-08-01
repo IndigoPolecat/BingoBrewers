@@ -71,7 +71,6 @@ public class TitleHud {
                     colorText = fontRenderer.getColorCode(colorMatcher.group(2).charAt(0));
                     }
                 } catch (ArrayIndexOutOfBoundsException ignored) {}
-                System.out.println("text: " + text + " color " + colorText + "textList: " + textList);
 
                 GL11.glPushMatrix(); //Start new matrix
                 GL11.glScalef(scaleFactor, scaleFactor, scaleFactor);
