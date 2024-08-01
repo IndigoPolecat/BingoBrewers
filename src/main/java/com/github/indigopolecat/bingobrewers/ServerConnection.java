@@ -343,7 +343,7 @@ public class ServerConnection extends Listener implements Runnable {
         ConnectionIgn response = new ConnectionIgn();
         ign = Minecraft.getMinecraft().getSession().getUsername();
         uuid = Minecraft.getMinecraft().getSession().getProfile().getId().toString();
-        response.hello = ign + "|v0.3.4|Beta|" + uuid;
+        response.hello = ign + "|v0.3.5|Beta|" + uuid;
         System.out.println("sending " + response.hello);
         BingoBrewers.client.sendTCP(response);
         System.out.println("sent");
