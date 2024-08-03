@@ -592,7 +592,7 @@ public class ServerConnection extends Listener implements Runnable {
         repeat = true;
         while (repeat) {
             try {
-                BingoBrewers.client = new Client();
+                BingoBrewers.client = new Client(16384, 16384);
                 connection();
             } catch (Exception e) {
                 LoggerUtil.LOGGER.info("Server Connection Error: " + e.getMessage());
