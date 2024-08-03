@@ -100,7 +100,7 @@ public class HypixelPackets {
                 }
             }
         }
-        System.out.println("PlayerInfo.playerLocation: " + PlayerInfo.playerLocation + ", " + PlayerInfo.subscribedToCurrentCHServer);
+
         if (PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows") && !PlayerInfo.subscribedToCurrentCHServer) {
             subscribeToCHServerTime = System.currentTimeMillis() + 2000;
         }

@@ -37,7 +37,7 @@ public class BingoBrewersConfig extends Config {
         addListener("pickonimbus", BingoBrewersConfig::pickonimbusCall);
         addListener("goblinEggs", BingoBrewersConfig::goblinEggsCall);
         addListener("roughGemstones", BingoBrewersConfig::roughCall);
-        addListener("jasperGemstones", BingoBrewersConfig::jasperCall);
+        addListener("jasperGemstones", BingoBrewersConfig::roughCall);
         addListener("junk", BingoBrewersConfig::miscCall);
         addListener("crystalHollowsWaypointsToggle", BingoBrewersConfig::SubscribeToServer);
 

@@ -221,7 +221,7 @@ public class ServerConnection extends Listener implements Runnable {
                             BingoBrewersConfig.filterPowder();
                             BingoBrewersConfig.filterGoblinEggs();
                             BingoBrewersConfig.filterRoughGemstones();
-                            BingoBrewersConfig.filterJasperGemstones();
+                            //BingoBrewersConfig.filterJasperGemstones();
                             BingoBrewersConfig.filterRobotParts();
                             BingoBrewersConfig.filterPrehistoricEggs();
                             BingoBrewersConfig.filterPickonimbus();
