@@ -529,6 +529,7 @@ public class BingoBrewersConfig extends Config {
                 }
             }
         }
+        filterJasperGemstones();
         if (roughGemstones == 0) {
             for (String item : itemCounts.keySet()) {
                 if (item.contains("Gemstone") && !item.contains("Powder")) {
