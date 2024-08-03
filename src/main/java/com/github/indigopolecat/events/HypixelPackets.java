@@ -134,6 +134,7 @@ public class HypixelPackets {
                     register.server = PlayerInfo.currentServer;
                     ServerConnection.sendTCP(register);*/
                 }
+                checkScoreboardForBingoTime = Long.MAX_VALUE;
             }
 
             if (System.currentTimeMillis() - BingoBrewers.lastPacketSentAt > 2000 && BingoBrewers.waitingForPacketResponse) {
