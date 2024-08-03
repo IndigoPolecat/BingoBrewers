@@ -100,7 +100,7 @@ public class HypixelPackets {
                 }
             }
         }
-
+        System.out.println("PlayerInfo.playerLocation: " + PlayerInfo.playerLocation + ", " + PlayerInfo.subscribedToCurrentCHServer);
         if (PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows") && !PlayerInfo.subscribedToCurrentCHServer) {
             subscribeToCHServerTime = System.currentTimeMillis() + 2000;
         }
@@ -114,7 +114,7 @@ public class HypixelPackets {
                 checkScoreboardForBingoTime = Long.MAX_VALUE;
             }
 
-            if (System.currentTimeMillis() > checkScoreboardForBingoTime) {
+            if (System.currentTimeMillis() > subscribeToCHServerTime) {
                 if (BingoBrewersConfig.crystalHollowsWaypointsToggle) {
                     // update day
                     World world = Minecraft.getMinecraft().theWorld;
@@ -134,7 +134,7 @@ public class HypixelPackets {
                     register.server = PlayerInfo.currentServer;
                     ServerConnection.sendTCP(register);*/
                 }
-                checkScoreboardForBingoTime = Long.MAX_VALUE;
+                subscribeToCHServerTime = Long.MAX_VALUE;
             }
 
             if (System.currentTimeMillis() - BingoBrewers.lastPacketSentAt > 2000 && BingoBrewers.waitingForPacketResponse) {
