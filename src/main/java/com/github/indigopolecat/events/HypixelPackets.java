@@ -63,8 +63,10 @@ public class HypixelPackets {
     }
 
     public static long checkScoreboardForBingoTime = Long.MAX_VALUE; // This variable is not
+    public static long subscribeToCHServerTime = Long.MAX_VALUE;
 
     public static void onLocationEvent(ClientboundLocationPacket packet) {
+        System.out.println("Location Packet: " + packet.toString());
         checkScoreboardForBingoTime = System.currentTimeMillis() + 1500;
         if (!packet.getServerType().isPresent()) return;
         PlayerInfo.playerGameType = packet.getServerType().get().getName();
@@ -100,25 +102,7 @@ public class HypixelPackets {
         }
 
         if (PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows") && !PlayerInfo.subscribedToCurrentCHServer) {
-            if (BingoBrewersConfig.crystalHollowsWaypointsToggle) {
-                // update day
-                World world = Minecraft.getMinecraft().theWorld;
-                long worldTime = world.getWorldTime();
-                PlayerInfo.day = (int) (worldTime / 24000);
-
-                if (PlayerInfo.currentServer == null) return;
-                KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
-                CHRequest.server = PlayerInfo.currentServer;
-                CHRequest.day = PlayerInfo.day;
-                ServerConnection.SubscribeToCHServer(CHRequest);
-
-                /*System.out.println("Registering to warp for " + PlayerInfo.currentServer);
-                KryoNetwork.RegisterToWarpServer register = new KryoNetwork.RegisterToWarpServer();
-                register.unregister = false;
-                PlayerInfo.registeredToWarp = true;
-                register.server = PlayerInfo.currentServer;
-                ServerConnection.sendTCP(register);*/
-            }
+            subscribeToCHServerTime = System.currentTimeMillis() + 2000;
         }
     }
 
@@ -128,6 +112,28 @@ public class HypixelPackets {
             if (System.currentTimeMillis() > checkScoreboardForBingoTime && BingoBrewers.onHypixel && PlayerInfo.playerGameType.equalsIgnoreCase("skyblock")) {
                 SplashHud.onBingo = ScoreBoard.isBingo();
                 checkScoreboardForBingoTime = Long.MAX_VALUE;
+            }
+
+            if (System.currentTimeMillis() > checkScoreboardForBingoTime) {
+                if (BingoBrewersConfig.crystalHollowsWaypointsToggle) {
+                    // update day
+                    World world = Minecraft.getMinecraft().theWorld;
+                    long worldTime = world.getWorldTime();
+                    PlayerInfo.day = (int) (worldTime / 24000);
+
+                    if (PlayerInfo.currentServer == null) return;
+                    KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
+                    CHRequest.server = PlayerInfo.currentServer;
+                    CHRequest.day = PlayerInfo.day;
+                    ServerConnection.SubscribeToCHServer(CHRequest);
+
+                    /*System.out.println("Registering to warp for " + PlayerInfo.currentServer);
+                    KryoNetwork.RegisterToWarpServer register = new KryoNetwork.RegisterToWarpServer();
+                    register.unregister = false;
+                    PlayerInfo.registeredToWarp = true;
+                    register.server = PlayerInfo.currentServer;
+                    ServerConnection.sendTCP(register);*/
+                }
             }
 
             if (System.currentTimeMillis() - BingoBrewers.lastPacketSentAt > 2000 && BingoBrewers.waitingForPacketResponse) {
