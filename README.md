@@ -11,8 +11,10 @@ When a splasher splashes in #splashes, your client will be sent a notification i
 - Splasher
 - Bingo Party listed in splash message
 - Notes (Any lines the splasher added that aren't identified as for discord use (e.g. "react with :SPLASHWHEN:"), or haven't already been covered by other purposes)
+
 The notification will disappear after 2 minutes. The title will disappear after 5 seconds.
-https://i.imgur.com/ipDvQdy.jpeg
+![ipDvQdy](https://github.com/user-attachments/assets/306e170e-66d8-4ebb-86ad-87961369e275)
+
 
 ### Splash Hub Player Count
 Any client inside of the splash hub will be communicating the current player count to my server, which will broadcast the current player count of the splash hub to all clients every 2 seconds.
