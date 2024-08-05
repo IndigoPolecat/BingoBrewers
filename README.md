@@ -2,7 +2,9 @@
 [Bingo Brewers](<https://github.com/IndigoPolecat/BingoBrewers/releases/latest>) is an open source mod intended to help with bingo, it is currently under development and has 2 key features.
 
 **IMPORTANT**: The Hypixel Mod API mod is a required dependency and must also be placed in your mods folder. You can download it from [Modrinth](<https://modrinth.com/mod/hypixel-mod-api/version/1.0>) with the [source](<https://github.com/HypixelDev/ForgeModAPI>) available. 
+
 If you don't know what the Mod API is, read [this](<https://hypixel.net/threads/hypixel-mod-api-developer-preview-feedback.5635119/>)
+
 If you would like to know why an external mod is required for this, read [this](<https://github.com/HypixelDev/ModAPI/wiki/FAQ#can-i-use-a-third-party-or-self-made-implementation-of-the-mod-api>).
 
 ## Splash Notifications
