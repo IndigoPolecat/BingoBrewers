@@ -13,6 +13,7 @@ public class KryoNetwork {
 
     public static void register(EndPoint endPoint) {
         Kryo kryo = endPoint.getKryo();
+        kryo.register(ServerPublicKey.class);
         kryo.register(ConnectionIgn.class);
         kryo.register(SplashNotification.class);
         kryo.register(ArrayList.class);
@@ -46,8 +47,21 @@ public class KryoNetwork {
         kryo.register(PollQueuePosition.class);
     }
 
+    public static class ServerPublicKey {
+        public String public_key;
+    }
+
+    public static class EncryptedPacket {
+        public String packet;
+        public byte[] iv;
+
+    }
     public static class ConnectionIgn {
-        public String hello;
+        public String IGN;
+        public String version;
+        public String uuid;
+        public HashMap<Object, Object> accountInformation = new HashMap<>(); // for future Misc. purposes
+        public String symmetric_key;
     }
 
     public static class SplashNotification {
