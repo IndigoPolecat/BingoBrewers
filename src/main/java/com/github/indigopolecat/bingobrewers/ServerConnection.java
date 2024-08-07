@@ -1,6 +1,6 @@
 package com.github.indigopolecat.bingobrewers;
 
-import java.io.*;
+import java.io.IOException;
 
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
@@ -18,23 +18,14 @@ import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import com.github.indigopolecat.kryo.ServerSummary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import org.lwjgl.Sys;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.esotericsoftware.minlog.Log.*;
-import static com.github.indigopolecat.bingobrewers.BingoBrewers.version;
 import static com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud.filteredItems;
 import static com.github.indigopolecat.bingobrewers.Warping.*;
 import static java.lang.String.join;
@@ -48,14 +39,6 @@ public class ServerConnection extends Listener implements Runnable {
     public static final String PARTY = "Party";
     public static final String LOCATION = "Location";
     public static final String NOTE = "Note";
-    public static final String SERVER_PUBLIC_KEY = "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FR" +
-            "OEFNSUlCQ2dLQ0FRRUFyNWZDZWVRUEJJVG9pK3NaRE83VwpuQTRZbEVhUGFvUmU3Nk5tTndadDhY" +
-            "cHRRQ2VhWDZsQ2pDb1Q0R3labm9HMGYyQzFBUm8vY2JUUnJhQ1h3aXFyClczUFJaeWk2aHlML25H" +
-            "T2xYNWFiejl3MXljcUNEaklEMWVTS1BvNUZiUFd6a3ZjcDZoUzhlR1ZxV0tudnFyT1oKU3BnVGp5" +
-            "NGZrc1djUzV5M3A3YmNWWlBFdndrMlp1UW9TMEdZQ2NUR1dNNkJZNlRRUGVKWndYUUwycHFzdGgw" +
-            "VgpRWk1wQloyVDFYYS9vYlhGb0lRN2RCK0NKS3V6MkJhZjlHcmZpNUZxY0xhbXIxS0RDNmpLc0h1" +
-            "aEd2Z2ZNNHloClZUcHJvZTE2UitUMkFVcStsNGlzODdQL01nK1J4Wnp4YjVCamRRMXlaZmM2NmlM" +
-            "TlhIR3V1Sjg5TGRoVmhxdWwKYVFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==";
 
     // The Hud renderer checks this every time it renders
     public static ArrayList<HashMap<String, ArrayList<String>>> mapList = new ArrayList<>();
@@ -73,7 +56,6 @@ public class ServerConnection extends Listener implements Runnable {
     public static ConcurrentHashMap<String, ServerSummary> serverSummaries = new ConcurrentHashMap<>();
     public static String ign = "";
     private String uuid = "";
-    private static SecretKey symmetricKey;
 
     @Override
     public void run() {
@@ -98,59 +80,10 @@ public class ServerConnection extends Listener implements Runnable {
         BingoBrewers.client.addListener(new Listener() {
             @Override
             public void received(Connection connection, Object object) {
-                if (object instanceof EncryptedPacket) {
-                    EncryptedPacket encryptedPacket = (EncryptedPacket) object;
-                    try {
-                        object = decryptData(encryptedPacket.packet, symmetricKey, encryptedPacket.iv);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
 
-
-                if (object instanceof ServerPublicKey) {
-                    ServerPublicKey serverPublicKey = (ServerPublicKey) object;
-                    String public_key = serverPublicKey.public_key;
-
-                    if (public_key.equals(SERVER_PUBLIC_KEY)) {
-                        try {
-                            symmetricKey = generateAESKey(256);
-                        } catch (NoSuchAlgorithmException e) {
-                            throw new RuntimeException(e);
-                        }
-
-                        ign = Minecraft.getMinecraft().getSession().getUsername();
-                        uuid = Minecraft.getMinecraft().getSession().getProfile().getId().toString();
-
-                        ConnectionIgn accountInfo = new ConnectionIgn();
-                        accountInfo.IGN = ign;
-                        accountInfo.uuid = uuid;
-                        accountInfo.version = "v0.3.6";
-                        accountInfo.symmetric_key = encodeKeyToBase64(symmetricKey);
-
-                        System.out.println("Sending " + ign + "|" + version + "|" + uuid);
-                        sendTCP(accountInfo);
-                        System.out.println("sent");
-
-
-                        // List of all keys that may be used in infopanel, in the order they'll be rendered in an element
-                        setSplashHudItems();
-                        repeat = false;
-                        try {
-                            Thread.sleep(300);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                        PlayerInfo.subscribedToCurrentCHServer = false;
-                        BingoBrewersConfig.SubscribeToServer();
-
-                    } else {
-                        joinTitle = new TitleHud("Server Public Key Outdated", 0xFF5555, 10000, true);
-                        joinChat = "\n§a§kmm §rBingo Brewers update required due to outdated keys. §kmm\n";
-                        getClient().close();
-                        return;
-                    }
-
+                if (object instanceof ConnectionIgn) {
+                    ConnectionIgn request = (ConnectionIgn) object;
+                    LoggerUtil.LOGGER.info(request.hello);
                 } else if (object instanceof SplashNotification) {
                     LoggerUtil.LOGGER.info("Received splash notification");
                     boolean sendNotif = true;
@@ -226,8 +159,8 @@ public class ServerConnection extends Listener implements Runnable {
                             newMiscCHItems = (ArrayList<String>) constants.get("newMiscCHItems");
                         }
                     }
-                    if (constants.get("joinAlert"+ version) != null && constants.get("joinAlert"+ version) instanceof JoinAlert) {
-                        JoinAlert joinAlert = (JoinAlert) constants.get("joinAlert"+ version);
+                    if (constants.get("joinAlert"+BingoBrewers.version) != null && constants.get("joinAlert"+BingoBrewers.version) instanceof JoinAlert) {
+                        JoinAlert joinAlert = (JoinAlert) constants.get("joinAlert"+BingoBrewers.version);
                         if (joinAlert.joinAlertChat != null) {
                             joinChat = joinAlert.joinAlertChat;
                         }
@@ -402,11 +335,25 @@ public class ServerConnection extends Listener implements Runnable {
             BingoBrewers.client.connect(3000, "38.46.216.110", 8080, 7070);
         }
         System.out.println("Connected to server.");
-
-
-
-
-
+        // send server player ign and version
+        ConnectionIgn response = new ConnectionIgn();
+        ign = Minecraft.getMinecraft().getSession().getUsername();
+        uuid = Minecraft.getMinecraft().getSession().getProfile().getId().toString();
+        response.hello = ign + "|v0.3.6|Beta|" + uuid;
+        System.out.println("sending " + response.hello);
+        BingoBrewers.client.sendTCP(response);
+        System.out.println("sent");
+        PlayerInfo.subscribedToCurrentCHServer = false;
+        // List of all keys that may be used in infopanel, in the order they'll be rendered in an element
+        setSplashHudItems();
+        repeat = false;
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        PlayerInfo.subscribedToCurrentCHServer = false;
+        BingoBrewersConfig.SubscribeToServer();
     }
 
     public static void setSplashHudItems() {
@@ -625,27 +572,7 @@ public class ServerConnection extends Listener implements Runnable {
             LoggerUtil.LOGGER.info("Client is null");
             return;
         }
-
-        EncryptedPacket packet = new EncryptedPacket();
-
-        // encrypt ConnectionIGN with public key
-        if (object instanceof ConnectionIgn) {
-            try {
-                PublicKey publicKey = loadPublicKeyFromBase64(SERVER_PUBLIC_KEY);
-                packet.packet = encryptObjectPublicKey(object, publicKey);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            packet.iv = generateIV();
-            try {
-                packet.packet = encryptData(object, symmetricKey, packet.iv);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        client.sendTCP(packet);
+        client.sendTCP(object);
     }
 
 
@@ -681,81 +608,5 @@ public class ServerConnection extends Listener implements Runnable {
             }
         }
     }
-
-    public static PublicKey loadPublicKeyFromBase64(String base64Key) throws Exception {
-        byte[] decodedKey = Base64.getDecoder().decode(base64Key);
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(decodedKey);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        return keyFactory.generatePublic(spec);
-    }
-
-    public static SecretKey generateAESKey(int keySize) throws NoSuchAlgorithmException {
-        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-        keyGenerator.init(keySize); // keySize can be 128, 192, or 256 bits
-        return keyGenerator.generateKey();
-    }
-
-    public static String encodeKeyToBase64(SecretKey key) {
-        return Base64.getEncoder().encodeToString(key.getEncoded());
-    }
-
-    public static String encryptObjectPublicKey(Object obj, PublicKey publicKey) throws Exception {
-        // Serialize the object to a byte array
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        try (ObjectOutputStream objectStream = new ObjectOutputStream(byteStream)) {
-            objectStream.writeObject(obj);
-        }
-
-        // Get the byte array of the serialized object
-        byte[] objectBytes = byteStream.toByteArray();
-
-        // Encrypt the byte array using RSA
-        Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        byte[] encryptedBytes = cipher.doFinal(objectBytes);
-
-        // Encode the encrypted bytes to a Base64 string
-        return Base64.getEncoder().encodeToString(encryptedBytes);
-    }
-
-    public static Object deserializeObject(byte[] data) throws Exception {
-        try (ByteArrayInputStream byteStream = new ByteArrayInputStream(data);
-             ObjectInputStream objectStream = new ObjectInputStream(byteStream)) {
-            return objectStream.readObject();
-        }
-    }
-
-    public static byte[] generateIV() {
-        byte[] iv = new byte[16]; // AES block size is 16 bytes
-        SecureRandom random = new SecureRandom();
-        random.nextBytes(iv);
-        return iv;
-    }
-
-    public static String encryptData(Object obj, SecretKey aesKey, byte[] iv) throws Exception {
-        // Serialize the object to a byte array
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        try (ObjectOutputStream objectStream = new ObjectOutputStream(byteStream)) {
-            objectStream.writeObject(obj);
-        }
-
-        // Get the byte array of the serialized object
-        byte[] objectBytes = byteStream.toByteArray();
-
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        cipher.init(Cipher.ENCRYPT_MODE, aesKey, ivSpec);
-        byte[] encryptedBytes = cipher.doFinal(objectBytes);
-        return Base64.getEncoder().encodeToString(encryptedBytes);
-    }
-
-    public static Object decryptData(String encryptedData, SecretKey aesKey, byte[] iv) throws Exception {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        cipher.init(Cipher.DECRYPT_MODE, aesKey, ivSpec);
-        byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
-        return deserializeObject(decryptedBytes);
-    }
-
 
 }
