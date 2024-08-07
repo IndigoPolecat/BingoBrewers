@@ -248,7 +248,6 @@ public class ServerConnection extends Listener implements Runnable {
                     }
                 } else if (object instanceof BackgroundWarpTask) {
                     BackgroundWarpTask warpTask = (BackgroundWarpTask) object;
-                    if (true) return;
 
                     if (warpTask.server.equals(PlayerInfo.currentServer) && !warpTask.accountsToWarp.isEmpty() && accountsToWarp.isEmpty() && !warpTask.accountsToWarp.containsKey(null) && !warpTask.accountsToWarp.containsValue(null)) {
                         accountsToWarp = new ConcurrentHashMap<>(warpTask.accountsToWarp);
@@ -288,11 +287,9 @@ public class ServerConnection extends Listener implements Runnable {
                 } else if (object instanceof WarningBannerInfo) {
 
                 } else if (object instanceof AbortWarpTask) {
-                    if (true) return;
                     Warping.PARTY_EMPTY_KICK = false;
                     Warping.kickParty = true;
                     accountsToWarp.clear();
-                    Warping.partyReady = false;
                     Warping.waitingOnLocation = true;
                     if (warpThread != null) {
                         warpThread.stop = true;
@@ -301,7 +298,6 @@ public class ServerConnection extends Listener implements Runnable {
                 } else if (object instanceof CancelWarpRequest) {
                     // sent by server if unable to fulfill a warp
                 } else if (object instanceof WarperInfo) {
-                    if (true) return;
                     WarperInfo warperInfo = (WarperInfo) object;
 
                     warperIGN = warperInfo.ign;
@@ -343,7 +339,7 @@ public class ServerConnection extends Listener implements Runnable {
         ConnectionIgn response = new ConnectionIgn();
         ign = Minecraft.getMinecraft().getSession().getUsername();
         uuid = Minecraft.getMinecraft().getSession().getProfile().getId().toString();
-        response.hello = ign + "|v0.3.5|Beta|" + uuid;
+        response.hello = ign + "|v0.3.6|Beta|" + uuid;
         System.out.println("sending " + response.hello);
         BingoBrewers.client.sendTCP(response);
         System.out.println("sent");

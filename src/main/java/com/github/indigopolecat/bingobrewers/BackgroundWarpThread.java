@@ -48,6 +48,7 @@ public class BackgroundWarpThread implements Runnable {
                 waitForJoinAndWarp();
                 kickPartyAndVerify();
             }
+            resetWarpThread();
             System.out.println("ending execution");
         }
     }
@@ -63,6 +64,8 @@ public class BackgroundWarpThread implements Runnable {
 
                 Warping.sendChatMessage("/p kick " + accountToKick);
                 System.out.println("kicking " + accountToKick);
+
+                timeOfLastKick = System.currentTimeMillis();
                 accountsToKick.remove(accountToKickUUID);
                 accountsKicked.put(accountToKickUUID, accountToKick);
 
@@ -166,8 +169,14 @@ public class BackgroundWarpThread implements Runnable {
         } else if (!Warping.accountsToWarp.keySet().containsAll(uuids)) { // there is someone who isn't supposed to be warped in the party
             Warping.PARTY_EMPTY_KICK = true;
             Warping.abort(true);
-        } else {
-            Warping.lastPartyUpdate = System.currentTimeMillis();
+        } else if (PlayerInfo.partyMembers.isEmpty()) {
+            stop = true;
+            return;
+        }
+
+        if (warpAttempts == 1 && warpTime == Long.MAX_VALUE) {
+            // aka if this was the 2nd attempt
+            kickParty = true;
         }
 
     }

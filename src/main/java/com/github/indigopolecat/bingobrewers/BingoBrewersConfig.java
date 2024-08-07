@@ -659,20 +659,20 @@ public class BingoBrewersConfig extends Config {
             }
 
             // always unregister, server will remove you from all if it doesn't find you in specified
-            /*KryoNetwork.RegisterToWarpServer unregister = new KryoNetwork.RegisterToWarpServer();
+            KryoNetwork.RegisterToWarpServer unregister = new KryoNetwork.RegisterToWarpServer();
             unregister.unregister = true;
             PlayerInfo.registeredToWarp = false;
             unregister.server = PlayerInfo.currentServer;
-            ServerConnection.sendTCP(unregister);*/
+            ServerConnection.sendTCP(unregister);
         }
 
-        /*if (PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
+        if (PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
             KryoNetwork.RegisterToWarpServer register = new KryoNetwork.RegisterToWarpServer();
             register.unregister = false;
             PlayerInfo.registeredToWarp = true;
             register.server = PlayerInfo.currentServer;
             ServerConnection.sendTCP(register);
-        }*/
+        }
     }
 
 

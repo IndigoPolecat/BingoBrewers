@@ -34,17 +34,10 @@ public class Warping {
     // when the party invite was sent out
     public static long lastPartyUpdate;
     public static boolean waitingOnLocation;
-    public static boolean partyReady;
     public static WARP_PHASE PHASE;
     public static boolean PARTY_EMPTY_KICK = false;
-
     public static volatile boolean kickParty;
-    public static int ticksSinceLastKick = 8;
-    public static int TICKS_BETWEEN_KICKS = 8;
-    public static boolean expectingPartyInfoMessage = false;
-
     public static BackgroundWarpThread warpThread;
-    public boolean delayPartyInvites;
 
     public static void warp() {
         // todo: come back to this and consider immediately kicking instead of waiting for the chat message
@@ -57,7 +50,6 @@ public class Warping {
     }
 
     public static void abort(boolean ineligible) {
-        if (true) return;
         System.out.println("aborting warp");
         kickParty = true;
         BingoBrewers.INSTANCE.sendPacket(new ServerboundPartyInfoPacket());
@@ -68,13 +60,22 @@ public class Warping {
         abort.ineligible = ineligible;
         ServerConnection.sendTCP(abort);
         accountsToWarp.clear();
-        partyReady = false;
         waitingOnLocation = true;
 
         if (warpThread != null) {
             warpThread.stop = true;
             warpThread.notify();
         }
+    }
+
+    public static void resetWarpThread() {
+        warpThread = null;
+        kickParty = false;
+        accountsToWarp.clear();
+        accountsToKick.clear();
+        accountsKicked.clear();
+        PHASE = null;
+        PARTY_EMPTY_KICK = false;
     }
 
     public static long lastMessageSent;
@@ -84,7 +85,6 @@ public class Warping {
         if (event.phase.equals(TickEvent.Phase.END)) {
 
             if (warpThread != null && System.currentTimeMillis() - warpThread.executionTimeBegan > 15000) {
-                if (true) return;
                 System.out.println("15s disband");
                 sendChatMessage("/p disband");
                 System.out.println("ending");
@@ -92,8 +92,6 @@ public class Warping {
                     warpThread.stop = true;
                     warpThread.resume();
                     System.out.println("thread ended");
-                    warpThread = null;
-                    System.out.println("thread null");
                 } else {
                     System.out.println ("warp thread is already null");
                 }
@@ -124,7 +122,6 @@ public class Warping {
 
     @SubscribeEvent
     public void onChatMessage(ClientChatReceivedEvent event) {
-        if (true) return;
         String message = event.message.getUnformattedText();
 
         Matcher partyInviteMatcher = partyInvitePattern.matcher(message);
@@ -202,7 +199,6 @@ public class Warping {
     // cancelling these packets is intentional in an effort to ensure other mods can avoid interacting with them since this is not a party they player will likely notice they're in
     @SubscribeEvent
     public void onPacketReceived(PacketEvent.Received event) {
-        if (true) return;
         if (event.getPacket() instanceof S02PacketChat) {
             if (((S02PacketChat) event.getPacket()).getType() == 2) return;
             String message = ((S02PacketChat) event.getPacket()).getChatComponent().getFormattedText();
@@ -344,7 +340,6 @@ public class Warping {
     @SubscribeEvent
     public void serverDisconnect(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
         messageQueue.clear(); // clear on disconnect
-        if (true) return;
         if (PlayerInfo.currentNetwork.equalsIgnoreCase("hypixel")) {
 
             KryoNetwork.RegisterToWarpServer unregister = new KryoNetwork.RegisterToWarpServer();
