@@ -1,6 +1,9 @@
 package com.github.indigopolecat.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.Serializer;
+import com.esotericsoftware.kryo.serializers.DefaultSerializers;
+import com.esotericsoftware.kryo.serializers.FieldSerializer;
 import com.esotericsoftware.kryonet.EndPoint;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 
@@ -14,7 +17,7 @@ public class KryoNetwork {
     public static void register(EndPoint endPoint) {
         Kryo kryo = endPoint.getKryo();
         kryo.register(ServerPublicKey.class);
-        kryo.register(ConnectionIgn.class);
+        kryo.register(ConnectionIgn.class, new FieldSerializer<ConnectionIgn>(kryo, ConnectionIgn.class));
         kryo.register(SplashNotification.class);
         kryo.register(ArrayList.class);
         kryo.register(PlayerCount.class);
