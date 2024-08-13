@@ -24,6 +24,7 @@ import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -73,7 +74,7 @@ public class ServerConnection extends Listener implements Runnable {
     public static ArrayList<String> CHItemOrder = new ArrayList<>();
     public static ConcurrentHashMap<String, ServerSummary> serverSummaries = new ConcurrentHashMap<>();
     public static String ign = "";
-    private String uuid = "";
+    private static String uuid = "";
     private static SecretKey symmetricKey;
 
     @Override
@@ -124,8 +125,8 @@ public class ServerConnection extends Listener implements Runnable {
                         uuid = Minecraft.getMinecraft().getSession().getProfile().getId().toString();
 
                         ConnectionIgn accountInfo = new ConnectionIgn();
-                        accountInfo.IGN = ign;
-                        accountInfo.uuid = uuid;
+                        accountInfo.IGN = setEncryptedIGN();
+                        accountInfo.uuid = setEncryptedUUID();
                         accountInfo.version = "v0.3.6";
                         accountInfo.symmetric_key = encodeKeyToBase64(symmetricKey);
 
@@ -627,28 +628,23 @@ public class ServerConnection extends Listener implements Runnable {
             return;
         }
 
-        EncryptedPacket packet = new EncryptedPacket();
-
-        // encrypt ConnectionIGN with public key
-        if (object instanceof ConnectionIgn) {
-            try {
-                PublicKey publicKey = loadPublicKeyFromBase64(SERVER_PUBLIC_KEY);
-                packet.packet = encryptObjectPublicKey(object, publicKey);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            packet.iv = generateIV();
-            try {
-                packet.packet = encryptData(object, symmetricKey, packet.iv);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        client.sendTCP(packet);
+        client.sendTCP(object);
     }
 
+    public static String setEncryptedIGN() {
+        try {
+            return encryptString(ign, symmetricKey);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+    public static String setEncryptedUUID() {
+        try {
+            return encryptString(uuid, symmetricKey);
+        } catch (Exception e) {
+            return "";
+        }
+    }
 
 
 
@@ -733,15 +729,11 @@ public class ServerConnection extends Listener implements Runnable {
         return iv;
     }
 
-    public static String encryptData(Object obj, SecretKey aesKey, byte[] iv) throws Exception {
-        // Serialize the object to a byte array
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        try (ObjectOutputStream objectStream = new ObjectOutputStream(byteStream)) {
-            objectStream.writeObject(obj);
-        }
+    public static String encryptString(String string, SecretKey aesKey) throws Exception {
+        byte[] iv = generateIV();
 
         // Get the byte array of the serialized object
-        byte[] objectBytes = byteStream.toByteArray();
+        byte[] objectBytes = string.getBytes(StandardCharsets.UTF_8);
 
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
