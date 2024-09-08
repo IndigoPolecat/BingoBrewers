@@ -18,11 +18,9 @@ import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import com.github.indigopolecat.kryo.ServerSummary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import org.lwjgl.Sys;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
-import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -63,7 +61,7 @@ public class ServerConnection extends Listener implements Runnable {
     public static ArrayList<HashMap<String, ArrayList<String>>> mapList = new ArrayList<>();
     public static ArrayList<String> keyOrder = new ArrayList<>();
     int waitTime = 0;
-    boolean repeat;
+    boolean reconnect;
     public static ArrayList<String> hubList = new ArrayList<>();
     long originalTime = -1;
     public static CopyOnWriteArrayList<CHWaypoints> waypoints = new CopyOnWriteArrayList<>();
@@ -128,7 +126,7 @@ public class ServerConnection extends Listener implements Runnable {
 
                         // List of all keys that may be used in infopanel, in the order they'll be rendered in an element
                         setSplashHudItems();
-                        repeat = false;
+                        reconnect = false;
                         try {
                             Thread.sleep(300);
                         } catch (InterruptedException e) {
@@ -632,8 +630,8 @@ public class ServerConnection extends Listener implements Runnable {
             waitTime = (int) (5000 * Math.random());
         }
         System.out.println("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
-        repeat = true;
-        while (repeat) {
+        reconnect = true;
+        while (reconnect) {
             try {
                 BingoBrewers.client = new Client(16384, 16384);
                 connection();

@@ -76,7 +76,6 @@ public class KryoNetwork {
 
     public static class PlayerCount {
         public int playerCount;
-        public EncryptedString IGN;
         public String server;
     }
 

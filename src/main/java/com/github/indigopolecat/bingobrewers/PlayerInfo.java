@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import static com.github.indigopolecat.bingobrewers.ServerConnection.encryptString;
+
 public class PlayerInfo {
     public static String playerLocation = "";
     public static String playerGameType = "";
@@ -132,7 +134,6 @@ public class PlayerInfo {
         if (currentCount != playercount) {
             KryoNetwork.PlayerCount count = new KryoNetwork.PlayerCount();
             count.playerCount = playercount;
-            count.IGN = Minecraft.getMinecraft().thePlayer.getName();
             if (playerHubNumber == null) {
                 System.out.println("Player hub number is null");
                 return;
