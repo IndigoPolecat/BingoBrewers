@@ -22,6 +22,11 @@ import org.lwjgl.Sys;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
@@ -695,7 +700,6 @@ public class ServerConnection extends Listener implements Runnable {
             throw new RuntimeException(e);
         }
     }
-
 
     public static byte[] generateIV() {
         byte[] iv = new byte[16]; // AES block size is 16 bytes
