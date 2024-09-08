@@ -20,14 +20,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import org.lwjgl.Sys;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
+import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.SecureRandom;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -99,15 +95,6 @@ public class ServerConnection extends Listener implements Runnable {
         BingoBrewers.client.addListener(new Listener() {
             @Override
             public void received(Connection connection, Object object) {
-                if (object instanceof EncryptedPacket) {
-                    EncryptedPacket encryptedPacket = (EncryptedPacket) object;
-                    try {
-                        object = decryptData(encryptedPacket.packet, symmetricKey, encryptedPacket.iv);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-
 
                 if (object instanceof ServerPublicKey) {
                     ServerPublicKey serverPublicKey = (ServerPublicKey) object;
@@ -124,10 +111,10 @@ public class ServerConnection extends Listener implements Runnable {
                         uuid = Minecraft.getMinecraft().getSession().getProfile().getId().toString();
 
                         ConnectionIgn accountInfo = new ConnectionIgn();
-                        accountInfo.IGN = ign;
-                        accountInfo.uuid = uuid;
-                        accountInfo.version = "v0.3.6";
-                        accountInfo.symmetric_key = encodeKeyToBase64(symmetricKey);
+                        accountInfo.IGN = encryptString(ign);
+                        accountInfo.uuid = encryptString(uuid);
+                        accountInfo.version = encryptString("v0.4");
+                        accountInfo.symmetric_key = encryptObjectPublicKey(symmetricKey, loadPublicKeyFromBase64(public_key));
 
                         System.out.println("Sending " + ign + "|" + version + "|" + uuid);
                         sendTCP(accountInfo);
@@ -147,7 +134,7 @@ public class ServerConnection extends Listener implements Runnable {
 
                     } else {
                         joinTitle = new TitleHud("Server Public Key Outdated", 0xFF5555, 10000, true);
-                        joinChat = "\n§a§kmm §rBingo Brewers update required due to outdated keys. §kmm\n";
+                        joinChat = "\n§a§kmm §rA Bingo Brewers update is required due to outdated encryption keys. §kmm\n";
                         getClient().close();
                         return;
                     }
@@ -368,7 +355,8 @@ public class ServerConnection extends Listener implements Runnable {
                 } else if (object instanceof WarperInfo) {
                     WarperInfo warperInfo = (WarperInfo) object;
 
-                    warperIGN = warperInfo.ign;
+                    warperIGN = decryptString(warperInfo.ign);
+
                     timeOfInvite = System.currentTimeMillis();
 
                     if (partyInvites.contains(warperIGN) && System.currentTimeMillis() - timeOfInvite < 5000 ) {
@@ -619,33 +607,13 @@ public class ServerConnection extends Listener implements Runnable {
         client.sendTCP(request);
     }
 
-    public static synchronized void sendTCP(Object object) {
+    public static synchronized void sendTCP(Object packet) {
         Client client = getClient();
 
         if (client == null) {
             LoggerUtil.LOGGER.info("Client is null");
             return;
         }
-
-        EncryptedPacket packet = new EncryptedPacket();
-
-        // encrypt ConnectionIGN with public key
-        if (object instanceof ConnectionIgn) {
-            try {
-                PublicKey publicKey = loadPublicKeyFromBase64(SERVER_PUBLIC_KEY);
-                packet.packet = encryptObjectPublicKey(object, publicKey);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            packet.iv = generateIV();
-            try {
-                packet.packet = encryptData(object, symmetricKey, packet.iv);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
         client.sendTCP(packet);
     }
 
@@ -683,11 +651,18 @@ public class ServerConnection extends Listener implements Runnable {
         }
     }
 
-    public static PublicKey loadPublicKeyFromBase64(String base64Key) throws Exception {
+    public static PublicKey loadPublicKeyFromBase64(String base64Key) {
         byte[] decodedKey = Base64.getDecoder().decode(base64Key);
         X509EncodedKeySpec spec = new X509EncodedKeySpec(decodedKey);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        return keyFactory.generatePublic(spec);
+        KeyFactory keyFactory = null;
+        try {
+
+            keyFactory = KeyFactory.getInstance("RSA");
+            return keyFactory.generatePublic(spec);
+
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static SecretKey generateAESKey(int keySize) throws NoSuchAlgorithmException {
@@ -700,31 +675,27 @@ public class ServerConnection extends Listener implements Runnable {
         return Base64.getEncoder().encodeToString(key.getEncoded());
     }
 
-    public static String encryptObjectPublicKey(Object obj, PublicKey publicKey) throws Exception {
-        // Serialize the object to a byte array
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        try (ObjectOutputStream objectStream = new ObjectOutputStream(byteStream)) {
-            objectStream.writeObject(obj);
-        }
-
+    public static String encryptObjectPublicKey(SecretKey obj, PublicKey publicKey) {
         // Get the byte array of the serialized object
-        byte[] objectBytes = byteStream.toByteArray();
+        byte[] objectBytes = obj.getEncoded();
 
         // Encrypt the byte array using RSA
-        Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        byte[] encryptedBytes = cipher.doFinal(objectBytes);
+        Cipher cipher = null;
+        try {
+            cipher = Cipher.getInstance("RSA");
 
-        // Encode the encrypted bytes to a Base64 string
-        return Base64.getEncoder().encodeToString(encryptedBytes);
-    }
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            byte[] encryptedBytes = cipher.doFinal(objectBytes);
 
-    public static Object deserializeObject(byte[] data) throws Exception {
-        try (ByteArrayInputStream byteStream = new ByteArrayInputStream(data);
-             ObjectInputStream objectStream = new ObjectInputStream(byteStream)) {
-            return objectStream.readObject();
+            // Encode the encrypted bytes to a Base64 string
+            return Base64.getEncoder().encodeToString(encryptedBytes);
+
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException |
+                 InvalidKeyException e) {
+            throw new RuntimeException(e);
         }
     }
+
 
     public static byte[] generateIV() {
         byte[] iv = new byte[16]; // AES block size is 16 bytes
@@ -733,29 +704,47 @@ public class ServerConnection extends Listener implements Runnable {
         return iv;
     }
 
-    public static String encryptData(Object obj, SecretKey aesKey, byte[] iv) throws Exception {
-        // Serialize the object to a byte array
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        try (ObjectOutputStream objectStream = new ObjectOutputStream(byteStream)) {
-            objectStream.writeObject(obj);
+    public static EncryptedString encryptString(String obj) {
+        byte[] iv = generateIV();
+        SecretKey aesKey = symmetricKey;
+
+        // Get the byte array of the string object
+        byte[] objectBytes = obj.getBytes();
+
+        Cipher cipher = null;
+        try {
+
+            cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            IvParameterSpec ivSpec = new IvParameterSpec(iv);
+            cipher.init(Cipher.ENCRYPT_MODE, aesKey, ivSpec);
+            byte[] encryptedBytes = cipher.doFinal(objectBytes);
+            EncryptedString encryptedString = new EncryptedString();
+            encryptedString.string = Base64.getEncoder().encodeToString(encryptedBytes);
+            encryptedString.iv = iv;
+            return encryptedString;
+
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException |
+                 IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
+            throw new RuntimeException(e);
         }
-
-        // Get the byte array of the serialized object
-        byte[] objectBytes = byteStream.toByteArray();
-
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        cipher.init(Cipher.ENCRYPT_MODE, aesKey, ivSpec);
-        byte[] encryptedBytes = cipher.doFinal(objectBytes);
-        return Base64.getEncoder().encodeToString(encryptedBytes);
     }
 
-    public static Object decryptData(String encryptedData, SecretKey aesKey, byte[] iv) throws Exception {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        cipher.init(Cipher.DECRYPT_MODE, aesKey, ivSpec);
-        byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
-        return deserializeObject(decryptedBytes);
+    public static String decryptString(EncryptedString encryptedString) {
+        SecretKey aesKey = symmetricKey;
+
+        try {
+
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            IvParameterSpec ivSpec = new IvParameterSpec(encryptedString.iv);
+            cipher.init(Cipher.DECRYPT_MODE, aesKey, ivSpec);
+            String encryptedData = encryptedString.string;
+            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
+            return new String(decryptedBytes);
+
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException |
+                 IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

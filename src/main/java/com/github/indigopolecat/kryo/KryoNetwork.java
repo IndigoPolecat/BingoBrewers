@@ -1,11 +1,8 @@
 package com.github.indigopolecat.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.Serializer;
-import com.esotericsoftware.kryo.serializers.DefaultSerializers;
 import com.esotericsoftware.kryo.serializers.FieldSerializer;
 import com.esotericsoftware.kryonet.EndPoint;
-import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,8 +13,10 @@ public class KryoNetwork {
 
     public static void register(EndPoint endPoint) {
         Kryo kryo = endPoint.getKryo();
+        kryo.register(EncryptedString.class);
+        kryo.register(byte[].class);
         kryo.register(ServerPublicKey.class);
-        kryo.register(ConnectionIgn.class, new FieldSerializer<ConnectionIgn>(kryo, ConnectionIgn.class));
+        kryo.register(ConnectionIgn.class);
         kryo.register(SplashNotification.class);
         kryo.register(ArrayList.class);
         kryo.register(PlayerCount.class);
@@ -53,18 +52,16 @@ public class KryoNetwork {
     public static class ServerPublicKey {
         public String public_key;
     }
-
-    public static class EncryptedPacket {
-        public String packet;
-        public byte[] iv;
-
-    }
     public static class ConnectionIgn {
-        public String IGN;
-        public String version;
-        public String uuid;
+        public EncryptedString IGN;
+        public EncryptedString version;
+        public EncryptedString uuid;
         public HashMap<Object, Object> accountInformation = new HashMap<>(); // for future Misc. purposes
         public String symmetric_key;
+    }
+    public static class EncryptedString {
+        public String string;
+        public byte[] iv;
     }
 
     public static class SplashNotification {
@@ -79,12 +76,12 @@ public class KryoNetwork {
 
     public static class PlayerCount {
         public int playerCount;
-        public String IGN;
+        public EncryptedString IGN;
         public String server;
     }
 
     public static class PlayerCountBroadcast {
-        public HashMap<String, String> playerCounts;
+        public HashMap<String, String> playerCounts = new HashMap<>();
     }
 
     public static class receiveConstantsOnStartup {
@@ -92,13 +89,11 @@ public class KryoNetwork {
         public int POINTS_PER_BINGO;
         public int POINTS_PER_BINGO_COMMUNITIES;
         public ArrayList<String> newCHChestItems = new ArrayList<>();
-        public String chItemRegex;
+        public String chItemRegex = "^§[0-9a-fk-or]\\s+(§[0-9a-fk-or])+(.\\s)?([\\w\\s]+?)(\\s§[0-9a-fk-or]§[0-9a-fk-or]x([\\d,]{1,5}))?§[0-9a-fk-or]";
         public String joinAlertTitle;
         public String joinAlertChat;
         public LinkedHashSet<String> CHItemOrder = new LinkedHashSet<>();
-
     }
-
 
     // Request the lbin of any item on ah/bz by item id
     // If they don't exist, they won't be included in the response
@@ -133,7 +128,7 @@ public class KryoNetwork {
     }
 
     public static class receiveCHItems {
-        public ArrayList<ChestInfo> chestMap;
+        public ArrayList<ChestInfo> chestMap = new ArrayList<>();
         public String server; // used to confirm that the server is correct
         public int day; // server's last known day
         public Long lastReceivedDayInfo = Long.MAX_VALUE;
@@ -152,7 +147,7 @@ public class KryoNetwork {
 
     public static class BackgroundWarpTask {
         public String server; // confirm
-        public HashMap<String, String> accountsToWarp;
+        public HashMap<String, String> accountsToWarp = new HashMap<>();
     }
 
     public static class RegisterToWarpServer {
@@ -169,9 +164,12 @@ public class KryoNetwork {
         public String server;
     }
 
+    // tell a warper to abort a warp
+    // client can also send it to the server to indicate it cannot perform a warp to the server at all
     public static class AbortWarpTask {
-        public String ign;
+        public EncryptedString ign;
         public boolean ineligible;
+
     }
 
     public static class QueuePosition {
@@ -190,10 +188,11 @@ public class KryoNetwork {
         public boolean unrequest;
     }
     public static class WarningBannerInfo {
-        public String text;
+        public EncryptedString text;
         public Integer textColor = 0xFFFFFF;
         public Integer backgroundColor = 0x000000;
     }
+
     public static class ReceiveConstantsOnStartupModern {
         public HashMap<String, Object> constants = new HashMap<>();
     }
@@ -203,7 +202,7 @@ public class KryoNetwork {
         public String joinAlertTitle;
     }
     public static class WarperInfo {
-        public String ign;
+        public EncryptedString ign;
     }
     public static class PollQueuePosition {
         public String server;
