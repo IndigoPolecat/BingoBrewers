@@ -26,6 +26,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static com.github.indigopolecat.bingobrewers.ServerConnection.encryptString;
+
 public class Warping {
     public static volatile ConcurrentHashMap<String, String> accountsToWarp = new ConcurrentHashMap<>();
     public static volatile ConcurrentHashMap<String, String> accountsToKick = new ConcurrentHashMap<>();
@@ -56,7 +58,7 @@ public class Warping {
 
 
         KryoNetwork.AbortWarpTask abort = new KryoNetwork.AbortWarpTask();
-        abort.ign = ServerConnection.ign;
+        abort.ign = encryptString(ServerConnection.ign);
         abort.ineligible = ineligible;
         ServerConnection.sendTCP(abort);
         accountsToWarp.clear();

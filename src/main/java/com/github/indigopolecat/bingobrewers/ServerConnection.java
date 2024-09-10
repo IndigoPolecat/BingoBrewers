@@ -16,6 +16,7 @@ import com.github.indigopolecat.kryo.KryoNetwork.*;
 import com.github.indigopolecat.kryo.KryoNetwork.ConnectionIgn;
 import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import com.github.indigopolecat.kryo.ServerSummary;
+import com.mojang.authlib.exceptions.AuthenticationException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 
@@ -48,14 +49,7 @@ public class ServerConnection extends Listener implements Runnable {
     public static final String PARTY = "Party";
     public static final String LOCATION = "Location";
     public static final String NOTE = "Note";
-    public static final String SERVER_PUBLIC_KEY = "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FR" +
-            "OEFNSUlCQ2dLQ0FRRUFyNWZDZWVRUEJJVG9pK3NaRE83VwpuQTRZbEVhUGFvUmU3Nk5tTndadDhY" +
-            "cHRRQ2VhWDZsQ2pDb1Q0R3labm9HMGYyQzFBUm8vY2JUUnJhQ1h3aXFyClczUFJaeWk2aHlML25H" +
-            "T2xYNWFiejl3MXljcUNEaklEMWVTS1BvNUZiUFd6a3ZjcDZoUzhlR1ZxV0tudnFyT1oKU3BnVGp5" +
-            "NGZrc1djUzV5M3A3YmNWWlBFdndrMlp1UW9TMEdZQ2NUR1dNNkJZNlRRUGVKWndYUUwycHFzdGgw" +
-            "VgpRWk1wQloyVDFYYS9vYlhGb0lRN2RCK0NKS3V6MkJhZjlHcmZpNUZxY0xhbXIxS0RDNmpLc0h1" +
-            "aEd2Z2ZNNHloClZUcHJvZTE2UitUMkFVcStsNGlzODdQL01nK1J4Wnp4YjVCamRRMXlaZmM2NmlM" +
-            "TlhIR3V1Sjg5TGRoVmhxdWwKYVFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==";
+    public static final String SERVER_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqgPvRC780jqwtXV4/39jjZvlXSnXRGEpD63y3Iptq8YO9sZic7Qno+vHKeoW50Ct5XWmNk13JjUwUdXmWBN4186FUo/b0Z+AtpLNVrkvk7dwkJQgAHa56fok52NK9QN8mTy+Saw1flmX4rdz7TflXpOwPzIYMYC33gqWe4/hMniuU7m+D/07fgzu5Ua5yFz27sNwrbqNuJOr1ReDScLykIazILHzfTa7RFAZn+4nWM3vdtdysKo1YSYQ++05uMR1S51ABtPkJdNLKzEf0sC6H2q1JPOcIAz/9EX2doWHROTfWoYifi0HDHEu+c0Cc20SfhfmY5NjofmLEc0XmuyqewIDAQAB";
 
     // The Hud renderer checks this every time it renders
     public static ArrayList<HashMap<String, ArrayList<String>>> mapList = new ArrayList<>();
@@ -85,14 +79,17 @@ public class ServerConnection extends Listener implements Runnable {
         try {
             connection();
         } catch (Exception e) {
+            System.out.println("catch reconnect");
             LoggerUtil.LOGGER.info("Server Connection Error: " + e.getMessage());
-            reconnect();
+            if (!reconnect) {
+                reconnect();
+            }
         }
 
     }
 
-    private void connection() throws IOException {
-        Log.set(LEVEL_TRACE);
+    private void connection() throws Exception {
+        Log.set(LEVEL_ERROR);
         KryoNetwork.register(BingoBrewers.client);
 
         BingoBrewers.client.addListener(new Listener() {
@@ -110,37 +107,61 @@ public class ServerConnection extends Listener implements Runnable {
                             throw new RuntimeException(e);
                         }
 
-                        ign = Minecraft.getMinecraft().getSession().getUsername();
-                        uuid = Minecraft.getMinecraft().getSession().getProfile().getId().toString();
-
-                        ConnectionIgn accountInfo = new ConnectionIgn();
-                        accountInfo.IGN = encryptString(ign);
-                        accountInfo.uuid = encryptString(uuid);
-                        accountInfo.version = encryptString("v0.4");
-                        accountInfo.symmetric_key = encryptObjectPublicKey(symmetricKey, loadPublicKeyFromBase64(public_key));
-
-                        System.out.println("Sending " + ign + "|" + version + "|" + uuid);
-                        sendTCP(accountInfo);
-                        System.out.println("sent");
-
-
-                        // List of all keys that may be used in infopanel, in the order they'll be rendered in an element
-                        setSplashHudItems();
-                        reconnect = false;
-                        try {
-                            Thread.sleep(300);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                        PlayerInfo.subscribedToCurrentCHServer = false;
-                        BingoBrewersConfig.SubscribeToServer();
-
+                        ClientSymmetricKey key = new ClientSymmetricKey();
+                        key.symmetric_key = encryptObjectPublicKey(symmetricKey, loadPublicKeyFromBase64(public_key));
+                        sendTCP(key);
                     } else {
                         joinTitle = new TitleHud("Server Public Key Outdated", 0xFF5555, 10000, true);
                         joinChat = "\n§a§kmm §rA Bingo Brewers update is required due to outdated encryption keys. §kmm\n";
                         getClient().close();
+                        reconnect = false;
                         return;
                     }
+
+                } else if (object instanceof Authentication) {
+                    Authentication authentication = (Authentication) object;
+                    String serverAuthID = decryptString(authentication.AuthID);
+
+                    String clientAuthID = UUID.randomUUID().toString().replaceAll("-", "");
+                    authentication.AuthID = encryptString(clientAuthID);
+
+                    Minecraft mc = Minecraft.getMinecraft();
+                    try {
+                        // This is sending your session info to Mojang's servers as if you were joining a server,
+                        // this is used on the Bingo Brewers server to authenticate your IGN like an MC server normally would when you join.
+                        // Basically it's for authentication, it's not a rat, here's the exact same code in skytils:  https://github.com/Skytils/SkytilsMod/blob/1.x/src/main/kotlin/gg/skytils/skytilsmod/features/impl/handlers/MayorInfo.kt#L175
+                        mc.getSessionService().joinServer(mc.getSession().getProfile(), mc.getSession().getToken(), serverAuthID.substring(0, serverAuthID.length()/2 - 1) + clientAuthID.substring(clientAuthID.length()/2));
+                    } catch (AuthenticationException e) {
+                        System.out.println(e.getMessage());
+                        throw new RuntimeException(e);
+                    }
+
+                    sendTCP(authentication);
+
+                    ign = Minecraft.getMinecraft().getSession().getUsername();
+                    uuid = Minecraft.getMinecraft().getSession().getProfile().getId().toString();
+
+                    ConnectionIgn accountInfo = new ConnectionIgn();
+                    accountInfo.IGN = encryptString(ign);
+                    accountInfo.uuid = encryptString(uuid);
+                    accountInfo.version = encryptString("v0.4");
+
+                    System.out.println("Sending " + ign + "|" + version + "|" + uuid);
+                    sendTCP(accountInfo);
+                    System.out.println("sent");
+
+
+                    // List of all keys that may be used in infopanel, in the order they'll be rendered in an element
+                    setSplashHudItems();
+
+                    try {
+                        Thread.sleep(300);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    PlayerInfo.subscribedToCurrentCHServer = false;
+                    BingoBrewersConfig.SubscribeToServer();
+
 
                 } else if (object instanceof SplashNotification) {
                     LoggerUtil.LOGGER.info("Received splash notification");
@@ -379,6 +400,7 @@ public class ServerConnection extends Listener implements Runnable {
 
             @Override
             public void disconnected(Connection connection) {
+                System.out.println("disconnected");
                 reconnect();
             }
 
@@ -394,11 +416,6 @@ public class ServerConnection extends Listener implements Runnable {
             BingoBrewers.client.connect(3000, "38.46.216.110", 8080, 7070);
         }
         System.out.println("Connected to server.");
-
-
-
-
-
     }
 
     public static void setSplashHudItems() {
@@ -627,19 +644,25 @@ public class ServerConnection extends Listener implements Runnable {
         BingoBrewers.client.close();
         BingoBrewers.client.removeListener(this);
         if (waitTime == 0) {
-            waitTime = (int) (5000 * Math.random());
+            waitTime = (int) (5000 * Math.random() + 1000);
         }
-        System.out.println("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
+        System.out.println("Disconnected from server.");
         reconnect = true;
         while (reconnect) {
+            System.out.println("reconnecting");
             try {
                 BingoBrewers.client = new Client(16384, 16384);
                 connection();
+                reconnect = false;
             } catch (Exception e) {
+                e.printStackTrace();
                 LoggerUtil.LOGGER.info("Server Connection Error: " + e.getMessage());
                 BingoBrewers.client.close();
                 BingoBrewers.client.removeListener(this);
+
+                System.out.println("Failed to reconnect, retrying in " + waitTime + " milliseconds.");
                 try {
+                    System.out.println("Sleeping for " + waitTime + "ms");
                     Thread.sleep(waitTime);
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);

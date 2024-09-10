@@ -23,7 +23,7 @@ import com.github.indigopolecat.events.PacketListener;
 import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-@Mod(modid = "bingobrewers", version = "0.3.6", useMetadata = true, dependencies = "required-after:hypixel_mod_api@[1.0.0,)")
+@Mod(modid = "bingobrewers", version = "0.4", useMetadata = true, dependencies = "required-after:hypixel_mod_api@[1.0.0,)")
 public class BingoBrewers {
     public static BingoBrewersConfig config;
     public static BingoBrewers INSTANCE;
