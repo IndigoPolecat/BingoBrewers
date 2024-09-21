@@ -108,7 +108,7 @@ public class CHChests {
         // add the opened chest to blacklist
         Packets.hardstone.put(coords, Long.MAX_VALUE);
 
-        KryoNetwork.sendCHItems chestLoot = new KryoNetwork.sendCHItems();
+        KryoNetwork.ClientSendCHItems chestLoot = new KryoNetwork.ClientSendCHItems();
         chestLoot.server = PlayerInfo.currentServer;
         chestLoot.day = (int) Minecraft.getMinecraft().theWorld.getWorldTime() / 24000;
         // coords are in the format BlockPos{x=420, y=124, z=576}

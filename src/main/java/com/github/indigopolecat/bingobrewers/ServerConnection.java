@@ -1,7 +1,5 @@
 package com.github.indigopolecat.bingobrewers;
 
-import java.io.*;
-
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
@@ -13,7 +11,7 @@ import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.*;
-import com.github.indigopolecat.kryo.KryoNetwork.ConnectionIgn;
+import com.github.indigopolecat.kryo.KryoNetwork.ConnectionIGN;
 import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import com.github.indigopolecat.kryo.ServerSummary;
 import com.mojang.authlib.exceptions.AuthenticationException;
@@ -55,7 +53,7 @@ public class ServerConnection extends Listener implements Runnable {
     public static ArrayList<HashMap<String, ArrayList<String>>> mapList = new ArrayList<>();
     public static ArrayList<String> keyOrder = new ArrayList<>();
     int waitTime = 0;
-    boolean reconnect;
+    boolean reconnect; // controls the loop for reconnecting the client
     public static ArrayList<String> hubList = new ArrayList<>();
     long originalTime = -1;
     public static CopyOnWriteArrayList<CHWaypoints> waypoints = new CopyOnWriteArrayList<>();
@@ -141,7 +139,7 @@ public class ServerConnection extends Listener implements Runnable {
                     ign = Minecraft.getMinecraft().getSession().getUsername();
                     uuid = Minecraft.getMinecraft().getSession().getProfile().getId().toString();
 
-                    ConnectionIgn accountInfo = new ConnectionIgn();
+                    ConnectionIGN accountInfo = new ConnectionIGN();
                     accountInfo.IGN = encryptString(ign);
                     accountInfo.uuid = encryptString(uuid);
                     accountInfo.version = encryptString("v0.4");
@@ -207,8 +205,8 @@ public class ServerConnection extends Listener implements Runnable {
                             }
                         }
                     }
-                } else if (object instanceof ReceiveConstantsOnStartupModern) {
-                    ReceiveConstantsOnStartupModern request = (ReceiveConstantsOnStartupModern) object;
+                } else if (object instanceof ClientReceiveServerConstantValues) {
+                    ClientReceiveServerConstantValues request = (ClientReceiveServerConstantValues) object;
                     HashMap<String, Object> constants = request.constants;
 
                     if (constants.get("bingoRankCosts") != null && constants.get("bingoRankCosts") instanceof HashMap) {
@@ -279,8 +277,8 @@ public class ServerConnection extends Listener implements Runnable {
                     }
 
 
-                } else if (object instanceof receiveCHItems) {
-                    receiveCHItems CHItems = (receiveCHItems) object;
+                } else if (object instanceof ServerSendCHItems) {
+                    ServerSendCHItems CHItems = (ServerSendCHItems) object;
                     System.out.println("Received CH Chests for " + CHItems.server);
                     ArrayList<ChestInfo> chests = CHItems.chestMap;
                     if (CHItems.server.equals(PlayerInfo.currentServer)) {
@@ -649,7 +647,7 @@ public class ServerConnection extends Listener implements Runnable {
         System.out.println("Disconnected from server.");
         reconnect = true;
         while (reconnect) {
-            System.out.println("reconnecting");
+            System.out.println("Reconnecting");
             try {
                 BingoBrewers.client = new Client(16384, 16384);
                 connection();

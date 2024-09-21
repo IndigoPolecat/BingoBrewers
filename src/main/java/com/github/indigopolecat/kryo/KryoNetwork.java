@@ -17,16 +17,16 @@ public class KryoNetwork {
         kryo.register(ServerPublicKey.class);
         kryo.register(Authentication.class);
         kryo.register(ClientSymmetricKey.class);
-        kryo.register(ConnectionIgn.class);
+        kryo.register(ConnectionIGN.class);
         kryo.register(SplashNotification.class);
         kryo.register(ArrayList.class);
         kryo.register(PlayerCount.class);
         kryo.register(PlayerCountBroadcast.class);
         kryo.register(HashMap.class);
-        kryo.register(requestLbin.class);
-        kryo.register(sendLbin.class);
-        kryo.register(sendCHItems.class);
-        kryo.register(receiveCHItems.class);
+        kryo.register(ClientRequestLowestBINPrices.class);
+        kryo.register(ServerSendLowestBINPrices.class);
+        kryo.register(ClientSendCHItems.class);
+        kryo.register(ServerSendCHItems.class);
         kryo.register(SubscribeToCHServer.class);
         kryo.register(ChestInfo.class);
         kryo.register(CHChestItem.class);
@@ -38,15 +38,15 @@ public class KryoNetwork {
         kryo.register(CancelWarpRequest.class);
         kryo.register(AbortWarpTask.class);
         kryo.register(QueuePosition.class);
+        kryo.register(ServerSummary.class);
         kryo.register(ServersSummary.class);
         kryo.register(UpdateServers.class);
         kryo.register(RequestLiveUpdatesForServerInfo.class);
-        kryo.register(ServerSummary.class);
         kryo.register(WarningBannerInfo.class);
-        kryo.register(ReceiveConstantsOnStartupModern.class);
+        kryo.register(ClientReceiveServerConstantValues.class);
         kryo.register(JoinAlert.class);
         kryo.register(WarperInfo.class);
-        kryo.register(PollQueuePosition.class);
+        kryo.register(RequestQueuePosition.class);
     }
 
     public static class ServerPublicKey {
@@ -58,7 +58,7 @@ public class KryoNetwork {
     public static class Authentication {
         public EncryptedString AuthID;
     }
-    public static class ConnectionIgn {
+    public static class ConnectionIGN {
         public EncryptedString IGN;
         public EncryptedString version;
         public EncryptedString uuid;
@@ -92,15 +92,15 @@ public class KryoNetwork {
 
     // Request the lbin of any item on ah/bz by item id
     // If they don't exist, they won't be included in the response
-    public static class requestLbin {
+    public static class ClientRequestLowestBINPrices {
         public ArrayList<String> items;
     }
 
-    public static class sendLbin {
+    public static class ServerSendLowestBINPrices {
         public HashMap<String, Integer> lbinMap;
     }
 
-    public static class sendCHItems {
+    public static class ClientSendCHItems {
         public ArrayList<CHChestItem> items = new ArrayList<>();
         public int x;
         public int y;
@@ -122,7 +122,7 @@ public class KryoNetwork {
         public boolean unsubscribe;
     }
 
-    public static class receiveCHItems {
+    public static class ServerSendCHItems {
         public ArrayList<ChestInfo> chestMap = new ArrayList<>();
         public String server; // used to confirm that the server is correct
         public int day; // server's last known day
@@ -188,7 +188,7 @@ public class KryoNetwork {
         public Integer backgroundColor = 0x000000;
     }
 
-    public static class ReceiveConstantsOnStartupModern {
+    public static class ClientReceiveServerConstantValues {
         public HashMap<String, Object> constants = new HashMap<>();
     }
 
@@ -199,7 +199,7 @@ public class KryoNetwork {
     public static class WarperInfo {
         public EncryptedString ign;
     }
-    public static class PollQueuePosition {
+    public static class RequestQueuePosition {
         public String server;
     }
 }
