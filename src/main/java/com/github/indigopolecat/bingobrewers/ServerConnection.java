@@ -131,7 +131,7 @@ public class ServerConnection extends Listener implements Runnable {
                         mc.getSessionService().joinServer(mc.getSession().getProfile(), mc.getSession().getToken(), serverAuthID.substring(0, serverAuthID.length()/2 - 1) + clientAuthID.substring(clientAuthID.length()/2));
                     } catch (AuthenticationException e) {
                         System.out.println(e.getMessage());
-                        throw new RuntimeException(e);
+                        return;
                     }
 
                     sendTCP(authentication);
