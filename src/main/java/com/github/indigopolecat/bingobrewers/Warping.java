@@ -11,6 +11,7 @@ import net.hypixel.modapi.packet.impl.serverbound.ServerboundPartyInfoPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.play.server.S02PacketChat;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
@@ -40,6 +41,7 @@ public class Warping {
     public static boolean PARTY_EMPTY_KICK = false;
     public static volatile boolean kickParty;
     public static BackgroundWarpThread warpThread;
+    public static String requestedWarp = "";
 
     public static void warp() {
         // todo: come back to this and consider immediately kicking instead of waiting for the chat message
@@ -116,7 +118,7 @@ public class Warping {
     public static boolean lookForEndingMessage = false;
     public static String warpMessageTrigger = "§9§m-----------------------------§r";
     public static Pattern playerWarpPattern = Pattern.compile("([✮✔✖])\\s+(\\[\\w+\\+*])?\\s*([\\w_]+)\\s+([\\w\\s]+)");
-
+    public static String warpingTooFastError = "Please wait 5 seconds between SkyBlock warps!"; // this is currently not translated
     public static Pattern partyInvitePattern = Pattern.compile("-----------------------------------------------------\n(\\[\\w+\\+*])?\\s*([\\w_]+) has invited you to join their party!\nYou have 60 seconds to accept. Click here to join!\n-----------------------------------------------------");
     public static ArrayList<String> partyInvites = new ArrayList<>(); // this variable is used for whichever comes first, BB server packet with warper info, or HP party invite
     public static String warperIGN;
@@ -124,14 +126,27 @@ public class Warping {
 
     @SubscribeEvent
     public void onChatMessage(ClientChatReceivedEvent event) {
+        if (requestedWarp.isEmpty() || event.type == 2) return;
+
         String message = event.message.getUnformattedText();
 
-        Matcher partyInviteMatcher = partyInvitePattern.matcher(message);
-        if (partyInviteMatcher.find()) {
-            partyInvites.add(partyInviteMatcher.group(2));
-            timeOfInvite = System.currentTimeMillis();
+        HashMap<String, String> partyMessageGroups = new HashMap<>();
+        Pattern accountPattern = Pattern.compile("(§.)?(\\[\\w+\\+*])?\\s*([\\w_]+)");
+        System.out.println(message);
+        System.out.println(INVITED_TO_PARTY.match(message, partyMessageGroups));
+
+        if (INVITED_TO_PARTY.match(message, partyMessageGroups)) {
+
+            Matcher accountMatcher = accountPattern.matcher(partyMessageGroups.get("0"));
+            String ign = "";
+            if (accountMatcher.find()) {
+                ign = accountMatcher.group(3);
+            }
+            System.out.println("ign = " + ign);
+            partyInvites.add(ign);
 
             if (partyInvites.contains(warperIGN) && System.currentTimeMillis() - timeOfInvite < 5000 ) {
+                System.out.println("joining");
                 // we have already received the packet telling us the ign and we can safely join
                 sendChatMessage("/p accept " + warperIGN);
                 partyInvites = new ArrayList<>();
@@ -141,6 +156,8 @@ public class Warping {
                 warperIGN = null;
                 partyInvites = new ArrayList<>();
                 timeOfInvite = 0;
+            } else {
+                timeOfInvite = System.currentTimeMillis();
             }
 
         }
@@ -164,6 +181,7 @@ public class Warping {
     private static MessageMatcher MEMBER;
     private static MessageMatcher ACCEPT_INVITE_LEADER;
     private static MessageMatcher ACCEPT_INVITE_MEMBERS;
+    private static MessageMatcher INVITED_TO_PARTY;
 
     public static void createPartyMessageMatchers() {
         try {
@@ -183,6 +201,7 @@ public class Warping {
             MEMBER = createMatcher(jsonObject, "member");
             ACCEPT_INVITE_LEADER = createMatcher(jsonObject, "accept_invite_leader");
             ACCEPT_INVITE_MEMBERS = createMatcher(jsonObject, "accept_invite_members");
+            INVITED_TO_PARTY = createMatcher(jsonObject, "invited_to_party");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -205,18 +224,26 @@ public class Warping {
             if (((S02PacketChat) event.getPacket()).getType() == 2) return;
             String message = ((S02PacketChat) event.getPacket()).getChatComponent().getFormattedText();
             String unformatted = ((S02PacketChat) event.getPacket()).getChatComponent().getUnformattedText();
-            if (message.equals("§9§m-----------------------------------------------------§r") && warpThread != null) {
+
+            if (warpThread == null) return;
+
+            // This message is not currently translated
+            if (unformatted.equals(warpingTooFastError) && System.currentTimeMillis() - warpThread.executionTimeBegan > 12000) {
+                PHASE = WARP_PHASE.KICK;
+                kickParty = true;
+                PARTY_EMPTY_KICK = false;
+            }
+
+            if (message.equals("§9§m-----------------------------------------------------§r")) {
 
                 //event.setCanceled(true);
                 lookForEndingMessage = !lookForEndingMessage;
-            } else if (message.equals(warpMessageTrigger) && warpThread != null) {
+            } else if (message.equals(warpMessageTrigger)) {
                 //event.setCanceled(true);
                 lookForEndingMessage = !lookForEndingMessage;
 
                 if (lookForEndingMessage) {
-                    PHASE = WARP_PHASE.KICK;
-                    kickParty = true;
-                    PARTY_EMPTY_KICK = false;
+
 
                     warpThread.conclusion.ignsWarped.clear();
                 } else {
@@ -354,5 +381,15 @@ public class Warping {
         }
 
         PlayerInfo.currentNetwork = null;
+    }
+
+    public static void requestWarp(String server) {
+        KryoNetwork.RequestWarpToServer request = new KryoNetwork.RequestWarpToServer();
+        request.server = server;
+        request.serverType = "Crystal Hollows";
+
+        requestedWarp = server;
+
+        ServerConnection.sendTCP(request);
     }
 }

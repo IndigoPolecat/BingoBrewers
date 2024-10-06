@@ -47,6 +47,8 @@ public class ServerConnection extends Listener implements Runnable {
     public static final String PARTY = "Party";
     public static final String LOCATION = "Location";
     public static final String NOTE = "Note";
+    // The server sends it's public key to the client, which checks it based on this. If they don't match the connection is refused.
+    // This would require all users to update in the event of the key being changed.
     public static final String SERVER_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqgPvRC780jqwtXV4/39jjZvlXSnXRGEpD63y3Iptq8YO9sZic7Qno+vHKeoW50Ct5XWmNk13JjUwUdXmWBN4186FUo/b0Z+AtpLNVrkvk7dwkJQgAHa56fok52NK9QN8mTy+Saw1flmX4rdz7TflXpOwPzIYMYC33gqWe4/hMniuU7m+D/07fgzu5Ua5yFz27sNwrbqNuJOr1ReDScLykIazILHzfTa7RFAZn+4nWM3vdtdysKo1YSYQ++05uMR1S51ABtPkJdNLKzEf0sC6H2q1JPOcIAz/9EX2doWHROTfWoYifi0HDHEu+c0Cc20SfhfmY5NjofmLEc0XmuyqewIDAQAB";
 
     // The Hud renderer checks this every time it renders
@@ -112,7 +114,8 @@ public class ServerConnection extends Listener implements Runnable {
                         joinTitle = new TitleHud("Server Public Key Outdated", 0xFF5555, 10000, true);
                         joinChat = "\n§a§kmm §rA Bingo Brewers update is required due to outdated encryption keys. §kmm\n";
                         getClient().close();
-                        reconnect = false;
+                        getClient().removeListener(this);
+                        reconnect = true; // by setting this to true, the client will assume it is already reconnecting and won't try to
                         return;
                     }
 
@@ -130,7 +133,7 @@ public class ServerConnection extends Listener implements Runnable {
                         // Basically it's for authentication, it's not a rat, here's the exact same code in skytils:  https://github.com/Skytils/SkytilsMod/blob/1.x/src/main/kotlin/gg/skytils/skytilsmod/features/impl/handlers/MayorInfo.kt#L175
                         mc.getSessionService().joinServer(mc.getSession().getProfile(), mc.getSession().getToken(), serverAuthID.substring(0, serverAuthID.length()/2 - 1) + clientAuthID.substring(clientAuthID.length()/2));
                     } catch (AuthenticationException e) {
-                        System.out.println(e.getMessage());
+                        e.printStackTrace();
                         return;
                     }
 
@@ -373,6 +376,7 @@ public class ServerConnection extends Listener implements Runnable {
                         warpThread.notify();
                     }
                 } else if (object instanceof CancelWarpRequest) {
+                    requestedWarp = "";
                     // sent by server if unable to fulfill a warp
                 } else if (object instanceof WarperInfo) {
                     WarperInfo warperInfo = (WarperInfo) object;

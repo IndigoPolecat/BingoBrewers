@@ -169,8 +169,9 @@ public class BackgroundWarpThread implements Runnable {
         } else if (!Warping.accountsToWarp.keySet().containsAll(uuids)) { // there is someone who isn't supposed to be warped in the party
             Warping.PARTY_EMPTY_KICK = true;
             Warping.abort(true);
-        } else if (PlayerInfo.partyMembers.isEmpty()) {
+        } else if (PlayerInfo.partyMembers.isEmpty() && System.currentTimeMillis() - executionTimeBegan > 7000) {
             stop = true;
+            Warping.sendChatMessage("/p disband");
             return;
         }
 

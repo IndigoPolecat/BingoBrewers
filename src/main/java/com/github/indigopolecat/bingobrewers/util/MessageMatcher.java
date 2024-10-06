@@ -38,9 +38,9 @@ public class MessageMatcher {
         if (matchGroups != null)
             matchGroups.clear();
         for (String simpleEqual : simpleEquals) {
+
             if (simpleEqual.equals(str)) return true;
         }
-
         for (PatternData regexPattern : regexPatterns) {
             Matcher m = regexPattern.pattern.matcher(str);
             if (m.matches()) {

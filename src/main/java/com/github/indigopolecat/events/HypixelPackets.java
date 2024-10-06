@@ -66,6 +66,9 @@ public class HypixelPackets {
 
     public static void onLocationEvent(ClientboundLocationPacket packet) {
         System.out.println("Location Packet: " + packet.toString());
+
+        Warping.requestedWarp = ""; // reset once servers are swapped
+
         checkScoreboardForBingoTime = System.currentTimeMillis() + 1500;
         if (!packet.getServerType().isPresent()) return;
         PlayerInfo.playerGameType = packet.getServerType().get().getName();
@@ -98,6 +101,7 @@ public class HypixelPackets {
                     PlayerInfo.lastSplashHubUpdate = System.currentTimeMillis();
                 }
             }
+
         }
 
         if (PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows") && !PlayerInfo.subscribedToCurrentCHServer) {
