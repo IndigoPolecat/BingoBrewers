@@ -76,11 +76,13 @@ public class HypixelPackets {
             if (!packet.getMode().isPresent()) return;
             PlayerInfo.playerLocation = packet.getMode().get();
             // Check if the scoreboard contains "bingo" and set the onBingo flag once we know if we're on skyblock
-            SplashHud.inSkyblockorPTLobby = true;
+            SplashHud.inSkyblockorPTLobbyorLimbo = true;
         } else if (PlayerInfo.playerGameType.equalsIgnoreCase("prototype")) {
-            SplashHud.inSkyblockorPTLobby = true;
+            SplashHud.inSkyblockorPTLobbyorLimbo = true;
+        } else if (PlayerInfo.playerGameType.equalsIgnoreCase("limbo")) {
+            SplashHud.inSkyblockorPTLobbyorLimbo = true;
         } else {
-            SplashHud.inSkyblockorPTLobby = false;
+            SplashHud.inSkyblockorPTLobbyorLimbo = false;
         }
 
 
@@ -89,14 +91,14 @@ public class HypixelPackets {
             PlayerInfo.playerHubNumber = PlayerInfo.hubServerMap.get(PlayerInfo.currentServer);
 
             // This is checking without "DH" tag that dungeon hubs have, unimportant but commenting for clarity
-            if (PlayerInfo.playerHubNumber != null && ServerConnection.hubList.contains(PlayerInfo.playerHubNumber)) {
+            if (PlayerInfo.playerHubNumber != null && SplashHud.hubList.contains(PlayerInfo.playerHubNumber)) {
                 PlayerInfo.inSplashHub = true;
                 PlayerInfo.lastSplashHubUpdate = System.currentTimeMillis();
             } else { // basically if the server isn't a hub, then it might be a dungeon hub so we check that
                 PlayerInfo.playerHubNumber = PlayerInfo.dungeonHubServerMap.get(PlayerInfo.currentServer);
 
                 // DH is a tag added to the hub number so regular hubs and dungeon hubs can be differentiated
-                if (PlayerInfo.playerHubNumber != null && ServerConnection.hubList.contains("DH" + PlayerInfo.playerHubNumber)) {
+                if (PlayerInfo.playerHubNumber != null && SplashHud.hubList.contains("DH" + PlayerInfo.playerHubNumber)) {
                     PlayerInfo.inSplashHub = true;
                     PlayerInfo.lastSplashHubUpdate = System.currentTimeMillis();
                 }

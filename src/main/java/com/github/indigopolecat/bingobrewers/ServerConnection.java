@@ -11,10 +11,8 @@ import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.*;
-import com.github.indigopolecat.kryo.KryoNetwork.ConnectionIGN;
 import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import com.github.indigopolecat.kryo.ServerSummary;
-import com.mojang.authlib.exceptions.AuthenticationException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 
@@ -33,31 +31,20 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.esotericsoftware.minlog.Log.*;
-import static com.github.indigopolecat.bingobrewers.BingoBrewers.version;
 import static com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud.filteredItems;
-import static com.github.indigopolecat.bingobrewers.Warping.*;
+import static com.github.indigopolecat.bingobrewers.PacketProcessing.*;
 import static java.lang.String.join;
 import static java.lang.String.valueOf;
 
 public class ServerConnection extends Listener implements Runnable {
 
-    public static final String DUNGEON_HUB = "Dungeon Hub";
-    public static final String HUB = "Hub";
-    public static final String SPLASHER = "Splasher";
-    public static final String PARTY = "Party";
-    public static final String LOCATION = "Location";
-    public static final String NOTE = "Note";
     // The server sends it's public key to the client, which checks it based on this. If they don't match the connection is refused.
     // This would require all users to update in the event of the key being changed.
     public static final String SERVER_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqgPvRC780jqwtXV4/39jjZvlXSnXRGEpD63y3Iptq8YO9sZic7Qno+vHKeoW50Ct5XWmNk13JjUwUdXmWBN4186FUo/b0Z+AtpLNVrkvk7dwkJQgAHa56fok52NK9QN8mTy+Saw1flmX4rdz7TflXpOwPzIYMYC33gqWe4/hMniuU7m+D/07fgzu5Ua5yFz27sNwrbqNuJOr1ReDScLykIazILHzfTa7RFAZn+4nWM3vdtdysKo1YSYQ++05uMR1S51ABtPkJdNLKzEf0sC6H2q1JPOcIAz/9EX2doWHROTfWoYifi0HDHEu+c0Cc20SfhfmY5NjofmLEc0XmuyqewIDAQAB";
 
-    // The Hud renderer checks this every time it renders
-    public static ArrayList<HashMap<String, ArrayList<String>>> mapList = new ArrayList<>();
-    public static ArrayList<String> keyOrder = new ArrayList<>();
-    int waitTime = 0;
-    boolean reconnect; // controls the loop for reconnecting the client
-    public static ArrayList<String> hubList = new ArrayList<>();
-    long originalTime = -1;
+    public static int waitTime = 0;
+    public static boolean reconnect; // controls the loop for reconnecting the client
+    public static long originalTime = -1;
     public static CopyOnWriteArrayList<CHWaypoints> waypoints = new CopyOnWriteArrayList<>();
     // if new ch items are added, they will be in this list
     public static ArrayList<String> newMiscCHItems = new ArrayList<>();
@@ -66,7 +53,7 @@ public class ServerConnection extends Listener implements Runnable {
     public static ArrayList<String> CHItemOrder = new ArrayList<>();
     public static ConcurrentHashMap<String, ServerSummary> serverSummaries = new ConcurrentHashMap<>();
     public static String ign = "";
-    private String uuid = "";
+    public static String uuid = "";
     private static SecretKey symmetricKey;
 
     @Override
@@ -95,308 +82,7 @@ public class ServerConnection extends Listener implements Runnable {
         BingoBrewers.client.addListener(new Listener() {
             @Override
             public void received(Connection connection, Object object) {
-
-                if (object instanceof ServerPublicKey) {
-                    ServerPublicKey serverPublicKey = (ServerPublicKey) object;
-                    String public_key = serverPublicKey.public_key;
-
-                    if (public_key.equals(SERVER_PUBLIC_KEY)) {
-                        try {
-                            symmetricKey = generateAESKey(256);
-                        } catch (NoSuchAlgorithmException e) {
-                            throw new RuntimeException(e);
-                        }
-
-                        ClientSymmetricKey key = new ClientSymmetricKey();
-                        key.symmetric_key = encryptObjectPublicKey(symmetricKey, loadPublicKeyFromBase64(public_key));
-                        sendTCP(key);
-                    } else {
-                        joinTitle = new TitleHud("Server Public Key Outdated", 0xFF5555, 10000, true);
-                        joinChat = "\n§a§kmm §rA Bingo Brewers update is required due to outdated encryption keys. §kmm\n";
-                        getClient().close();
-                        getClient().removeListener(this);
-                        reconnect = true; // by setting this to true, the client will assume it is already reconnecting and won't try to
-                        return;
-                    }
-
-                } else if (object instanceof Authentication) {
-                    Authentication authentication = (Authentication) object;
-                    String serverAuthID = decryptString(authentication.AuthID);
-
-                    String clientAuthID = UUID.randomUUID().toString().replaceAll("-", "");
-                    authentication.AuthID = encryptString(clientAuthID);
-
-                    Minecraft mc = Minecraft.getMinecraft();
-                    try {
-                        // This is sending your session info to Mojang's servers as if you were joining a server,
-                        // this is used on the Bingo Brewers server to authenticate your IGN like an MC server normally would when you join.
-                        // Basically it's for authentication, it's not a rat, here's the exact same code in skytils:  https://github.com/Skytils/SkytilsMod/blob/1.x/src/main/kotlin/gg/skytils/skytilsmod/features/impl/handlers/MayorInfo.kt#L175
-                        mc.getSessionService().joinServer(mc.getSession().getProfile(), mc.getSession().getToken(), serverAuthID.substring(0, serverAuthID.length()/2 - 1) + clientAuthID.substring(clientAuthID.length()/2));
-                    } catch (AuthenticationException e) {
-                        e.printStackTrace();
-                        return;
-                    }
-
-                    sendTCP(authentication);
-
-                    ign = Minecraft.getMinecraft().getSession().getUsername();
-                    uuid = Minecraft.getMinecraft().getSession().getProfile().getId().toString();
-
-                    ConnectionIGN accountInfo = new ConnectionIGN();
-                    accountInfo.IGN = encryptString(ign);
-                    accountInfo.uuid = encryptString(uuid);
-                    accountInfo.version = encryptString("v0.4");
-
-                    System.out.println("Sending " + ign + "|" + version + "|" + uuid);
-                    sendTCP(accountInfo);
-                    System.out.println("sent");
-
-
-                    // List of all keys that may be used in infopanel, in the order they'll be rendered in an element
-                    setSplashHudItems();
-
-                    try {
-                        Thread.sleep(300);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    PlayerInfo.subscribedToCurrentCHServer = false;
-                    BingoBrewersConfig.SubscribeToServer();
-
-
-                } else if (object instanceof SplashNotification) {
-                    LoggerUtil.LOGGER.info("Received splash notification");
-                    boolean sendNotif = true;
-                    SplashNotification notif = (SplashNotification) object;
-                    // Remove the previous splash notification with the same ID (if message is edited)
-                    for (int i = 0; i < mapList.size(); i++) {
-                        HashMap<String, ArrayList<String>> map = mapList.get(i);
-                        if (map.get("Splash").get(0).equals(notif.splash)) {
-                            ArrayList<String> hubField = map.get(HUB);
-                            // Don't send notification if the hub # or hub type (dungeon/normal) hasn't changed
-                            try {
-                                String hubNumber = hubField.get(1).replaceAll(": (\\d+).*", "$1");
-                                if (hubNumber.equals(notif.message) && notif.dungeonHub == hubField.get(0).contains(DUNGEON_HUB)) {
-                                    sendNotif = false;
-                                    hubList.remove(hubNumber);
-                                    hubList.remove("DH" + hubNumber);
-                                }
-
-                            } catch (Exception ignored) {
-
-                            }
-
-                            // keep track of the original time the splash was sent, instead of updating each time it's edited
-                            originalTime = Long.parseLong(map.get("Time").get(0));
-
-                            mapList.remove(mapList.get(i));
-                        }
-                    }
-                    updateMapList(notif, sendNotif);
-                } else if (object instanceof PlayerCountBroadcast) {
-                    PlayerCountBroadcast request = (PlayerCountBroadcast) object;
-                    for (HashMap<String, ArrayList<String>> map : mapList) {
-                        if (map.containsKey(HUB)) {
-                            String hub = map.get(HUB).get(1).replaceAll(": (\\d+).*", "$1");
-                            if (request.playerCounts.containsKey(hub)) {
-                                // If the hub is a dungeon hub, it has a 24 player limit
-                                if (map.get(HUB).get(0).equals(DUNGEON_HUB)) {
-                                    map.get(HUB).set(1, ": " + hub + " (" + request.playerCounts.get(hub) + "/24)");
-                                } else {
-                                    map.get(HUB).set(1, ": " + hub + " (" + request.playerCounts.get(hub) + "/80)");
-                                }
-                            }
-                        }
-                    }
-                } else if (object instanceof ClientReceiveServerConstantValues) {
-                    ClientReceiveServerConstantValues request = (ClientReceiveServerConstantValues) object;
-                    HashMap<String, Object> constants = request.constants;
-
-                    if (constants.get("bingoRankCosts") != null && constants.get("bingoRankCosts") instanceof HashMap) {
-                        boolean nope = false;
-                        for (Map.Entry<?, ?> entry : ((HashMap<?, ?>) constants.get("bingoRankCosts")).entrySet()) {
-                            if (!(entry.getValue() instanceof Integer) || !(entry.getKey() instanceof Integer)) {
-                                nope = true;
-                                break;
-                            }
-                        }
-                        if (!nope) {
-                            ChestInventories.rankPriceMap = (HashMap<Integer, Integer>) constants.get("bingoRankCosts");
-                        }
-                    }
-                    if (constants.get("chItemRegex") != null && constants.get("chItemRegex") instanceof String) {
-                        CHChests.regex = (String) constants.get("chItemRegex");
-                    }
-                    if (constants.get("newMiscCHItems") != null && constants.get("newMiscCHItems") instanceof ArrayList) {
-                        boolean nope = false;
-                        for (Object string : (ArrayList<Object>) constants.get("newMiscCHItems")) {
-                            if (!(string instanceof String)) {
-                                nope = true;
-                                break;
-                            }
-                        }
-                        if (!nope) {
-                            newMiscCHItems = (ArrayList<String>) constants.get("newMiscCHItems");
-                        }
-                    }
-                    if (constants.get("joinAlert"+ version) != null && constants.get("joinAlert"+ version) instanceof JoinAlert) {
-                        JoinAlert joinAlert = (JoinAlert) constants.get("joinAlert"+ version);
-                        if (joinAlert.joinAlertChat != null) {
-                            joinChat = joinAlert.joinAlertChat;
-                        }
-                        if (joinAlert.joinAlertTitle != null) {
-                            joinTitle = new TitleHud(joinAlert.joinAlertTitle, 0xFF5555, 10000, true);
-                        }
-                    }
-
-                    if (constants.get("CHItemOrder") != null && constants.get("CHItemOrder") instanceof LinkedHashSet) {
-                        boolean nope = false;
-                        for (Object string : (LinkedHashSet<Object>) constants.get("CHItemOrder")) {
-                            if (!(string instanceof String)) {
-                                nope = true;
-                                break;
-                            }
-                        }
-                        if (!nope) {
-                            CHItemOrder = new ArrayList<>((LinkedHashSet<String>) constants.get("CHItemOrder"));
-                        }
-                    }
-
-                    if (constants.get("itemNameRegexGroup") != null && constants.get("itemNameRegexGroup") instanceof Integer) {
-                        if (constants.get("itemCountRegexGroup") != null && constants.get("itemCountRegexGroup") instanceof Integer)
-                            if (constants.get("itemNameColorRegexGroup") != null && constants.get("itemNameColorRegexGroup") instanceof Integer) {
-                                CHChests.itemCountRegexGroup = (Integer) constants.get("itemCountRegexGroup");
-                                CHChests.itemNameRegexGroup = (Integer) constants.get("itemNameRegexGroup");
-                                CHChests.itemNameColorRegexGroup = (Integer) constants.get("itemNameColorRegexGroup");
-                            }
-                    }
-
-                    if (constants.get("signalLootChatMessage") != null && constants.get("signalLootChatMessage") instanceof String) {
-                        CHChests.signalLootChatMessage = (String) constants.get("signalLootChatMessage");
-                    }
-
-                    if (constants.get("signalLootChatMessageEnd") != null && constants.get("signalLootChatMessageEnd") instanceof String) {
-                        CHChests.signalLootChatMessageEnd = (String) constants.get("signalLootChatMessageEnd");
-                    }
-
-
-                } else if (object instanceof ServerSendCHItems) {
-                    ServerSendCHItems CHItems = (ServerSendCHItems) object;
-                    System.out.println("Received CH Chests for " + CHItems.server);
-                    ArrayList<ChestInfo> chests = CHItems.chestMap;
-                    if (CHItems.server.equals(PlayerInfo.currentServer)) {
-                        if (CHItems.day - 1 > PlayerInfo.day || System.currentTimeMillis() - (CHItems.lastReceivedDayInfo != null ? CHItems.lastReceivedDayInfo : Long.MAX_VALUE) > 25_200_000) return; // ignore if the server is younger than last known, or it's been more than 7 hours since info was received
-                        for (ChestInfo chest : chests) {
-                            CHWaypoints chWaypoints = new CHWaypoints(chest.x, chest.y, chest.z, chest.items);
-                            waypoints.add(chWaypoints);
-
-                            for (CHChestItem item : chest.items) {
-                                CrystalHollowsItemTotal.sumItems(item);
-                            }
-
-                            for (CHWaypoints waypoint : CHWaypoints.filteredWaypoints) {
-                                waypoint.filteredExpandedItems.clear();
-                            }
-
-                            BingoBrewersConfig.filterPowder();
-                            BingoBrewersConfig.filterGoblinEggs();
-                            BingoBrewersConfig.filterRoughGemstones();
-                            //BingoBrewersConfig.filterJasperGemstones();
-                            BingoBrewersConfig.filterRobotParts();
-                            BingoBrewersConfig.filterPrehistoricEggs();
-                            BingoBrewersConfig.filterPickonimbus();
-                            BingoBrewersConfig.filterMisc();
-                            organizeWaypoints();
-
-                        }
-                    }
-                } else if (object instanceof ServersSummary) {
-                    ServersSummary servers = (ServersSummary) object;
-                    serverSummaries.putAll(servers.serverInfo);
-                    // remove outdated entries
-                    for (ServerSummary server : serverSummaries.values()) {
-                        if (server.serverType == null) {
-                            serverSummaries.remove(server.server);
-                        }
-                    }
-                } else if (object instanceof QueuePosition) {
-                    // if you have to wait in the queue, this will give you your current position
-                    // gonna leave it for you to implement because I think the permanent value should be stored in the class for rendering the menu
-                    QueuePosition position = (QueuePosition) object;
-                    if (position.positionInWarpQueue == 0) {
-                        // server is telling the client there was an unknown error and there are no available warp clients
-                    }
-                } else if (object instanceof BackgroundWarpTask) {
-                    BackgroundWarpTask warpTask = (BackgroundWarpTask) object;
-
-                    if (warpTask.server.equals(PlayerInfo.currentServer) && !warpTask.accountsToWarp.isEmpty() && accountsToWarp.isEmpty() && !warpTask.accountsToWarp.containsKey(null) && !warpTask.accountsToWarp.containsValue(null)) {
-                        accountsToWarp = new ConcurrentHashMap<>(warpTask.accountsToWarp);
-                        Warping.server = warpTask.server;
-
-                        System.out.println("Received warp task for: " + accountsToWarp.values());
-
-                        if (accountsToWarp.isEmpty()) {
-                            Warping.abort(false);
-                            return;
-                        }
-
-                        Client client = getClient();
-                        if (client != null) {
-                            BackgroundWarpTask confirm = new BackgroundWarpTask();
-                            confirm.accountsToWarp = new HashMap<>();
-                            confirm.accountsToWarp.put(uuid, ign);
-                            confirm.server = PlayerInfo.currentServer;
-                            client.sendTCP(confirm);
-                            System.out.println("confirmed");
-                        }
-
-                        if (Warping.warpThread != null) {
-                            warpThread.stop = true;
-                            warpThread.notify();
-                        }
-                        Warping.warpThread = new BackgroundWarpThread();
-                        Thread warpThread = new Thread(Warping.warpThread);
-                        warpThread.start();
-                        System.out.println("warp begun");
-                    } else {
-                        System.out.println("something went wrong");
-                        System.out.println("warpTask Server: " + warpTask.server + " player info server: " + PlayerInfo.currentServer);
-                        System.out.println("current accounts: " + accountsToWarp.toString());
-                        System.out.println("accounts to warp: " + warpTask.accountsToWarp.toString());
-                    }
-                } else if (object instanceof WarningBannerInfo) {
-
-                } else if (object instanceof AbortWarpTask) {
-                    Warping.PARTY_EMPTY_KICK = false;
-                    Warping.kickParty = true;
-                    accountsToWarp.clear();
-                    Warping.waitingOnLocation = true;
-                    if (warpThread != null) {
-                        warpThread.stop = true;
-                        warpThread.notify();
-                    }
-                } else if (object instanceof CancelWarpRequest) {
-                    requestedWarp = "";
-                    // sent by server if unable to fulfill a warp
-                } else if (object instanceof WarperInfo) {
-                    WarperInfo warperInfo = (WarperInfo) object;
-
-                    warperIGN = decryptString(warperInfo.ign);
-
-                    timeOfInvite = System.currentTimeMillis();
-
-                    if (partyInvites.contains(warperIGN) && System.currentTimeMillis() - timeOfInvite < 5000 ) {
-                        // we have already received the packet telling us the ign and we can safely join
-                        sendChatMessage("/p accept " + warperIGN);
-                        partyInvites = new ArrayList<>();
-                        warperIGN = null;
-                        timeOfInvite = 0;
-                    } else if (System.currentTimeMillis() - timeOfInvite > 5000) {
-                        warperIGN = null;
-                        partyInvites = new ArrayList<>();
-                        timeOfInvite = 0;
-                    }
-                }
+                processPacket(connection, object);
             }
 
 
@@ -421,12 +107,12 @@ public class ServerConnection extends Listener implements Runnable {
     }
 
     public static void setSplashHudItems() {
-        keyOrder.clear(); // clear the list so it doesn't keep adding the same keys every time you reconnect
-        keyOrder.add(HUB);
-        if (BingoBrewersConfig.showSplasher) keyOrder.add(SPLASHER);
-        if (BingoBrewersConfig.showParty) keyOrder.add(PARTY);
-        if (BingoBrewersConfig.showLocation) keyOrder.add(LOCATION);
-        if (BingoBrewersConfig.showNote) keyOrder.add(NOTE);
+        SplashHud.keyOrder.clear(); // clear the list so it doesn't keep adding the same keys every time you reconnect
+        SplashHud.keyOrder.add(SplashHud.HUB);
+        if (BingoBrewersConfig.showSplasher) SplashHud.keyOrder.add(SplashHud.SPLASHER);
+        if (BingoBrewersConfig.showParty) SplashHud.keyOrder.add(SplashHud.PARTY);
+        if (BingoBrewersConfig.showLocation) SplashHud.keyOrder.add(SplashHud.LOCATION);
+        if (BingoBrewersConfig.showNote) SplashHud.keyOrder.add(SplashHud.NOTE);
     }
 
     public static void organizeWaypoints() {
@@ -480,9 +166,12 @@ public class ServerConnection extends Listener implements Runnable {
         return BingoBrewers.client;
     }
 
-    public synchronized void setActiveHud(TitleHud activeTitle) {
+    public static synchronized void setActiveHud(TitleHud activeTitle) {
         BingoBrewers.activeTitle = activeTitle;
     }
+
+    public static SecretKey getSymmetricKey() {return symmetricKey;}
+    public static void setSymmetricKey(SecretKey key) {symmetricKey = key;}
 
     public synchronized TitleHud getActiveHud() {
         return BingoBrewers.activeTitle;
@@ -506,40 +195,40 @@ public class ServerConnection extends Listener implements Runnable {
 
         ArrayList<String> hubInfo = new ArrayList<>();
         if (!notif.dungeonHub) {
-            hubInfo.add(HUB);
-            hubList.add(hub);
+            hubInfo.add(SplashHud.HUB);
+            SplashHud.hubList.add(hub);
         } else {
-            hubInfo.add(DUNGEON_HUB);
+            hubInfo.add(SplashHud.DUNGEON_HUB);
             // Identify a hub as a dungeonhub to avoid mixing up regular hubs and dhubs
-            hubList.add("DH" + hub);
+            SplashHud.hubList.add("DH" + hub);
         }
         hubInfo.add(": " + hub);
-        splashInfo.put(HUB, hubInfo);
+        splashInfo.put(SplashHud.HUB, hubInfo);
 
         ArrayList<String> splasherInfo = new ArrayList<>();
-        splasherInfo.add(SPLASHER);
+        splasherInfo.add(SplashHud.SPLASHER);
         splasherInfo.add(": " + splasher);
-        splashInfo.put(SPLASHER, splasherInfo);
+        splashInfo.put(SplashHud.SPLASHER, splasherInfo);
 
         ArrayList<String> partyInfo = new ArrayList<>();
         partyInfo.add("Bingo Party");
         partyInfo.add(": " + partyHost);
-        splashInfo.put(PARTY, partyInfo);
+        splashInfo.put(SplashHud.PARTY, partyInfo);
 
         ArrayList<String> locationInfo = new ArrayList<>();
-        locationInfo.add(LOCATION);
+        locationInfo.add(SplashHud.LOCATION);
         locationInfo.add(": " + location);
-        splashInfo.put(LOCATION, locationInfo);
+        splashInfo.put(SplashHud.LOCATION, locationInfo);
 
         ArrayList<String> noteInfo = new ArrayList<>();
-        noteInfo.add(NOTE);
+        noteInfo.add(SplashHud.NOTE);
         if (note == null || note.isEmpty()) {
             noteInfo.add(": No Note");
         } else {
             noteInfo.add(": ");
             noteInfo.addAll(note);
         }
-        splashInfo.put(NOTE, noteInfo);
+        splashInfo.put(SplashHud.NOTE, noteInfo);
 
         ArrayList<String> timeInfo = new ArrayList<>();
         if (originalTime != -1) {
@@ -553,7 +242,7 @@ public class ServerConnection extends Listener implements Runnable {
         splashId.add(notif.splash);
         splashInfo.put("Splash", splashId);
 
-        mapList.add(splashInfo);
+        SplashHud.mapList.add(splashInfo);
         if (sendNotif) {
             PlayerInfo.setReadyToNotify(hub, notif.dungeonHub);
         }
@@ -563,7 +252,7 @@ public class ServerConnection extends Listener implements Runnable {
     public synchronized void notification(String hub, boolean dungeonHub) {
         if (!BingoBrewersConfig.splashNotificationsEnabled) return;
         if(!SplashHud.onBingo) return; // non-profile bingo splashes setting was here
-        if(!SplashHud.inSkyblockorPTLobby && !BingoBrewersConfig.splashNotificationsOutsideSkyblock) return;
+        if(!SplashHud.inSkyblockorPTLobbyorLimbo && !BingoBrewersConfig.splashNotificationsOutsideSkyblock) return;
         if(!BingoBrewers.onHypixel) return;
         EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
         if (!dungeonHub) {

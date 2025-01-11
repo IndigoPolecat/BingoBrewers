@@ -1,8 +1,8 @@
 package com.github.indigopolecat.bingobrewers.Hud;
 
-import cc.polyfrost.oneconfig.config.annotations.*;
-import cc.polyfrost.oneconfig.hud.Hud;
-import cc.polyfrost.oneconfig.libs.universal.UMatrixStack;
+import org.polyfrost.oneconfig.api.config.v1.annotations.*;
+import org.polyfrost.oneconfig.hud.Hud;
+import org.polyfrost.universal.UMatrixStack;
 import com.github.indigopolecat.bingobrewers.BingoBrewersConfig;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 import net.minecraft.client.Minecraft;

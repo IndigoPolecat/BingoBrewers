@@ -1,12 +1,12 @@
 package com.github.indigopolecat.bingobrewers.mixin;
 
-import cc.polyfrost.oneconfig.config.Config;
-import cc.polyfrost.oneconfig.config.annotations.HUD;
-import cc.polyfrost.oneconfig.config.core.ConfigUtils;
-import cc.polyfrost.oneconfig.config.elements.BasicOption;
-import cc.polyfrost.oneconfig.config.elements.OptionPage;
-import cc.polyfrost.oneconfig.hud.HUDUtils;
-import cc.polyfrost.oneconfig.hud.Hud;
+import org.polyfrost.oneconfig.api.config.v1.Config;
+import org.polyfrost.oneconfig.api.config.v1.annotations.HUD;
+import org.polyfrost.oneconfig.api.config.v1.core.ConfigUtils;
+import org.polyfrost.oneconfig.api.config.v1.elements.BasicOption;
+import org.polyfrost.oneconfig.api.config.v1.elements.OptionPage;
+import org.polyfrost.oneconfig.hud.HUDUtils;
+import org.polyfrost.oneconfig.hud.Hud;
 import com.github.indigopolecat.bingobrewers.util.HudCore;
 import com.github.indigopolecat.bingobrewers.BingoBrewersConfig;
 import com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud;

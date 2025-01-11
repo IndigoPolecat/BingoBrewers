@@ -1,6 +1,6 @@
 package com.github.indigopolecat.bingobrewers.util;
 
-import cc.polyfrost.oneconfig.config.elements.BasicOption;
+import org.polyfrost.oneconfig.api.config.v1.elements.BasicOption;
 
 import java.util.ArrayList;
 

@@ -122,11 +122,15 @@ dependencies {
     implementation("com.google.code.gson:gson:2.9.1")
     shadowImpl("com.esotericsoftware:kryonet:2.22.0-RC1")
     // Basic OneConfig dependencies for legacy versions. See OneConfig example mod for more info
-    modCompileOnly("cc.polyfrost:oneconfig-1.8.9-forge:0.2.2-alpha+") // Should not be included in jar
+    //modCompileOnly("cc.polyfrost:oneconfig-1.8.9-forge:0.2.2-alpha+") // Should not be included in jar
     // include should be replaced with a configuration that includes this in the jar
-    shadowImpl("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+") // Should be included in jar
+    //shadowImpl("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+") // Should be included in jar
     shadowImpl("moe.nea:libautoupdate:1.3.1") // Should be included in jar
     implementation("net.hypixel:mod-api:1.0")
+    compileOnly("io.github.llamalad7:mixinextras-common:0.4.1")
+    annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")
+    compileOnly("org.polyfrost:polymixin:0.8.4+build.2")
+    //modCompileOnly("org.polyfrost.oneconfig:internal:1.0.0-alpha.47")
 
 }
 

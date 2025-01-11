@@ -9,6 +9,7 @@ import com.github.indigopolecat.bingobrewers.util.AutoUpdater;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.github.indigopolecat.events.HypixelPackets;
 import com.github.indigopolecat.events.Packets;
+import com.sun.xml.internal.bind.v2.runtime.reflect.Lister;
 import net.hypixel.modapi.HypixelModAPI;
 import net.hypixel.modapi.packet.HypixelPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPartyInfoPacket;
@@ -23,7 +24,7 @@ import com.github.indigopolecat.events.PacketListener;
 import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-@Mod(modid = "bingobrewers", version = "0.4", useMetadata = true, dependencies = "required-after:hypixel_mod_api@[1.0.0,)")
+@Mod(modid = "bingobrewers", version = "0.4", useMetadata = true)
 public class BingoBrewers {
     public static BingoBrewersConfig config;
     public static BingoBrewers INSTANCE;
@@ -55,34 +56,20 @@ public class BingoBrewers {
         MinecraftForge.EVENT_BUS.register(autoUpdater);
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(new HypixelPackets());
+
         config = new BingoBrewersConfig();
+        config.preload();
+
         createServerThread();
+        createConstantsOnLaunch();
+
         ClientCommandHandler.instance.registerCommand(new ConfigCommand());
         ClientCommandHandler.instance.registerCommand(new TempWarpCommand());
-
-        minecraftColors.put("§0", 0x000000);  // Black
-        minecraftColors.put("§1", 0x0000AA);  // Dark Blue
-        minecraftColors.put("§2", 0x00AA00);  // Dark Green
-        minecraftColors.put("§3", 0x00AAAA);  // Dark Aqua
-        minecraftColors.put("§4", 0xAA0000);  // Dark Red
-        minecraftColors.put("§5", 0xAA00AA);  // Dark Purple
-        minecraftColors.put("§6", 0xFFAA00);  // Gold
-        minecraftColors.put("§7", 0xAAAAAA);  // Gray
-        minecraftColors.put("§8", 0x555555);  // Dark Gray
-        minecraftColors.put("§9", 0x5555FF);  // Blue
-        minecraftColors.put("§a", 0x55FF55);  // Green
-        minecraftColors.put("§b", 0x55FFFF);  // Aqua
-        minecraftColors.put("§c", 0xFF5555);  // Red
-        minecraftColors.put("§d", 0xFF55FF);  // Light Purple
-        minecraftColors.put("§e", 0xFFFF55);  // Yellow
-        minecraftColors.put("§f", 0xFFFFFF);  // White
 
         HypixelModAPI.getInstance().registerHandler(ClientboundPingPacket.class, HypixelPackets::onPingPacket);
         HypixelModAPI.getInstance().registerHandler(ClientboundPartyInfoPacket.class, HypixelPackets::onPartyInfoPacket);
         HypixelModAPI.getInstance().registerHandler(ClientboundLocationPacket.class, HypixelPackets::onLocationEvent);
         HypixelModAPI.getInstance().subscribeToEventPacket(ClientboundLocationPacket.class);
-
-        Warping.createPartyMessageMatchers();
     }
 
 
@@ -91,6 +78,7 @@ public class BingoBrewers {
             ServerConnection serverConnection = new ServerConnection();
             Thread serverThread = new Thread(serverConnection);
             serverThread.start();
+            PacketProcessing.setClientInstance(serverConnection);
         } catch (Exception e) {
             LoggerUtil.LOGGER.info("Server Connection Error: " + e.getMessage());
         }
@@ -112,5 +100,26 @@ public class BingoBrewers {
         } else {
             packetHold.add(packet);
         }
+    }
+
+    public static void createConstantsOnLaunch() {
+        minecraftColors.put("§0", 0x000000);  // Black
+        minecraftColors.put("§1", 0x0000AA);  // Dark Blue
+        minecraftColors.put("§2", 0x00AA00);  // Dark Green
+        minecraftColors.put("§3", 0x00AAAA);  // Dark Aqua
+        minecraftColors.put("§4", 0xAA0000);  // Dark Red
+        minecraftColors.put("§5", 0xAA00AA);  // Dark Purple
+        minecraftColors.put("§6", 0xFFAA00);  // Gold
+        minecraftColors.put("§7", 0xAAAAAA);  // Gray
+        minecraftColors.put("§8", 0x555555);  // Dark Gray
+        minecraftColors.put("§9", 0x5555FF);  // Blue
+        minecraftColors.put("§a", 0x55FF55);  // Green
+        minecraftColors.put("§b", 0x55FFFF);  // Aqua
+        minecraftColors.put("§c", 0xFF5555);  // Red
+        minecraftColors.put("§d", 0xFF55FF);  // Light Purple
+        minecraftColors.put("§e", 0xFFFF55);  // Yellow
+        minecraftColors.put("§f", 0xFFFFFF);  // White
+
+        Warping.createPartyMessageMatchers();
     }
 }

@@ -1,18 +1,17 @@
 package com.github.indigopolecat.bingobrewers;
 
-import cc.polyfrost.oneconfig.config.Config;
-import cc.polyfrost.oneconfig.config.annotations.*;
-import cc.polyfrost.oneconfig.config.core.OneColor;
-import cc.polyfrost.oneconfig.config.data.InfoType;
-import cc.polyfrost.oneconfig.config.data.Mod;
-import cc.polyfrost.oneconfig.config.data.ModType;
-import cc.polyfrost.oneconfig.config.data.OptionSize;
+import org.polyfrost.oneconfig.api.config.v1.Config;
+import org.polyfrost.oneconfig.api.config.v1.annotations.*;
+import org.polyfrost.oneconfig.api.config.v1.core.OneColor;
+import org.polyfrost.oneconfig.api.config.v1.data.InfoType;
+import org.polyfrost.oneconfig.api.config.v1.data.OptionSize;
 import com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud;
 import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
 import com.github.indigopolecat.bingobrewers.gui.UpdateScreen;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import net.minecraft.client.Minecraft;
+import org.polyfrost.polyui.color.PolyColor;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -21,11 +20,13 @@ import static com.github.indigopolecat.bingobrewers.CHWaypoints.filteredWaypoint
 import static com.github.indigopolecat.bingobrewers.CHWaypoints.itemCounts;
 import static com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud.filteredItems;
 import static com.github.indigopolecat.bingobrewers.ServerConnection.*;
+import static org.polyfrost.polyui.color.ColorUtils.argb;
 
 public class BingoBrewersConfig extends Config {
     public BingoBrewersConfig() {
-        super(new Mod("Bingo Brewers", ModType.SKYBLOCK), "bingobrewers.json");
-        initialize();
+        //super(new Mod("Bingo Brewers", ModType.SKYBLOCK), "bingobrewers.json");
+        super("bingobrewers.json", "Bingo Brewers", Category.HYPIXEL);
+
         List<String> crystalHollowsWaypoints = Arrays.asList("robotParts", "powder", "prehistoricEggs", "pickonimbus", "goblinEggs", "roughGemstones", "jasperGemstones", "junk", "CHHud", "waypointFate");
         for (String option : crystalHollowsWaypoints) {
             addDependency(option, "crystalHollowsWaypointsToggle");
@@ -48,11 +49,14 @@ public class BingoBrewersConfig extends Config {
 
     }
 
+    /* -----------------------------------------------------------
+         Splash Notifications
+       ----------------------------------------------------------- */
+
     @Switch(
-            name = "Splash Notifications",
+            title = "Splash Notifications",
             category = "Splash Notifications",
-            description = "Enable or disable splash notifications",
-            size = OptionSize.DUAL
+            description = "Enable or disable splash notifications"
     )
     public static boolean splashNotificationsEnabled = true;
 
@@ -72,10 +76,9 @@ public class BingoBrewersConfig extends Config {
     public static boolean splashNotificationsInBingo = true;*/
 
     @Switch(
-            name = "Show Splash Notifications outside of Skyblock",
+            title = "Show Splash Notifications outside of Skyblock",
             category = "Splash Notifications",
-            description = "Whether to show splash notifications outside of Skyblock AND the Prototype Lobby.",
-            size = OptionSize.DUAL
+            description = "Whether to show splash notifications outside of Skyblock AND the Prototype Lobby or Limbo."
     )
     public static boolean splashNotificationsOutsideSkyblock = true;
 
@@ -87,35 +90,35 @@ public class BingoBrewersConfig extends Config {
     public SplashHud hud = new SplashHud();
 
     @Checkbox(
-            name = "Show Splasher",
+            title = "Show Splasher",
             category = "Splash Notifications",
             description = "Include the splasher's IGN in splash notifications"
     )
     public static boolean showSplasher = true;
 
     @Checkbox(
-            name = "Show Party",
+            title = "Show Party",
             category = "Splash Notifications",
             description = "Include the bingo party listed in the splash message in splash notifications"
     )
     public static boolean showParty = true;
 
     @Checkbox(
-            name = "Show Location",
+            title = "Show Location",
             category = "Splash Notifications",
             description = "Include the location in splash notifications"
     )
     public static boolean showLocation = true;
 
     @Checkbox(
-            name = "Show Note",
+            title = "Show Note",
             category = "Splash Notifications",
             description = "Show any extra information the splasher included in the splash notification"
     )
     public static boolean showNote = true;
 
     @Slider(
-            name = "Notification Volume",
+            title = "Notification Volume",
             category = "Splash Notifications",
             description = "Set the volume of the splash notification",
             min = 0f, max = 200f
@@ -123,14 +126,20 @@ public class BingoBrewersConfig extends Config {
     public static float splashNotificationVolume = 100f;
 
     @Color(
-            name = "Alert Text Color",
+            title = "Alert Text Color",
             category = "Splash Notifications",
-            description = "Set the color of the alert text (e.g. \"Splash in Hub 14\")"
+            description = "Set the color of the alert text (e.g. \"Splash in Hub 14\")",
+            alpha = false
     )
-    public static OneColor alertTextColor = new OneColor(0xFF8BAFE0);
+    public static PolyColor alertTextColor = argb(0xFF8BAFE0);
+
+        /* -----------------------------------------------------------
+             Crystal Hollows
+           ----------------------------------------------------------- */
+
 
     @Switch(
-            name = "Crystal Hollows Waypoints",
+            title = "Crystal Hollows Waypoints",
             category = "Crystal Hollows Waypoints",
             description = "Toggle Crystal Hollows Waypoints"
     )
@@ -143,91 +152,97 @@ public class BingoBrewersConfig extends Config {
     public CrystalHollowsHud CHHud = new CrystalHollowsHud();
 
     @Dropdown(
-            name = "Waypoints After Opening",
+            title = "Waypoints After Opening",
             options = {"Strikethrough", "Remove", "Do Nothing"},
             category = "Crystal Hollows Waypoints",
-            description = "How to display waypoints once you have opened the chest.",
-            size = OptionSize.DUAL
+            description = "How to display waypoints once you have opened the chest."
     )
     public static int waypointFate = 0;
 
     @Dropdown(
-            name = "Powder",
+            title = "Powder",
             options = {"All", "Only 1200+ Powder", "None"},
             category = "Crystal Hollows Waypoints",
-            description = "Include Mithril and Gemstone powder.",
-            size = OptionSize.DUAL
+            description = "Include Mithril and Gemstone powder."
     )
     public static int powder = 0;
 
     @Dropdown(
-            name = "Goblin Eggs",
+            title = "Goblin Eggs",
             options = {"All", "Blue Only", "None"},
             category = "Crystal Hollows Waypoints",
-            description = "Include Goblin Eggs.",
-            size = OptionSize.DUAL
+            description = "Include Goblin Eggs."
     )
     public static int goblinEggs = 0;
 
     @Dropdown(
-            name = "Gemstones",
+            title = "Gemstones",
             options = {"All", "Fine/Flawless Only", "None"},
             category = "Crystal Hollows Waypoints",
             description = "Include gemstones found in chests.",
-            size = OptionSize.DUAL
     )
     public static int roughGemstones = 1;
 
     @Checkbox(
-            name = "Jasper Gemstones",
+            title = "Jasper Gemstones",
             category = "Crystal Hollows Waypoints",
-            description = "Separate toggle for all Jasper gemstones, they can reveal Fairy Grottos.",
-            size = OptionSize.DUAL
+            description = "Separate toggle for all Jasper gemstones, they can reveal Fairy Grottos."
     )
     public static boolean jasperGemstones = true;
 
     @Checkbox(
-            name = "Robot Parts",
+            title = "Robot Parts",
             category = "Crystal Hollows Waypoints",
-            description = "Include all 6 Robot Parts.",
-            size = OptionSize.DUAL
+            description = "Include all 6 Robot Parts."
     )
     public static boolean robotParts = true;
 
 
     @Checkbox(
-            name = "Prehistoric Eggs",
+            title = "Prehistoric Eggs",
             category = "Crystal Hollows Waypoints",
-            description = "Include Prehistoric Eggs.",
-            size = OptionSize.DUAL
+            description = "Include Prehistoric Eggs."
     )
     public static boolean prehistoricEggs = true;
 
     @Checkbox(
-            name = "Pickonimbus 2000",
+            title = "Pickonimbus 2000",
             category = "Crystal Hollows Waypoints",
-            description = "Include Pickonimbus 2000s.",
-            size = OptionSize.DUAL
+            description = "Include Pickonimbus 2000s."
     )
     public static boolean pickonimbus = true;
 
     @Checkbox(
-            name = "Misc.",
+            title = "Misc.",
             category = "Crystal Hollows Waypoints",
-            description = "Wishing Compasses, Treasurite, Jungle Hearts, Oil Barrels, Sludge Juice, Ascension Ropes, Yoggies.",
-            size = OptionSize.DUAL
+            description = "Wishing Compasses, Treasurite, Jungle Hearts, Oil Barrels, Sludge Juice, Ascension Ropes, Yoggies."
     )
     public static boolean junk = true;
 
+    /* -----------------------------------------------------------
+         Bingo Shop
+       ----------------------------------------------------------- */
+
     @Switch(
-            name = "Show Coins/Bingo Point",
-            category = "Misc",
+            title = "Show Coins/Bingo Point",
+            category = "Bingo Shop",
             description = "Show coins per Bingo Point in the Bingo Shop."
     )
     public static boolean showCoinsPerBingoPoint = true;
 
+    @Switch(
+            title = "Display Missing Bingoes",
+            category = "Bingo Shop",
+            description = "Display how many Bingoes are required to buy the item."
+    )
+    public static boolean displayMissingBingoes = true;
+
+    /* -----------------------------------------------------------
+         Misc
+       ----------------------------------------------------------- */
+
     @Dropdown(
-            name = "Auto Updater Versions",
+            title = "Auto Updater Versions",
             category = "Misc",
             description = "Choose which updates should the auto-updater look for",
             options = {"Stable", "Beta", "None"}
@@ -235,14 +250,14 @@ public class BingoBrewersConfig extends Config {
     public static int autoUpdaterType = 0;
 
     @Switch(
-            name = "Auto Download",
+            title = "Auto Download",
             category = "Misc",
             description = "Auto download updates when available. Requires restart."
     )
     public static boolean autoDownload = false;
 
     @Button(
-            name = "Check for Updates",
+            title = "Check for Updates",
             category = "Misc",
             description = "Check for updates",
             text = "Click"
@@ -252,7 +267,7 @@ public class BingoBrewersConfig extends Config {
     }
 
     @Info(
-            text = "Running version " + BingoBrewers.version,
+            title = "Running version " + BingoBrewers.version,
             type = InfoType.INFO,
             category = "Misc",
             size = OptionSize.DUAL
@@ -260,35 +275,28 @@ public class BingoBrewersConfig extends Config {
     public static boolean ignoredL;
 
     @Switch(
-            name = "Display Missing Bingo Points",
+            title = "Display Missing Bingo Points",
             category = "Misc",
             description = "Display the amount of missing Bingo Points to buy the item."
     )
     public static boolean displayMissingBingoPoints = true;
-
+    \
     @Switch(
-            name = "Display Missing Bingoes",
-            category = "Misc",
-            description = "Display how many Bingoes are required to buy the item."
-    )
-    public static boolean displayMissingBingoes = true;
-
-    @Switch(
-            name = "Chicken Head Reset Alert",
+            title = "Chicken Head Reset Alert",
             category = "Misc",
             description = "Display a message if the Chicken Head cooldown is reset."
     )
     public static boolean displayEggTimerReset = false;
 
     @Text(
-            name = "Chicken Head Alert Message",
+            title = "Chicken Head Alert Message",
             category = "Misc",
             description = "What to display when the Chicken cooldown is reset. (Use & for § in COLOR only codes)"
     )
     public static String eggTimerMessage = "&aCrouch";
 
     @Switch(
-            name="Chicken Head Reset Sound",
+            title = "Chicken Head Reset Sound",
             category = "Misc",
             description = "Play a sound if the Chicken Head cooldown is reset."
     )

@@ -1,7 +1,7 @@
 package com.github.indigopolecat.bingobrewers;
 
 
-import cc.polyfrost.oneconfig.libs.checker.units.qual.A;
+import org.polyfrost.oneconfig.libs.checker.units.qual.A;
 import com.esotericsoftware.kryonet.Server;
 import com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud;
 import com.github.indigopolecat.bingobrewers.Hud.TitleHud;

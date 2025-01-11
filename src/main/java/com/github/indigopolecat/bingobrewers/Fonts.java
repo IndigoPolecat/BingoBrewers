@@ -1,6 +1,6 @@
 package com.github.indigopolecat.bingobrewers;
 
-import cc.polyfrost.oneconfig.renderer.font.Font;
+import org.polyfrost.oneconfig.renderer.font.Font;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.ResourceLocation;
