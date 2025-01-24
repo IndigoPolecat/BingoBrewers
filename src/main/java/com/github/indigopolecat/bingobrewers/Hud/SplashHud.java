@@ -1,5 +1,8 @@
+/*
 package com.github.indigopolecat.bingobrewers.Hud;
 
+import cc.polyfrost.oneconfig.hud.TextHud;
+import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import net.minecraft.client.entity.EntityPlayerSP;
 import org.polyfrost.oneconfig.api.event.v1.EventManager;
@@ -23,7 +26,7 @@ import java.util.List;
 import static com.github.indigopolecat.bingobrewers.ServerConnection.setActiveHud;
 import static java.lang.String.valueOf;
 
-public class SplashHud extends Hud {
+public class SplashHud extends TextHud {
     public static final String DUNGEON_HUB = "Dungeon Hub";
     public static final String HUB = "Hub";
     public static final String SPLASHER = "Splasher";
@@ -31,7 +34,6 @@ public class SplashHud extends Hud {
     public static final String LOCATION = "Location";
     public static final String NOTE = "Note";
     // The Hud renderer checks this every time it renders the splash hud for a list of active splashes
-    public static ArrayList<HashMap<String, ArrayList<String>>> mapList = new ArrayList<>();
     public static ArrayList<String> keyOrder = new ArrayList<>();
     public static ArrayList<String> hubList = new ArrayList<>();
 
@@ -44,8 +46,6 @@ public class SplashHud extends Hud {
     float totalHeight = 0;
     float longestWidth = 0;
     float fontSize = 0.2F;
-    // This is in this class so it is stored between game instances
-    public static boolean onBingo = false;
     public static boolean inSkyblockorPTLobbyorLimbo = false;
 
 
@@ -62,17 +62,17 @@ public class SplashHud extends Hud {
             scale = 0.3f;
         }
         ArrayList<HashMap<String, ArrayList<String>>> infoPanel = new ArrayList<>();
-        if(!onBingo && !example) return; // non-profile bingo splashes setting was here
+        if(!PlayerInfo.onBingo && !example) return; // non-profile bingo splashes setting was here
         if(!SplashHud.inSkyblockorPTLobbyorLimbo && !BingoBrewersConfig.splashNotificationsOutsideSkyblock && !example) return;
         if(!BingoBrewers.onHypixel) return;
-        if (example && (mapList.isEmpty() || !BingoBrewersConfig.splashNotificationsEnabled)) {
+        if (example && (activeSplashes.isEmpty() || !BingoBrewersConfig.splashNotificationsEnabled)) {
             // Example splash displayed in settings if none is active
             HashMap<String, ArrayList<String>> infoMap = getExampleHud();
             infoPanel.add(infoMap);
         } else if (BingoBrewersConfig.splashNotificationsEnabled) {
             renderCounter++;
             // The list containing each hashmap of info to be displayed
-            infoPanel = mapList;
+            infoPanel = activeSplashes;
             // Only render the most recent splash and the oldest splash
             if (renderCounter % 60 == 0) {
                 // Reset the counter even though it will never max lol
@@ -89,7 +89,7 @@ public class SplashHud extends Hud {
                         String hubNumber = infoMap.get("Hub").get(1).substring(2);
                         hubList.remove(hubNumber);
                         hubList.remove("DH" + hubNumber);
-                        mapList.remove(infoMap);
+                        activeSplashes.remove(infoMap);
                         latestSplash.remove(time);
                         if (PlayerInfo.playerHubNumber == null) {
                             PlayerInfo.inSplashHub = false;
@@ -278,7 +278,7 @@ public class SplashHud extends Hud {
     }
 
     public void updateMapList(KryoNetwork.SplashNotification notif, boolean sendNotif) {
-        String hub = notif.message;
+        String hub = notif.hub;
         if (hub == null) {
             hub = "Unknown Hub";
         }
@@ -342,7 +342,7 @@ public class SplashHud extends Hud {
         splashId.add(notif.splash);
         splashInfo.put("Splash", splashId);
 
-        mapList.add(splashInfo);
+        activeSplashes.add(splashInfo);
         if (sendNotif) {
             PlayerInfo.setReadyToNotify(hub, notif.dungeonHub);
         }
@@ -351,7 +351,106 @@ public class SplashHud extends Hud {
     // This is called onTickEvent in PlayerInfo when the player is not null
     public synchronized void notification(String hub, boolean dungeonHub) {
         if (!BingoBrewersConfig.splashNotificationsEnabled) return;
-        if(!SplashHud.onBingo) return; // non-profile bingo splashes setting was here
+        if(!PlayerInfo.onBingo) return; // non-profile bingo splashes setting was here
+        if(!SplashHud.inSkyblockorPTLobbyorLimbo && !BingoBrewersConfig.splashNotificationsOutsideSkyblock) return;
+        if(!BingoBrewers.onHypixel) return;
+        EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
+        if (!dungeonHub) {
+            if (hub.equalsIgnoreCase("Unknown Hub")) {
+                hub = "Unknown Hub";
+            } else {
+                hub = "Hub " + hub;
+            }
+            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000, false);
+            setActiveHud(titleHud);
+        } else {
+            if (hub.equalsIgnoreCase("Unknown Hub")) {
+                hub = "Unknown Dungeon Hub";
+            } else {
+                hub = "Dungeon Hub " + hub;
+            }
+            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000, false);
+            setActiveHud(titleHud);
+        }
+
+        player.playSound("bingobrewers:splash_notification", BingoBrewersConfig.splashNotificationVolume/100f, 1.0f);
+    }
+
+    public void updateSplashHud(KryoNetwork.SplashNotification notif, boolean sendNotif) {
+        String hub = notif.hub;
+        if (hub == null) {
+            hub = "Unknown Hub";
+        }
+        String splasher = notif.splasher;
+        String partyHost = notif.partyHost;
+        if (!partyHost.equals("No Party")) {
+            partyHost = "/p join " + partyHost;
+        }
+        List<String> note = notif.note;
+        // This should always be "Bea House" but is hard coded server side incase it ever needs to change quickly
+        String location = notif.location;
+
+        HashMap<String, ArrayList<String>> splashInfo = new HashMap<>();
+
+        ArrayList<String> hubInfo = new ArrayList<>();
+        if (!notif.dungeonHub) {
+            hubInfo.add(SplashHud.HUB);
+            SplashHud.hubList.add(hub);
+        } else {
+            hubInfo.add(SplashHud.DUNGEON_HUB);
+            // Identify a hub as a dungeonhub to avoid mixing up regular hubs and dhubs
+            SplashHud.hubList.add("DH" + hub);
+        }
+        hubInfo.add(": " + hub);
+        splashInfo.put(SplashHud.HUB, hubInfo);
+
+        ArrayList<String> splasherInfo = new ArrayList<>();
+        splasherInfo.add(SplashHud.SPLASHER);
+        splasherInfo.add(": " + splasher);
+        splashInfo.put(SplashHud.SPLASHER, splasherInfo);
+
+        ArrayList<String> partyInfo = new ArrayList<>();
+        partyInfo.add("Bingo Party");
+        partyInfo.add(": " + partyHost);
+        splashInfo.put(SplashHud.PARTY, partyInfo);
+
+        ArrayList<String> locationInfo = new ArrayList<>();
+        locationInfo.add(SplashHud.LOCATION);
+        locationInfo.add(": " + location);
+        splashInfo.put(SplashHud.LOCATION, locationInfo);
+
+        ArrayList<String> noteInfo = new ArrayList<>();
+        noteInfo.add(SplashHud.NOTE);
+        if (note == null || note.isEmpty()) {
+            noteInfo.add(": No Note");
+        } else {
+            noteInfo.add(": ");
+            noteInfo.addAll(note);
+        }
+        splashInfo.put(SplashHud.NOTE, noteInfo);
+
+        ArrayList<String> timeInfo = new ArrayList<>();
+        if (originalTime != -1) {
+            timeInfo.add(valueOf(originalTime));
+            originalTime = -1;
+        } else {
+            timeInfo.add(valueOf(System.currentTimeMillis()));
+        }
+        splashInfo.put("Time", timeInfo);
+        ArrayList<String> splashId = new ArrayList<>();
+        splashId.add(notif.splash);
+        splashInfo.put("Splash", splashId);
+
+        SplashHud.activeSplashes.add(splashInfo);
+        if (sendNotif) {
+            PlayerInfo.setReadyToNotify(hub, notif.dungeonHub);
+        }
+    }
+
+    // This is called onTickEvent in PlayerInfo when the player is not null
+    public synchronized void notification(String hub, boolean dungeonHub) {
+        if (!BingoBrewersConfig.splashNotificationsEnabled) return;
+        if(!PlayerInfo.onBingo) return; // non-profile bingo splashes setting was here
         if(!SplashHud.inSkyblockorPTLobbyorLimbo && !BingoBrewersConfig.splashNotificationsOutsideSkyblock) return;
         if(!BingoBrewers.onHypixel) return;
         EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
@@ -416,3 +515,4 @@ public class SplashHud extends Hud {
         return infoMap;
     }
 }
+*/

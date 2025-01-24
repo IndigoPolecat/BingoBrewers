@@ -71,10 +71,11 @@ public class KryoNetwork {
     }
 
     public static class SplashNotification {
-        public String message;
+        public long timestamp;
+        public String hub;
         public String splasher;
         public String partyHost;
-        public List<String> note;
+        public ArrayList<String> note;
         public String location;
         public String splash;
         public boolean dungeonHub;

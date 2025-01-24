@@ -115,7 +115,7 @@ public class HypixelPackets {
     public void onTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             if (System.currentTimeMillis() > checkScoreboardForBingoTime && BingoBrewers.onHypixel && PlayerInfo.playerGameType.equalsIgnoreCase("skyblock")) {
-                SplashHud.onBingo = ScoreBoard.isBingo();
+                PlayerInfo.onBingo = ScoreBoard.isBingo();
                 checkScoreboardForBingoTime = Long.MAX_VALUE;
             }
 

@@ -3,9 +3,11 @@ package com.github.indigopolecat.bingobrewers;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
+import com.github.indigopolecat.bingobrewers.Hud.SplashInfoHud;
 import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
+import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.ServerSummary;
 import com.mojang.authlib.exceptions.AuthenticationException;
@@ -95,17 +97,31 @@ public class PacketProcessing {
 
         } else if (packet instanceof KryoNetwork.SplashNotification) {
             LoggerUtil.LOGGER.info("Received splash notification");
-            boolean sendNotif = true;
+
             KryoNetwork.SplashNotification notif = (KryoNetwork.SplashNotification) packet;
-            // Remove the previous splash notification with the same ID (if message is edited)
-            for (int i = 0; i < SplashHud.mapList.size(); i++) {
-                HashMap<String, ArrayList<String>> map = SplashHud.mapList.get(i);
+            // update the active splashes list if the message is edited
+            for (int i = 0; i < SplashInfoHud.activeSplashes.size(); i++) {
+                SplashNotificationInfo splashNotificationInfo = SplashInfoHud.activeSplashes.get(i);
+                if (splashNotificationInfo.id.equals(notif.splash)) {
+                    SplashInfoHud.activeSplashes.set(i, new SplashNotificationInfo(notif, false)); // add the updated splash in the original location
+
+                    // remove the notification if the updated message contains "done" on the last line when the previous one did not
+                    if (notif.note.get(notif.note.size() - 1).matches("done") && !splashNotificationInfo.splasherNotes.get(splashNotificationInfo.splasherNotes.size() - 1).matches("done")) SplashInfoHud.activeSplashes.remove(i);
+
+                    return;
+                }
+            }
+
+            SplashInfoHud.activeSplashes.add(new SplashNotificationInfo(notif, true));
+
+
+                /*HashMap<String, ArrayList<String>> map = SplashHud.activeSplashes.get(i);
                 if (map.get("Splash").get(0).equals(notif.splash)) {
                     ArrayList<String> hubField = map.get(SplashHud.HUB);
                     // Don't send notification if the hub # or hub type (dungeon/normal) hasn't changed
                     try {
                         String hubNumber = hubField.get(1).replaceAll(": (\\d+).*", "$1");
-                        if (hubNumber.equals(notif.message) && notif.dungeonHub == hubField.get(0).contains(SplashHud.DUNGEON_HUB)) {
+                        if (hubNumber.equals(notif.hub) && notif.dungeonHub == hubField.get(0).contains(SplashHud.DUNGEON_HUB)) {
                             sendNotif = false;
                             SplashHud.hubList.remove(hubNumber);
                             SplashHud.hubList.remove("DH" + hubNumber);
@@ -114,27 +130,13 @@ public class PacketProcessing {
                     } catch (Exception ignored) {
 
                     }
-
-                    // keep track of the original time the splash was sent, instead of updating each time it's edited
-                    originalTime = Long.parseLong(map.get("Time").get(0));
-
-                    SplashHud.mapList.remove(SplashHud.mapList.get(i));
                 }
-            }
-            updateMapList(notif, sendNotif);
+            }*/
         } else if (packet instanceof KryoNetwork.PlayerCountBroadcast) {
             KryoNetwork.PlayerCountBroadcast request = (KryoNetwork.PlayerCountBroadcast) packet;
-            for (HashMap<String, ArrayList<String>> map : SplashHud.mapList) {
-                if (map.containsKey(SplashHud.HUB)) {
-                    String hub = map.get(SplashHud.HUB).get(1).replaceAll(": (\\d+).*", "$1");
-                    if (request.playerCounts.containsKey(hub)) {
-                        // If the hub is a dungeon hub, it has a 24 player limit
-                        if (map.get(SplashHud.HUB).get(0).equals(SplashHud.DUNGEON_HUB)) {
-                            map.get(SplashHud.HUB).set(1, ": " + hub + " (" + request.playerCounts.get(hub) + "/24)");
-                        } else {
-                            map.get(SplashHud.HUB).set(1, ": " + hub + " (" + request.playerCounts.get(hub) + "/80)");
-                        }
-                    }
+            for (SplashNotificationInfo info : SplashInfoHud.activeSplashes) {
+                if (request.playerCounts.containsKey(info.hubNumber)) {
+                    info.lobbyPlayerCount = "(" + request.playerCounts.get(info.hubNumber) + ")";
                 }
             }
         } else if (packet instanceof KryoNetwork.ClientReceiveServerConstantValues) {

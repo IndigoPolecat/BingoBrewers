@@ -1,7 +1,5 @@
 package com.github.indigopolecat.bingobrewers;
 
-
-import org.polyfrost.oneconfig.libs.checker.units.qual.A;
 import com.esotericsoftware.kryonet.Server;
 import com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud;
 import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
@@ -27,6 +25,8 @@ public class PlayerInfo {
     public static String playerHubNumber = null;
     public static long lastWorldLoad = -1;
     public static long lastPositionUpdate = -1;
+    // This is in this class so it is stored between game instances
+    public static boolean onBingo = false;
     private static boolean newLoad = false;
     public static boolean inSplashHub;
     public static long lastSplashHubUpdate = -1;

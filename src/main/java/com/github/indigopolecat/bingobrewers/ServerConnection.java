@@ -18,6 +18,7 @@ import net.minecraft.client.entity.EntityPlayerSP;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
+import java.net.SocketTimeoutException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -32,7 +33,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.esotericsoftware.minlog.Log.*;
 import static com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud.filteredItems;
-import static com.github.indigopolecat.bingobrewers.PacketProcessing.*;
+import com.github.indigopolecat.bingobrewers.PacketProcessing.*;
+
+import static com.github.indigopolecat.bingobrewers.PacketProcessing.processPacket;
 import static java.lang.String.join;
 import static java.lang.String.valueOf;
 
@@ -44,7 +47,6 @@ public class ServerConnection extends Listener implements Runnable {
 
     public static int waitTime = 0;
     public static boolean reconnect; // controls the loop for reconnecting the client
-    public static long originalTime = -1;
     public static CopyOnWriteArrayList<CHWaypoints> waypoints = new CopyOnWriteArrayList<>();
     // if new ch items are added, they will be in this list
     public static ArrayList<String> newMiscCHItems = new ArrayList<>();
@@ -78,20 +80,17 @@ public class ServerConnection extends Listener implements Runnable {
     private void connection() throws Exception {
         Log.set(LEVEL_ERROR);
         KryoNetwork.register(BingoBrewers.client);
-
         BingoBrewers.client.addListener(new Listener() {
             @Override
             public void received(Connection connection, Object object) {
                 processPacket(connection, object);
             }
 
-
             @Override
             public void disconnected(Connection connection) {
                 System.out.println("disconnected");
                 reconnect();
             }
-
         });
 
         BingoBrewers.client.start();
@@ -177,104 +176,7 @@ public class ServerConnection extends Listener implements Runnable {
         return BingoBrewers.activeTitle;
     }
 
-    public void updateMapList(SplashNotification notif, boolean sendNotif) {
-        String hub = notif.message;
-        if (hub == null) {
-            hub = "Unknown Hub";
-        }
-        String splasher = notif.splasher;
-        String partyHost = notif.partyHost;
-        if (!partyHost.equals("No Party")) {
-            partyHost = "/p join " + partyHost;
-        }
-        List<String> note = notif.note;
-        // This should always be "Bea House" but is hard coded server side incase it ever needs to change quickly
-        String location = notif.location;
 
-        HashMap<String, ArrayList<String>> splashInfo = new HashMap<>();
-
-        ArrayList<String> hubInfo = new ArrayList<>();
-        if (!notif.dungeonHub) {
-            hubInfo.add(SplashHud.HUB);
-            SplashHud.hubList.add(hub);
-        } else {
-            hubInfo.add(SplashHud.DUNGEON_HUB);
-            // Identify a hub as a dungeonhub to avoid mixing up regular hubs and dhubs
-            SplashHud.hubList.add("DH" + hub);
-        }
-        hubInfo.add(": " + hub);
-        splashInfo.put(SplashHud.HUB, hubInfo);
-
-        ArrayList<String> splasherInfo = new ArrayList<>();
-        splasherInfo.add(SplashHud.SPLASHER);
-        splasherInfo.add(": " + splasher);
-        splashInfo.put(SplashHud.SPLASHER, splasherInfo);
-
-        ArrayList<String> partyInfo = new ArrayList<>();
-        partyInfo.add("Bingo Party");
-        partyInfo.add(": " + partyHost);
-        splashInfo.put(SplashHud.PARTY, partyInfo);
-
-        ArrayList<String> locationInfo = new ArrayList<>();
-        locationInfo.add(SplashHud.LOCATION);
-        locationInfo.add(": " + location);
-        splashInfo.put(SplashHud.LOCATION, locationInfo);
-
-        ArrayList<String> noteInfo = new ArrayList<>();
-        noteInfo.add(SplashHud.NOTE);
-        if (note == null || note.isEmpty()) {
-            noteInfo.add(": No Note");
-        } else {
-            noteInfo.add(": ");
-            noteInfo.addAll(note);
-        }
-        splashInfo.put(SplashHud.NOTE, noteInfo);
-
-        ArrayList<String> timeInfo = new ArrayList<>();
-        if (originalTime != -1) {
-            timeInfo.add(valueOf(originalTime));
-            originalTime = -1;
-        } else {
-            timeInfo.add(valueOf(System.currentTimeMillis()));
-        }
-        splashInfo.put("Time", timeInfo);
-        ArrayList<String> splashId = new ArrayList<>();
-        splashId.add(notif.splash);
-        splashInfo.put("Splash", splashId);
-
-        SplashHud.mapList.add(splashInfo);
-        if (sendNotif) {
-            PlayerInfo.setReadyToNotify(hub, notif.dungeonHub);
-        }
-    }
-
-    // This is called onTickEvent in PlayerInfo when the player is not null
-    public synchronized void notification(String hub, boolean dungeonHub) {
-        if (!BingoBrewersConfig.splashNotificationsEnabled) return;
-        if(!SplashHud.onBingo) return; // non-profile bingo splashes setting was here
-        if(!SplashHud.inSkyblockorPTLobbyorLimbo && !BingoBrewersConfig.splashNotificationsOutsideSkyblock) return;
-        if(!BingoBrewers.onHypixel) return;
-        EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-        if (!dungeonHub) {
-            if (hub.equalsIgnoreCase("Unknown Hub")) {
-                hub = "Unknown Hub";
-            } else {
-                hub = "Hub " + hub;
-            }
-            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000, false);
-            setActiveHud(titleHud);
-        } else {
-            if (hub.equalsIgnoreCase("Unknown Hub")) {
-                hub = "Unknown Dungeon Hub";
-            } else {
-                hub = "Dungeon Hub " + hub;
-            }
-            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000, false);
-            setActiveHud(titleHud);
-        }
-
-        player.playSound("bingobrewers:splash_notification", BingoBrewersConfig.splashNotificationVolume/100f, 1.0f);
-    }
 
     public synchronized void sendPlayerCount(KryoNetwork.PlayerCount count) {
         if (!BingoBrewersConfig.splashNotificationsEnabled) return;
