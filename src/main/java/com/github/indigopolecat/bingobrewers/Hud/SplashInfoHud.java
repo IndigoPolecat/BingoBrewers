@@ -10,7 +10,6 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.jetbrains.annotations.NotNull;
-import org.lwjgl.opengl.GL11;
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud;
 import org.polyfrost.universal.UMatrixStack;
 
@@ -23,13 +22,16 @@ public class SplashInfoHud extends LegacyHud {
 
     public static CopyOnWriteArrayList<SplashNotificationInfo> activeSplashes = new CopyOnWriteArrayList<>();
     public static SplashNotificationInfo exampleNotificationInfo = new SplashNotificationInfo(true);
+    public static float unscaledHudHeight;
     public static int MAX_SPLASH_NOTIFICATIONS_VISIBLE = 2;
-    public static int MAX_LINES_OF_INFO_BEFORE_CUTOFF = 7;
+    public static int MAX_LINES_OF_INFO_BEFORE_CUTOFF = 6; // how many lines of info (non-prefix) are shown before cutting it off to preserve space
     public static int MAX_STRING_WIDTH = 300; // controls length of strings before they get wrapped to a new line
     public static String PREFIX_INFO_DIVIDER = ": "; // placed between the prefix line (e.g. "Hub") and the actual info (e.g. "14") as a separator
     public static Color COLOR_INFO = new Color(255, 255, 255); // White
+    public static Color COLOR_DIVIDER = new Color(255, 255, 255); // White
     public static Color COLOR_PREFIX = new Color(255, 255, 85); // Yellow
-    public static float LINE_GAP; // gap between lines, multiplied by scaleY
+    public static float LINE_GAP = 10; // gap between lines, multiplied by scaleY
+    public static float TOP_BOTTOM_PADDING = 3; // padding between the edge of the HUD's box and where the text is rendered vertically, scaled
 
     @Override
     public boolean update() {
@@ -38,7 +40,7 @@ public class SplashInfoHud extends LegacyHud {
 
     @Override
     public float getWidth() {
-        return 0;
+        return MAX_STRING_WIDTH;
     }
 
     @Override
@@ -48,7 +50,7 @@ public class SplashInfoHud extends LegacyHud {
 
     @Override
     public float getHeight() {
-        return 0;
+        return unscaledHudHeight;
     }
 
     @Override
@@ -80,10 +82,10 @@ public class SplashInfoHud extends LegacyHud {
 
         if (!PlayerInfo.onBingo && !example) return; // non-profile bingo splashes setting was here
         // limbo isn't listed, not sure if it should be, will see if anyone complains.
-        if ((PlayerInfo.playerLocation.equalsIgnoreCase("prototype_lobby") || PlayerInfo.playerLocation.equalsIgnoreCase("skyblock")) && !BingoBrewersConfig.splashNotificationsOutsideSkyblock && !example) return;
+        if (PlayerInfo.inSkyblockOrPTL && !BingoBrewersConfig.splashNotificationsOutsideSkyblock && !example) return;
         if (!BingoBrewers.onHypixel) return;
 
-        float heightToRenderAt = (y * scaleY) + 3; // advances each line drawn
+        float heightToRenderAt = ((y + TOP_BOTTOM_PADDING) * scaleY); // advances each line drawn
 
         if (example && (activeSplashes.isEmpty() || !BingoBrewersConfig.splashNotificationsEnabled)) {
             // check the example actually exists. Why would it not? no idea
@@ -98,11 +100,19 @@ public class SplashInfoHud extends LegacyHud {
                 heightToRenderAt = renderSplashNotification(splashNotificationInfo, x, scaleY, heightToRenderAt);
             }
         }
+
+        unscaledHudHeight = (heightScaled + (TOP_BOTTOM_PADDING * scaleY)) / scaleY;
     }
 
     public static float renderSplashNotification(SplashNotificationInfo info, float x, float scaleY, float heightToRenderAt) {
+
         String hubPrefix = info.dungeonHub ? SplashNotificationInfo.DUNGEON_HUB : SplashNotificationInfo.HUB;
-        heightToRenderAt = renderSplashHudSection(hubPrefix, Collections.singletonList(info.hubNumber + info.lobbyPlayerCount), x, scaleY, heightToRenderAt);
+        String hubInfo = info.serverID.isEmpty() ? info.hubNumber : info.hubNumber + "(" + info.serverID + ")";
+        heightToRenderAt = renderSplashHudSection(hubPrefix, Collections.singletonList(hubInfo), x, scaleY, heightToRenderAt);
+
+        if (BingoBrewersConfig.showPlayerCount) {
+            heightToRenderAt = renderSplashHudSection(SplashNotificationInfo.PLAYER_COUNT, Collections.singletonList(info.lobbyPlayerCount), x, scaleY, heightToRenderAt);
+        }
 
         if (BingoBrewersConfig.showSplasher) {
             heightToRenderAt = renderSplashHudSection(SplashNotificationInfo.SPLASHER, Collections.singletonList(info.splasherIGN), x, scaleY, heightToRenderAt);
@@ -140,8 +150,16 @@ public class SplashInfoHud extends LegacyHud {
             wrappedInfo.addAll(infoList);
         }
 
+        String firstInfoLine;
+        if (!COLOR_INFO.equals(COLOR_DIVIDER)) {
+            firstInfoLine = wrappedInfo.get(0); // set the rest of the info to be drawn, not including the divider since we draw it here
+            fontRenderer.drawStringWithShadow(PREFIX_INFO_DIVIDER, x + nextStart, heightToRenderAt, COLOR_DIVIDER.getRGB());
+            nextStart += fontRenderer.getStringWidth(PREFIX_INFO_DIVIDER);
+        } else {
+            firstInfoLine = PREFIX_INFO_DIVIDER + wrappedInfo.get(0); // otherwise include the prefix divider with the first line because they are the same color
+        }
         // draw the first line adjacent to the last line of the prefix using the nextStart variable
-        fontRenderer.drawStringWithShadow(PREFIX_INFO_DIVIDER + wrappedInfo.get(0), x + nextStart, heightToRenderAt, COLOR_INFO.getRGB());
+        fontRenderer.drawStringWithShadow(firstInfoLine, x + nextStart, heightToRenderAt, COLOR_INFO.getRGB());
         heightToRenderAt += LINE_GAP * scaleY;
         wrappedInfo.remove(0);
 

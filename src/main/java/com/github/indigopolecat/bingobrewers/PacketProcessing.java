@@ -2,7 +2,6 @@ package com.github.indigopolecat.bingobrewers;
 
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
-import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
 import com.github.indigopolecat.bingobrewers.Hud.SplashInfoHud;
 import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
@@ -99,6 +98,8 @@ public class PacketProcessing {
             LoggerUtil.LOGGER.info("Received splash notification");
 
             KryoNetwork.SplashNotification notif = (KryoNetwork.SplashNotification) packet;
+            if (notif.hub.isEmpty()) return; // completely ignore splashes without a hub number
+
             // update the active splashes list if the message is edited
             for (int i = 0; i < SplashInfoHud.activeSplashes.size(); i++) {
                 SplashNotificationInfo splashNotificationInfo = SplashInfoHud.activeSplashes.get(i);
@@ -106,32 +107,15 @@ public class PacketProcessing {
                     SplashInfoHud.activeSplashes.set(i, new SplashNotificationInfo(notif, false)); // add the updated splash in the original location
 
                     // remove the notification if the updated message contains "done" on the last line when the previous one did not
-                    if (notif.note.get(notif.note.size() - 1).matches("done") && !splashNotificationInfo.splasherNotes.get(splashNotificationInfo.splasherNotes.size() - 1).matches("done")) SplashInfoHud.activeSplashes.remove(i);
+                    if (notif.note.get(notif.note.size() - 1).matches("(?i)done") && !splashNotificationInfo.splasherNotes.get(splashNotificationInfo.splasherNotes.size() - 1).matches("done")) SplashInfoHud.activeSplashes.remove(i);
 
                     return;
                 }
             }
 
+            if (notif.timestamp + 120_000 > System.currentTimeMillis()) return;
+
             SplashInfoHud.activeSplashes.add(new SplashNotificationInfo(notif, true));
-
-
-                /*HashMap<String, ArrayList<String>> map = SplashHud.activeSplashes.get(i);
-                if (map.get("Splash").get(0).equals(notif.splash)) {
-                    ArrayList<String> hubField = map.get(SplashHud.HUB);
-                    // Don't send notification if the hub # or hub type (dungeon/normal) hasn't changed
-                    try {
-                        String hubNumber = hubField.get(1).replaceAll(": (\\d+).*", "$1");
-                        if (hubNumber.equals(notif.hub) && notif.dungeonHub == hubField.get(0).contains(SplashHud.DUNGEON_HUB)) {
-                            sendNotif = false;
-                            SplashHud.hubList.remove(hubNumber);
-                            SplashHud.hubList.remove("DH" + hubNumber);
-                        }
-
-                    } catch (Exception ignored) {
-
-                    }
-                }
-            }*/
         } else if (packet instanceof KryoNetwork.PlayerCountBroadcast) {
             KryoNetwork.PlayerCountBroadcast request = (KryoNetwork.PlayerCountBroadcast) packet;
             for (SplashNotificationInfo info : SplashInfoHud.activeSplashes) {

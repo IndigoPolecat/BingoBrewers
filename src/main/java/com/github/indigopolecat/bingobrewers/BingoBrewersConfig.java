@@ -1,16 +1,14 @@
 package com.github.indigopolecat.bingobrewers;
 
+import com.github.indigopolecat.bingobrewers.Hud.SplashInfoHud;
 import org.polyfrost.oneconfig.api.config.v1.Config;
 import org.polyfrost.oneconfig.api.config.v1.annotations.*;
-import org.polyfrost.oneconfig.api.config.v1.core.OneColor;
-import org.polyfrost.oneconfig.api.config.v1.data.InfoType;
-import org.polyfrost.oneconfig.api.config.v1.data.OptionSize;
 import com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud;
-import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
 import com.github.indigopolecat.bingobrewers.gui.UpdateScreen;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import net.minecraft.client.Minecraft;
+import org.polyfrost.oneconfig.api.hud.v1.HudManager;
 import org.polyfrost.polyui.color.PolyColor;
 
 import java.util.*;
@@ -32,21 +30,25 @@ public class BingoBrewersConfig extends Config {
             addDependency(option, "crystalHollowsWaypointsToggle");
         }
         addDependency("justifySeparation", "justifyAlignmentCHHud");
-        addListener("robotParts", BingoBrewersConfig::robotPartsCall);
-        addListener("powder", BingoBrewersConfig::powderCall);
-        addListener("prehistoricEggs", BingoBrewersConfig::prehistoricEggsCall);
-        addListener("pickonimbus", BingoBrewersConfig::pickonimbusCall);
-        addListener("goblinEggs", BingoBrewersConfig::goblinEggsCall);
-        addListener("roughGemstones", BingoBrewersConfig::roughCall);
-        addListener("jasperGemstones", BingoBrewersConfig::roughCall);
-        addListener("junk", BingoBrewersConfig::miscCall);
-        addListener("crystalHollowsWaypointsToggle", BingoBrewersConfig::SubscribeToServer);
+        addCallback("robotParts", BingoBrewersConfig::robotPartsCall);
+        addCallback("powder", BingoBrewersConfig::powderCall);
+        addCallback("prehistoricEggs", BingoBrewersConfig::prehistoricEggsCall);
+        addCallback("pickonimbus", BingoBrewersConfig::pickonimbusCall);
+        addCallback("goblinEggs", BingoBrewersConfig::goblinEggsCall);
+        addCallback("roughGemstones", BingoBrewersConfig::roughCall);
+        addCallback("jasperGemstones", BingoBrewersConfig::roughCall);
+        addCallback("junk", BingoBrewersConfig::miscCall);
+        addCallback("crystalHollowsWaypointsToggle", BingoBrewersConfig::SubscribeToServer);
 
-        addListener("showSplasher",  ServerConnection::setSplashHudItems);
-        addListener("showParty",  ServerConnection::setSplashHudItems);
-        addListener("showLocation",  ServerConnection::setSplashHudItems);
-        addListener("showNote",  ServerConnection::setSplashHudItems);
+        addCallback("showSplasher",  ServerConnection::setSplashHudItems);
+        addCallback("showParty",  ServerConnection::setSplashHudItems);
+        addCallback("showLocation",  ServerConnection::setSplashHudItems);
+        addCallback("showNote",  ServerConnection::setSplashHudItems);
 
+    }
+
+    public static void addHuds() {
+        HudManager.register(new SplashInfoHud());
     }
 
     /* -----------------------------------------------------------
@@ -82,12 +84,12 @@ public class BingoBrewersConfig extends Config {
     )
     public static boolean splashNotificationsOutsideSkyblock = true;
 
-    @HUD(
-            name = "Splash Notification HUD",
-            category = "Splash Notifications"
-
+    @Checkbox(
+            title = "Show Player Count",
+            category = "Splash Notifications",
+            description = "Show the current player count of the lobby"
     )
-    public SplashHud hud = new SplashHud();
+    public static boolean showPlayerCount = true;
 
     @Checkbox(
             title = "Show Splasher",
@@ -179,7 +181,7 @@ public class BingoBrewersConfig extends Config {
             title = "Gemstones",
             options = {"All", "Fine/Flawless Only", "None"},
             category = "Crystal Hollows Waypoints",
-            description = "Include gemstones found in chests.",
+            description = "Include gemstones found in chests."
     )
     public static int roughGemstones = 1;
 
@@ -268,10 +270,8 @@ public class BingoBrewersConfig extends Config {
 
     @Info(
             title = "Running version " + BingoBrewers.version,
-            type = InfoType.INFO,
-            category = "Misc",
-            size = OptionSize.DUAL
-    )
+            description = "Current version of Bingo Brewers.",
+            category = "Misc")
     public static boolean ignoredL;
 
     @Switch(
@@ -280,7 +280,7 @@ public class BingoBrewersConfig extends Config {
             description = "Display the amount of missing Bingo Points to buy the item."
     )
     public static boolean displayMissingBingoPoints = true;
-    \
+
     @Switch(
             title = "Chicken Head Reset Alert",
             category = "Misc",
@@ -327,14 +327,14 @@ public class BingoBrewersConfig extends Config {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if ("FTX 3070".equals(item.name) || "Robotron Reflector".equals(item.name) || "Control Switch".equals(item.name) || "Synthetic Heart".equals(item.name) || "Superlite Motor".equals(item.name) || "Electron Transmitter".equals(item.name)) {
                         waypoint.filteredExpandedItems.add(item);
-                        if (!CHWaypoints.filteredWaypoints.contains(waypoint)) {
-                            CHWaypoints.filteredWaypoints.add(waypoint);
+                        if (!filteredWaypoints.contains(waypoint)) {
+                            filteredWaypoints.add(waypoint);
                         }
                     }
                 }
             }
         }
-        CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
+        filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
     }
 
     public static void powderCall() {
@@ -361,8 +361,8 @@ public class BingoBrewersConfig extends Config {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if (item.name.contains(" Powder")) {
                         waypoint.filteredExpandedItems.add(item);
-                        if (!CHWaypoints.filteredWaypoints.contains(waypoint)) {
-                            CHWaypoints.filteredWaypoints.add(waypoint);
+                        if (!filteredWaypoints.contains(waypoint)) {
+                            filteredWaypoints.add(waypoint);
                         }
                     }
                 }
@@ -391,14 +391,14 @@ public class BingoBrewersConfig extends Config {
                             filteredItems.add(crystalHollowsItemTotal);
                         }
                         waypoint.filteredExpandedItems.add(item);
-                        if (!CHWaypoints.filteredWaypoints.contains(waypoint)) {
-                            CHWaypoints.filteredWaypoints.add(waypoint);
+                        if (!filteredWaypoints.contains(waypoint)) {
+                            filteredWaypoints.add(waypoint);
                         }
                     }
                 }
             }
         }
-        CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
+        filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
 
     }
 
@@ -426,14 +426,14 @@ public class BingoBrewersConfig extends Config {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if ("Prehistoric Egg".equals(item.name)) {
                         waypoint.filteredExpandedItems.add(item);
-                        if (!CHWaypoints.filteredWaypoints.contains(waypoint)) {
-                            CHWaypoints.filteredWaypoints.add(waypoint);
+                        if (!filteredWaypoints.contains(waypoint)) {
+                            filteredWaypoints.add(waypoint);
                         }
                     }
                 }
             }
         }
-        CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
+        filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
 
     }
 
@@ -461,14 +461,14 @@ public class BingoBrewersConfig extends Config {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if (item.name.contains("Pickonimbus")) {
                         waypoint.filteredExpandedItems.add(item);
-                        if (!CHWaypoints.filteredWaypoints.contains(waypoint)) {
-                            CHWaypoints.filteredWaypoints.add(waypoint);
+                        if (!filteredWaypoints.contains(waypoint)) {
+                            filteredWaypoints.add(waypoint);
                         }
                     }
                 }
             }
         }
-        CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
+        filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
 
     }
 
@@ -496,8 +496,8 @@ public class BingoBrewersConfig extends Config {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if (item.name.contains("Goblin Egg")) {
                         waypoint.filteredExpandedItems.add(item);
-                        if (!CHWaypoints.filteredWaypoints.contains(waypoint)) {
-                            CHWaypoints.filteredWaypoints.add(waypoint);
+                        if (!filteredWaypoints.contains(waypoint)) {
+                            filteredWaypoints.add(waypoint);
                         }
                     }
                 }
@@ -513,14 +513,14 @@ public class BingoBrewersConfig extends Config {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if ("Blue Goblin Egg".equals(item.name)) {
                         waypoint.filteredExpandedItems.add(item);
-                        if (!CHWaypoints.filteredWaypoints.contains(waypoint)) {
-                            CHWaypoints.filteredWaypoints.add(waypoint);
+                        if (!filteredWaypoints.contains(waypoint)) {
+                            filteredWaypoints.add(waypoint);
                         }
                     }
                 }
             }
         }
-        CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
+        filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
 
     }
 
@@ -549,8 +549,8 @@ public class BingoBrewersConfig extends Config {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if (item.name.contains("Gemstone") && !item.name.contains("Powder")) {
                         waypoint.filteredExpandedItems.add(item);
-                        if (!CHWaypoints.filteredWaypoints.contains(waypoint)) {
-                            CHWaypoints.filteredWaypoints.add(waypoint);
+                        if (!filteredWaypoints.contains(waypoint)) {
+                            filteredWaypoints.add(waypoint);
                         }
                     }
                 }
@@ -566,14 +566,14 @@ public class BingoBrewersConfig extends Config {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if (item.name.contains("Fine") || item.name.contains("Flawless")) {
                         waypoint.filteredExpandedItems.add(item);
-                        if (!CHWaypoints.filteredWaypoints.contains(waypoint)) {
-                            CHWaypoints.filteredWaypoints.add(waypoint);
+                        if (!filteredWaypoints.contains(waypoint)) {
+                            filteredWaypoints.add(waypoint);
                         }
                     }
                 }
             }
         }
-        CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
+        filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
 
     }
 
@@ -601,14 +601,14 @@ public class BingoBrewersConfig extends Config {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
                     if (item.name.contains("Jasper")) {
                         waypoint.filteredExpandedItems.add(item);
-                        if (!CHWaypoints.filteredWaypoints.contains(waypoint)) {
-                            CHWaypoints.filteredWaypoints.add(waypoint);
+                        if (!filteredWaypoints.contains(waypoint)) {
+                            filteredWaypoints.add(waypoint);
                         }
                     }
                 }
             }
         }
-        CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
+        filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
 
     }
 
@@ -617,33 +617,33 @@ public class BingoBrewersConfig extends Config {
         organizeWaypoints();
     }
     public static void filterMisc() {
-        filteredItems.removeIf(entry -> "Wishing Compass".equals(entry.itemName) || "Treasurite".equals(entry.itemName) || "Jungle Heart".equals(entry.itemName) || "Oil Barrel".equals(entry.itemName) || "Sludge Juice".equals(entry.itemName) || "Ascension Rope".equals(entry.itemName) || "Yoggie".equals(entry.itemName) || ServerConnection.newMiscCHItems.contains(entry.itemName));
+        filteredItems.removeIf(entry -> "Wishing Compass".equals(entry.itemName) || "Treasurite".equals(entry.itemName) || "Jungle Heart".equals(entry.itemName) || "Oil Barrel".equals(entry.itemName) || "Sludge Juice".equals(entry.itemName) || "Ascension Rope".equals(entry.itemName) || "Yoggie".equals(entry.itemName) || newMiscCHItems.contains(entry.itemName));
         for (CHWaypoints waypoint : waypoints) {
             for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
-                if ("Wishing Compass".equals(item.name) || "Treasurite".equals(item.name) || "Jungle Heart".equals(item.name) || "Oil Barrel".equals(item.name) || "Sludge Juice".equals(item.name) || "Ascension Rope".equals(item.name) || "Yoggie".equals(item.name) || ServerConnection.newMiscCHItems.contains(item.name)) {
+                if ("Wishing Compass".equals(item.name) || "Treasurite".equals(item.name) || "Jungle Heart".equals(item.name) || "Oil Barrel".equals(item.name) || "Sludge Juice".equals(item.name) || "Ascension Rope".equals(item.name) || "Yoggie".equals(item.name) || newMiscCHItems.contains(item.name)) {
                     waypoint.filteredExpandedItems.remove(item);
                 }
             }
         }
         if (junk) {
             for (String item : itemCounts.keySet()) {
-                if ("Wishing Compass".equals(item) || "Treasurite".equals(item) || "Jungle Heart".equals(item) || "Oil Barrel".equals(item) || "Sludge Juice".equals(item) || "Ascension Rope".equals(item) || "Yoggie".equals(item) || ServerConnection.newMiscCHItems.contains(item)) {
+                if ("Wishing Compass".equals(item) || "Treasurite".equals(item) || "Jungle Heart".equals(item) || "Oil Barrel".equals(item) || "Sludge Juice".equals(item) || "Ascension Rope".equals(item) || "Yoggie".equals(item) || newMiscCHItems.contains(item)) {
                     filteredItems.add(itemCounts.get(item));
                 }
             }
 
             for (CHWaypoints waypoint : waypoints) {
                 for (KryoNetwork.CHChestItem item : waypoint.expandedName) {
-                    if ("Wishing Compass".equals(item.name) || "Treasurite".equals(item.name) || "Jungle Heart".equals(item.name) || "Oil Barrel".equals(item.name) || "Sludge Juice".equals(item.name) || "Ascension Rope".equals(item.name) || "Yoggie".equals(item.name) || ServerConnection.newMiscCHItems.contains(item.name)) {
+                    if ("Wishing Compass".equals(item.name) || "Treasurite".equals(item.name) || "Jungle Heart".equals(item.name) || "Oil Barrel".equals(item.name) || "Sludge Juice".equals(item.name) || "Ascension Rope".equals(item.name) || "Yoggie".equals(item.name) || newMiscCHItems.contains(item.name)) {
                         waypoint.filteredExpandedItems.add(item);
-                        if (!CHWaypoints.filteredWaypoints.contains(waypoint)) {
-                            CHWaypoints.filteredWaypoints.add(waypoint);
+                        if (!filteredWaypoints.contains(waypoint)) {
+                            filteredWaypoints.add(waypoint);
                         }
                     }
                 }
             }
         }
-        CHWaypoints.filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
+        filteredWaypoints.removeIf(waypoint -> waypoint.filteredExpandedItems.isEmpty());
 
     }
 
@@ -652,7 +652,7 @@ public class BingoBrewersConfig extends Config {
             KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
             CHRequest.server = PlayerInfo.currentServer;
             CHRequest.day = PlayerInfo.day;
-            ServerConnection.SubscribeToCHServer(CHRequest);
+            SubscribeToCHServer(CHRequest);
         } else {
             waypoints.clear();
             itemCounts.clear();
@@ -663,13 +663,13 @@ public class BingoBrewersConfig extends Config {
                 CHRequest.server = PlayerInfo.currentServer;
                 CHRequest.day = PlayerInfo.day;
                 CHRequest.unsubscribe = true;
-                ServerConnection.SubscribeToCHServer(CHRequest);
+                SubscribeToCHServer(CHRequest);
 
                 KryoNetwork.RegisterToWarpServer unregister = new KryoNetwork.RegisterToWarpServer();
                 unregister.unregister = true;
                 PlayerInfo.registeredToWarp = false;
                 unregister.server = PlayerInfo.currentServer;
-                ServerConnection.sendTCP(unregister);
+                sendTCP(unregister);
             }
 
         }
@@ -679,7 +679,7 @@ public class BingoBrewersConfig extends Config {
             register.unregister = false;
             PlayerInfo.registeredToWarp = true;
             register.server = PlayerInfo.currentServer;
-            ServerConnection.sendTCP(register);
+            sendTCP(register);
         }
     }
 

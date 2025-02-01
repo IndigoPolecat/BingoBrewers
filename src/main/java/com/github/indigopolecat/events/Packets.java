@@ -1,7 +1,7 @@
 package com.github.indigopolecat.events;
 
 import com.github.indigopolecat.bingobrewers.*;
-import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
+import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.github.indigopolecat.bingobrewers.Hud.SplashInfoHud.activeSplashes;
+
 
 public class Packets {
 
@@ -37,7 +39,7 @@ public class Packets {
     @SubscribeEvent
     public void onPacketReceived(PacketEvent.Received event) {
         if (event.getPacket() instanceof S38PacketPlayerListItem) {
-            if (System.currentTimeMillis() - PlayerInfo.lastSplashHubUpdate > 120000) {
+            if (System.currentTimeMillis() - PlayerInfo.lastSplashHubPresenceUpdate > 120000) {
                 PlayerInfo.inSplashHub = false;
             }
             if (!PlayerInfo.inSplashHub) return;
@@ -48,8 +50,9 @@ public class Packets {
                 Pattern playerCount = Pattern.compile("Players \\(([0-9]+)\\)");
                 Matcher playerCountMatcher = playerCount.matcher(data.getDisplayName().getUnformattedText());
                 if (playerCountMatcher.find()) {
-                    PlayerInfo playerInfo = new PlayerInfo();
-                    playerInfo.setPlayerCount(Integer.parseInt(playerCountMatcher.group(1)));
+                    for (SplashNotificationInfo splash : activeSplashes) {
+                    }
+                    PlayerInfo.setPlayerCount(Integer.parseInt(playerCountMatcher.group(1)));
                 }
 
 

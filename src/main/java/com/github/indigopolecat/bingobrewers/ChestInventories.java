@@ -2,6 +2,7 @@ package com.github.indigopolecat.bingobrewers;
 
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.github.indigopolecat.events.Packets;
+import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerChest;
 import net.minecraftforge.client.event.GuiOpenEvent;

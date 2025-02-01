@@ -2,6 +2,7 @@ package com.github.indigopolecat.bingobrewers;
 
 import com.esotericsoftware.kryonet.Client;
 import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
+import com.github.indigopolecat.bingobrewers.Hud.SplashInfoHud;
 import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
 import com.github.indigopolecat.bingobrewers.commands.ConfigCommand;
 import com.github.indigopolecat.bingobrewers.commands.TempWarpCommand;
@@ -51,7 +52,7 @@ public class BingoBrewers {
         MinecraftForge.EVENT_BUS.register(new PacketListener());
         MinecraftForge.EVENT_BUS.register(new CHChests());
         MinecraftForge.EVENT_BUS.register(new PlayerInfo());
-        MinecraftForge.EVENT_BUS.register(new SplashHud());
+        MinecraftForge.EVENT_BUS.register(new SplashInfoHud());
         MinecraftForge.EVENT_BUS.register(new ChatTextUtil());
         MinecraftForge.EVENT_BUS.register(new Warping());
         MinecraftForge.EVENT_BUS.register(autoUpdater);
@@ -60,6 +61,7 @@ public class BingoBrewers {
 
         config = new BingoBrewersConfig();
         config.preload();
+        BingoBrewersConfig.addHuds();
 
         createServerThread();
         createConstantsOnLaunch();

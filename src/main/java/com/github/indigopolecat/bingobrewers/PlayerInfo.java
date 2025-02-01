@@ -1,11 +1,10 @@
 package com.github.indigopolecat.bingobrewers;
 
-import com.esotericsoftware.kryonet.Server;
 import com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud;
 import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
+import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
@@ -14,22 +13,20 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-
-import static com.github.indigopolecat.bingobrewers.ServerConnection.encryptString;
 
 public class PlayerInfo {
     public static String playerLocation = "";
     public static String playerGameType = "";
     public static String playerHubNumber = null;
+    public static boolean inSkyblockOrPTL;
     public static long lastWorldLoad = -1;
     public static long lastPositionUpdate = -1;
     // This is in this class so it is stored between game instances
     public static boolean onBingo = false;
     private static boolean newLoad = false;
     public static boolean inSplashHub;
-    public static long lastSplashHubUpdate = -1;
+    public static long lastSplashHubPresenceUpdate = -1;
     public static int playerCount;
     public static String currentServer = "";
     public static String currentNetwork = "";
@@ -69,7 +66,7 @@ public class PlayerInfo {
             CHWaypoints.filteredWaypoints.clear();
             CrystalHollowsHud.filteredItems.clear();
             CHWaypoints.itemCounts.clear();
-            if (System.currentTimeMillis() - lastSplashHubUpdate > 3000) {
+            if (System.currentTimeMillis() - lastSplashHubPresenceUpdate > 3000) {
                 inSplashHub = false;
             }
         }
@@ -111,8 +108,7 @@ public class PlayerInfo {
             if (System.currentTimeMillis() - lastNotification > 5000) readyToNotify = false;
             if (readyToNotify && Minecraft.getMinecraft().thePlayer != null) {
                 readyToNotify = false;
-                ServerConnection serverConnection = new ServerConnection();
-                serverConnection.notification(splashHubNumberForNotification, readyToNotifyDungeon);
+                SplashNotificationInfo.notification(splashHubNumberForNotification, readyToNotifyDungeon);
             }
 
             if (ServerConnection.joinTitle != null && Minecraft.getMinecraft().thePlayer != null) {
@@ -127,7 +123,7 @@ public class PlayerInfo {
     }
 
 
-    public void setPlayerCount(int playercount) {
+    public static void setPlayerCount(int playercount) {
         int currentCount = playerCount;
         PlayerInfo.playerCount = playercount;
         // If the player count has changed
@@ -138,7 +134,9 @@ public class PlayerInfo {
                 System.out.println("Player hub number is null");
                 return;
             }
-            count.server = playerHubNumber;
+            count.hub = playerHubNumber;
+            count.serverID = currentServer;
+
             ServerConnection serverConnection = new ServerConnection();
             serverConnection.sendPlayerCount(count);
         }

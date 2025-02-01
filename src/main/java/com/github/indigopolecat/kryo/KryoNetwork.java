@@ -6,7 +6,6 @@ import com.esotericsoftware.kryonet.EndPoint;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 
 public class KryoNetwork {
 
@@ -73,6 +72,7 @@ public class KryoNetwork {
     public static class SplashNotification {
         public long timestamp;
         public String hub;
+        public String serverID;
         public String splasher;
         public String partyHost;
         public ArrayList<String> note;
@@ -82,8 +82,11 @@ public class KryoNetwork {
     }
 
     public static class PlayerCount {
+        public String splashID;
+        public String splasher;
         public int playerCount;
-        public String server;
+        public String hub;
+        public String serverID;
     }
 
     public static class PlayerCountBroadcast {
