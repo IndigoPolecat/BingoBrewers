@@ -40,22 +40,36 @@ public class Packets {
     public void onPacketReceived(PacketEvent.Received event) {
         if (event.getPacket() instanceof S38PacketPlayerListItem) {
             if (System.currentTimeMillis() - PlayerInfo.lastSplashHubPresenceUpdate > 120000) {
-                PlayerInfo.inSplashHub = false;
             }
-            if (!PlayerInfo.inSplashHub) return;
+
             S38PacketPlayerListItem packet = (S38PacketPlayerListItem) event.getPacket();
             if (packet.getAction() != S38PacketPlayerListItem.Action.UPDATE_DISPLAY_NAME) return;
+
             for (S38PacketPlayerListItem.AddPlayerData data : packet.getEntries()) {
                 if (!data.getDisplayName().getUnformattedText().contains("Players")) return;
+
+                for (int i = 0; i < activeSplashes.size(); i++) {
+                    // only send if the splasher is within your render distance or you are in the recognized server id
+                    SplashNotificationInfo splash = activeSplashes.get(i);
+
+                    if (splash.serverID.equalsIgnoreCase(PlayerInfo.currentServer)) {
+                        break;
+                    }
+
+                    if (PlayerInfo.currentRenderedPlayerEntities.contains(splash.splasherIGN)) {
+                        break;
+                    }
+
+                    if (i == activeSplashes.size() - 1) {
+                        return;
+                    }
+                }
+
                 Pattern playerCount = Pattern.compile("Players \\(([0-9]+)\\)");
                 Matcher playerCountMatcher = playerCount.matcher(data.getDisplayName().getUnformattedText());
                 if (playerCountMatcher.find()) {
-                    for (SplashNotificationInfo splash : activeSplashes) {
-                    }
                     PlayerInfo.setPlayerCount(Integer.parseInt(playerCountMatcher.group(1)));
                 }
-
-
             }
         }
 

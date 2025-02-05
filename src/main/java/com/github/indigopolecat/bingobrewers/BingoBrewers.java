@@ -1,7 +1,6 @@
 package com.github.indigopolecat.bingobrewers;
 
 import com.esotericsoftware.kryonet.Client;
-import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
 import com.github.indigopolecat.bingobrewers.Hud.SplashInfoHud;
 import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
 import com.github.indigopolecat.bingobrewers.commands.ConfigCommand;

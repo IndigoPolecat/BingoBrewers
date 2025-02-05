@@ -35,6 +35,7 @@ public class SplashNotificationInfo {
     public static final String PARTY = "Party";
     public static final String LOCATION = "Location";
     public static final String NOTE = "Note";
+    public static boolean inSplashHub;
 
 
     public SplashNotificationInfo(KryoNetwork.SplashNotification notificationInfo, boolean sendNotif) {

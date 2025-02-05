@@ -6,6 +6,8 @@ import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
@@ -14,6 +16,9 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+
+import static com.github.indigopolecat.bingobrewers.Hud.SplashInfoHud.activeSplashes;
 
 public class PlayerInfo {
     public static String playerLocation = "";
@@ -25,9 +30,9 @@ public class PlayerInfo {
     // This is in this class so it is stored between game instances
     public static boolean onBingo = false;
     private static boolean newLoad = false;
-    public static boolean inSplashHub;
     public static long lastSplashHubPresenceUpdate = -1;
     public static int playerCount;
+    public static HashSet<String> currentRenderedPlayerEntities;
     public static String currentServer = "";
     public static String currentNetwork = "";
     public static HashMap<String, String> hubServerMap = new HashMap<>();
@@ -66,9 +71,6 @@ public class PlayerInfo {
             CHWaypoints.filteredWaypoints.clear();
             CrystalHollowsHud.filteredItems.clear();
             CHWaypoints.itemCounts.clear();
-            if (System.currentTimeMillis() - lastSplashHubPresenceUpdate > 3000) {
-                inSplashHub = false;
-            }
         }
     }
 
@@ -102,6 +104,12 @@ public class PlayerInfo {
                             BingoBrewers.onHypixel = false;
                         }
                     }
+                }
+            }
+            if (!activeSplashes.isEmpty()) {
+                for (EntityPlayer player : Minecraft.getMinecraft().theWorld.playerEntities) {
+                    System.out.println(player.getName());
+                    currentRenderedPlayerEntities.add(player.getName());
                 }
             }
             // Expire notification after 5s

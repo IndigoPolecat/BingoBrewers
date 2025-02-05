@@ -1,9 +1,7 @@
 package com.github.indigopolecat.events;
 
 import com.github.indigopolecat.bingobrewers.*;
-import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
-import com.github.indigopolecat.bingobrewers.Hud.SplashInfoHud;
-import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
+
 import com.github.indigopolecat.kryo.KryoNetwork;
 import net.hypixel.modapi.packet.HypixelPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundHelloPacket;
@@ -88,20 +86,6 @@ public class HypixelPackets {
 
 
         PlayerInfo.currentServer = packet.getServerName();
-        if (PlayerInfo.currentServer != null && !PlayerInfo.currentServer.isEmpty()) {
-            for (SplashNotificationInfo notif : SplashInfoHud.activeSplashes) {
-
-                PlayerInfo.playerHubNumber = PlayerInfo.hubServerMap.get(PlayerInfo.currentServer);
-                PlayerInfo.playerHubNumber = PlayerInfo.dungeonHubServerMap.get(PlayerInfo.currentServer);
-                if (notif.serverID.equalsIgnoreCase(PlayerInfo.currentServer)) {
-                    PlayerInfo.inSplashHub = true;
-                    PlayerInfo.lastSplashHubPresenceUpdate = System.currentTimeMillis();
-                } else if (PlayerInfo.playerHubNumber.equals(notif.hubNumber)) {
-                    PlayerInfo.inSplashHub = true;
-                    PlayerInfo.lastSplashHubPresenceUpdate = System.currentTimeMillis();
-                }
-            }
-        }
 
         if (PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows") && !PlayerInfo.subscribedToCurrentCHServer) {
             subscribeToCHServerTime = System.currentTimeMillis() + 2000;

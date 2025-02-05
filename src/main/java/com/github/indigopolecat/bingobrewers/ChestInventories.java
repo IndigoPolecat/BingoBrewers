@@ -1,6 +1,7 @@
 package com.github.indigopolecat.bingobrewers;
 
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
+import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
 import com.github.indigopolecat.events.Packets;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.inventory.Container;
@@ -25,6 +26,8 @@ import org.lwjgl.input.Keyboard;
 import java.text.DecimalFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.github.indigopolecat.bingobrewers.Hud.SplashInfoHud.activeSplashes;
 
 public class ChestInventories {
     public static final int POINTS_PER_BINGO = 85;
@@ -243,6 +246,7 @@ public class ChestInventories {
             // Remove the last 36 slots in the chest inventory, which are the player inventory
             chestInventory.subList(chestInventory.size() - 36, chestInventory.size()).clear();
 
+            // TODO: Change this to just directly update the hub # based on known server ids
             // loop through the items in the chest
             for (ItemStack item : chestInventory) {
                 // verify the item slot isn't empty
@@ -250,6 +254,7 @@ public class ChestInventories {
                     // Get the lore of the item
                     List<String> itemLore = item.getTooltip(Minecraft.getMinecraft().thePlayer, false);
                     String hubNumber = null;
+                    String server = null;
                     // loop through the lore lines of the item
                     for (String s : itemLore) {
                         // look for the lore line that contains the hub number
@@ -258,20 +263,24 @@ public class ChestInventories {
                             hubNumber = s.replaceAll("SkyBlock Hub #(\\d+)", "$1");
                             hubNumber = hubNumber.replaceAll("Dungeon Hub #(\\d+)", "$1");
                             hubNumber = removeFormatting(hubNumber);
-                        } else if (s.contains("Server:")) { // Look for the lore line containing the server id
+                        } else if (s.contains("Server:") && hubNumber != null) { // Look for the lore line containing the server id, but if the hub number hasn't been set yet ignore
                             // Match the server id and remove formatting codes
-                            String server = s.replaceAll("Server: (.+)", "$1");
+                            server = s.replaceAll("Server: (.+)", "$1");
                             server = removeFormatting(server);
 
-                            // if we're in a hub selector, add the server and hub number to the hubServerMap
-                            if (hubNumber != null && hubSelectorOpen) {
-                                PlayerInfo.hubServerMap.put(server, hubNumber);
-                            } else if (hubNumber != null && dungeonHubSelectorOpen) { // if we're in a dungeon hub selector, add the server and hub number to the dungeonHubServerMap
-                                PlayerInfo.dungeonHubServerMap.put(server, hubNumber);
+                        }
+                        // if we're in a hub selector, add the server and hub number to the hubServerMap
+                        if (hubNumber != null && server != null && hubSelectorOpen) {
+                            for (SplashNotificationInfo info : activeSplashes) {
+                                if (info.hubNumber.equals(hubNumber) && info.serverID.equalsIgnoreCase(server)) {
+
+                                }
                             }
+                            PlayerInfo.hubServerMap.put(server, hubNumber);
+                        } else if (hubNumber != null && server != null && dungeonHubSelectorOpen) { // if we're in a dungeon hub selector, add the server and hub number to the dungeonHubServerMap
+                            PlayerInfo.dungeonHubServerMap.put(server, hubNumber);
                         }
                     }
-
                 }
             }
         }

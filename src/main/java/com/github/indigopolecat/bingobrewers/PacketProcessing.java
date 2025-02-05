@@ -76,14 +76,12 @@ public class PacketProcessing {
             accountInfo.IGN = encryptString(ign);
             accountInfo.uuid = encryptString(uuid);
             accountInfo.version = encryptString("v0.4");
+            accountInfo.connections = connectionsThisSession;
 
             System.out.println("Sending " + ign + "|" + version + "|" + uuid);
             sendTCP(accountInfo);
             System.out.println("sent");
 
-
-            // List of all keys that may be used in infopanel, in the order they'll be rendered in an element
-            setSplashHudItems();
 
             try {
                 Thread.sleep(300);
@@ -106,9 +104,8 @@ public class PacketProcessing {
                 if (splashNotificationInfo.id.equals(notif.splash)) {
                     SplashInfoHud.activeSplashes.set(i, new SplashNotificationInfo(notif, false)); // add the updated splash in the original location
 
-                    // remove the notification if the updated message contains "done" on the last line when the previous one did not
-                    if (notif.note.get(notif.note.size() - 1).matches("(?i)done") && !splashNotificationInfo.splasherNotes.get(splashNotificationInfo.splasherNotes.size() - 1).matches("done")) SplashInfoHud.activeSplashes.remove(i);
-
+                    // remove the notification if the server has parsed the splasher signaling the end of a splash (e.g. "done" at the end of the message)
+                    if (notif.remove) SplashInfoHud.activeSplashes.remove(i);
                     return;
                 }
             }

@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class SplashInfoHud extends LegacyHud {
-
     public static CopyOnWriteArrayList<SplashNotificationInfo> activeSplashes = new CopyOnWriteArrayList<>();
     public static SplashNotificationInfo exampleNotificationInfo = new SplashNotificationInfo(true);
     public static float unscaledHudHeight;
@@ -204,9 +203,9 @@ public class SplashInfoHud extends LegacyHud {
     }
 
     @SubscribeEvent
-    public void removeOutdatedSplashInfo(TickEvent.ClientTickEvent tick) {
+    public void onTick(TickEvent.ClientTickEvent tick) {
         if (!tick.phase.equals(TickEvent.Phase.END)) return;
-
+        // remove outdated splash info
         activeSplashes.removeIf(splashNotificationInfo -> System.currentTimeMillis() - splashNotificationInfo.timestamp > 120000);
     }
 
@@ -221,4 +220,5 @@ public class SplashInfoHud extends LegacyHud {
     public Category category() {
         return Category.getINFO();
     }
+
 }

@@ -48,6 +48,8 @@ public class KryoNetwork {
         kryo.register(RequestQueuePosition.class);
     }
 
+    // TODO: add constructors to classes
+
     public static class ServerPublicKey {
         public String public_key;
     }
@@ -61,6 +63,7 @@ public class KryoNetwork {
         public EncryptedString IGN;
         public EncryptedString version;
         public EncryptedString uuid;
+        public int connections;
         public HashMap<Object, Object> accountInformation = new HashMap<>(); // for future Misc. purposes
     }
 
@@ -79,6 +82,7 @@ public class KryoNetwork {
         public String location;
         public String splash;
         public boolean dungeonHub;
+        public boolean remove;
     }
 
     public static class PlayerCount {
@@ -120,6 +124,7 @@ public class KryoNetwork {
         public Integer itemColor;
     }
 
+    // TODO: combine with warp register into one packet sent every time you join a lobby
     public static class SubscribeToCHServer {
         public String server;
         public int day;

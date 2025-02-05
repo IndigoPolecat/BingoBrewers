@@ -5,20 +5,15 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.minlog.Log;
 import com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud;
-import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
 import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.*;
-import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import com.github.indigopolecat.kryo.ServerSummary;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
-import java.net.SocketTimeoutException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -36,17 +31,16 @@ import static com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud.filter
 import com.github.indigopolecat.bingobrewers.PacketProcessing.*;
 
 import static com.github.indigopolecat.bingobrewers.PacketProcessing.processPacket;
-import static java.lang.String.join;
-import static java.lang.String.valueOf;
+
 
 public class ServerConnection extends Listener implements Runnable {
 
     // The server sends it's public key to the client, which checks it based on this. If they don't match the connection is refused.
-    // This would require all users to update in the event of the key being changed.
+    // This would require all users to update in the event of the key being changed but simpler than CA.
     public static final String SERVER_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqgPvRC780jqwtXV4/39jjZvlXSnXRGEpD63y3Iptq8YO9sZic7Qno+vHKeoW50Ct5XWmNk13JjUwUdXmWBN4186FUo/b0Z+AtpLNVrkvk7dwkJQgAHa56fok52NK9QN8mTy+Saw1flmX4rdz7TflXpOwPzIYMYC33gqWe4/hMniuU7m+D/07fgzu5Ua5yFz27sNwrbqNuJOr1ReDScLykIazILHzfTa7RFAZn+4nWM3vdtdysKo1YSYQ++05uMR1S51ABtPkJdNLKzEf0sC6H2q1JPOcIAz/9EX2doWHROTfWoYifi0HDHEu+c0Cc20SfhfmY5NjofmLEc0XmuyqewIDAQAB";
-
     public static int waitTime = 0;
     public static boolean reconnect; // controls the loop for reconnecting the client
+    public static int connectionsThisSession = 0; // easy visual indicator server side if connections are struggling
     public static CopyOnWriteArrayList<CHWaypoints> waypoints = new CopyOnWriteArrayList<>();
     // if new ch items are added, they will be in this list
     public static ArrayList<String> newMiscCHItems = new ArrayList<>();
@@ -60,8 +54,8 @@ public class ServerConnection extends Listener implements Runnable {
 
     @Override
     public void run() {
-        Client client1 = new Client(16384, 16384);
-        setClient(client1);
+        Client client = new Client(16384, 16384);
+        setClient(client);
         if (BingoBrewers.client == null) {
             LoggerUtil.LOGGER.info("Client is null");
         }
@@ -95,23 +89,17 @@ public class ServerConnection extends Listener implements Runnable {
 
         BingoBrewers.client.start();
         System.out.println("Client started, Test Instance: " + BingoBrewers.TEST_INSTANCE);
+
+        connectionsThisSession++;
+
         if (BingoBrewers.TEST_INSTANCE) {
             // Note: for those compiling their own version, the test server will rarely be active so keep the boolean as false
             System.out.println("Connecting to test server");
-            BingoBrewers.client.connect(3000, "38.46.216.110", 9090, 9191);
+            BingoBrewers.client.connect(8000, "38.46.216.110", 9090, 9191);
         } else {
-            BingoBrewers.client.connect(3000, "38.46.216.110", 8080, 7070);
+            BingoBrewers.client.connect(8000, "38.46.216.110", 8080, 7070);
         }
         System.out.println("Connected to server.");
-    }
-
-    public static void setSplashHudItems() {
-        SplashHud.keyOrder.clear(); // clear the list so it doesn't keep adding the same keys every time you reconnect
-        SplashHud.keyOrder.add(SplashHud.HUB);
-        if (BingoBrewersConfig.showSplasher) SplashHud.keyOrder.add(SplashHud.SPLASHER);
-        if (BingoBrewersConfig.showParty) SplashHud.keyOrder.add(SplashHud.PARTY);
-        if (BingoBrewersConfig.showLocation) SplashHud.keyOrder.add(SplashHud.LOCATION);
-        if (BingoBrewersConfig.showNote) SplashHud.keyOrder.add(SplashHud.NOTE);
     }
 
     public static void organizeWaypoints() {
@@ -237,25 +225,24 @@ public class ServerConnection extends Listener implements Runnable {
         BingoBrewers.client.close();
         BingoBrewers.client.removeListener(this);
         if (waitTime == 0) {
-            waitTime = (int) (5000 * Math.random() + 1000);
+            waitTime = (int) (5000 * Math.random() + 2000);
         }
         System.out.println("Disconnected from server.");
         reconnect = true;
         while (reconnect) {
-            System.out.println("Reconnecting");
+            System.out.println("Reconnecting to Bingo Brewers server.");
             try {
                 BingoBrewers.client = new Client(16384, 16384);
-                connection();
+                connection(); // there's a built in reconnect method idk that's not used but this works
                 reconnect = false;
             } catch (Exception e) {
                 e.printStackTrace();
-                LoggerUtil.LOGGER.info("Server Connection Error: " + e.getMessage());
+                LoggerUtil.LOGGER.info("[Bingo Brewers] Server Connection Error: " + e.getMessage());
                 BingoBrewers.client.close();
                 BingoBrewers.client.removeListener(this);
 
-                System.out.println("Failed to reconnect, retrying in " + waitTime + " milliseconds.");
                 try {
-                    System.out.println("Sleeping for " + waitTime + "ms");
+                    System.out.println("Reconnect failed. Trying again in " + waitTime + " milliseconds.");
                     Thread.sleep(waitTime);
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
@@ -263,9 +250,9 @@ public class ServerConnection extends Listener implements Runnable {
                 if (waitTime < 60000) {
                     waitTime *= 2;
                 } else {
-                    waitTime = 60000;
+                    waitTime = 60000 - (int) (5000 * Math.random() + 1000); // slightly vary time
+                    System.out.println("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
                 }
-                System.out.println("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
             }
         }
     }
