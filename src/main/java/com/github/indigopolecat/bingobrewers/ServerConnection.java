@@ -581,13 +581,13 @@ public class ServerConnection extends Listener implements Runnable {
     public void reconnect() {
         BingoBrewers.client.close();
         BingoBrewers.client.removeListener(this);
-        if (waitTime == 0) {
-            waitTime = (int) (5000 * Math.random());
+        if (waitTime == 0 || waitTime > 30000) {
+            waitTime = (int) (3000 * Math.random()) + 2000;
         }
-        System.out.println("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
         repeat = true;
         while (repeat) {
             try {
+                System.out.println("Reconnecting to Bingo Brewers server...");
                 BingoBrewers.client = new Client(16384, 16384);
                 connection();
             } catch (Exception e) {
@@ -595,6 +595,8 @@ public class ServerConnection extends Listener implements Runnable {
                 BingoBrewers.client.close();
                 BingoBrewers.client.removeListener(this);
                 try {
+                    System.out.println("Reconnect failed. Trying again in " + waitTime + " milliseconds.");
+
                     Thread.sleep(waitTime);
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
@@ -602,9 +604,8 @@ public class ServerConnection extends Listener implements Runnable {
                 if (waitTime < 60000) {
                     waitTime *= 2;
                 } else {
-                    waitTime = 60000;
+                    waitTime = 60000 - (int) (5000 * Math.random() + 1000); // slightly vary time
                 }
-                System.out.println("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
             }
         }
     }
