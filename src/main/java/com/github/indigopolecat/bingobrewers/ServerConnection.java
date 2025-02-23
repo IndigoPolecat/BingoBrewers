@@ -20,6 +20,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import org.lwjgl.Sys;
 
+import java.net.InetAddress;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -327,12 +328,13 @@ public class ServerConnection extends Listener implements Runnable {
 
         BingoBrewers.client.start();
         System.out.println("Client started, Test Instance: " + BingoBrewers.TEST_INSTANCE);
+
         if (BingoBrewers.TEST_INSTANCE) {
             // Note: for those compiling their own version, the test server will rarely be active so keep the boolean as false
             System.out.println("Connecting to test server");
-            BingoBrewers.client.connect(10000, "38.46.216.110", 9090, 9191);
+            BingoBrewers.client.connect(10000, "bingobrewers.com", 9090, 9191);
         } else {
-            BingoBrewers.client.connect(10000, "38.46.216.110", 8080, 7070);
+            BingoBrewers.client.connect(10000, "bingobrewers.com", 8080, 7070);
         }
         System.out.println("Connected to server.");
         // send server player ign and version
