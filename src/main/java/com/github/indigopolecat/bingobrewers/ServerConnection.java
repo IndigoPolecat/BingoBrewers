@@ -75,7 +75,7 @@ public class ServerConnection extends Listener implements Runnable {
     }
 
     private void connection() throws IOException {
-        Log.set(LEVEL_DEBUG);
+        Log.set(LEVEL_ERROR);
         KryoNetwork.register(BingoBrewers.client);
 
         BingoBrewers.client.addListener(new Listener() {
