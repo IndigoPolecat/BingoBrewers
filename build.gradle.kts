@@ -126,7 +126,11 @@ dependencies {
     // include should be replaced with a configuration that includes this in the jar
     //shadowImpl("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+") // Should be included in jar
     shadowImpl("moe.nea:libautoupdate:1.3.1") // Should be included in jar
-    implementation("net.hypixel:mod-api:1.0")
+
+    // mod API tweaker and dependency
+    modImplementation("net.hypixel:mod-api-forge:1.0.1.1")
+    shadowImpl("net.hypixel:mod-api-forge-tweaker:1.0.1.1")
+
     compileOnly("io.github.llamalad7:mixinextras-common:0.4.1")
     annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")
     compileOnly("org.polyfrost:polymixin:0.8.4+build.2")
@@ -146,7 +150,7 @@ tasks.withType(Jar::class) {
         this["TweakOrder"] = 0
 
         // If you don't want mixins, remove these lines
-        this["TweakClass"] = "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker"
+        this["TweakClass"] = "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker, com.github.indigopolecat.bingobrewers.modapitweaker.HypixelModAPITweaker"
         this["MixinConfigs"] = "mixins.$modid.json"
     }
 }
@@ -177,22 +181,20 @@ tasks.jar {
     destinationDirectory.set(layout.buildDirectory.dir("badjars"))
 }
 
-/*
-tasks.shadowJar {
+// equivalent of shadowJar in DGT
+tasks.fatJar {
     destinationDirectory.set(layout.buildDirectory.dir("badjars"))
     archiveClassifier.set("all-dev")
     configurations = listOf(shadowImpl)
+    relocate("net.hypixel.modapi.tweaker", "com.github.indigopolecat.bingobrewers.modapitweaker")
+
     doLast {
         configurations.forEach {
             println("Copying jars into mod: ${it.files}")
         }
     }
-    //relocate("com.google.gson", "com.github.indigopolecat")
-
-    // If you want to include other dependencies and shadow them, you can relocate them in here
-    fun relocate(name: String) = relocate(name, "com.github.indigopolecat.$name")
 }
- */
+
 //tasks.assemble.get().dependsOn(tasks.shadowJar)
 //tasks.assemble.get().dependsOn(tasks.remapJar)
 
