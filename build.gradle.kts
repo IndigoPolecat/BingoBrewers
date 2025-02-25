@@ -99,6 +99,8 @@ val shadowImpl: Configuration by configurations.creating {
     configurations.implementation.get().extendsFrom(this)
 }
 
+val hypixelModApiVersion = "1.0.1.1" // mod api version
+
 dependencies {
     minecraft("com.mojang:minecraft:1.8.9")
     mappings("de.oceanlabs.mcp:mcp_stable:22-1.8.9")
@@ -119,7 +121,8 @@ dependencies {
     // include should be replaced with a configuration that includes this in the jar
     shadowImpl("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+") // Should be included in jar
     shadowImpl("moe.nea:libautoupdate:1.3.1") // Should be included in jar
-    implementation("net.hypixel:mod-api:1.0")
+    modImplementation("net.hypixel:mod-api-forge:$hypixelModApiVersion")
+    shadowImpl("net.hypixel:mod-api-forge-tweaker:$hypixelModApiVersion")
 
 }
 
@@ -136,6 +139,8 @@ tasks.withType(Jar::class) {
 
         // If you don't want mixins, remove these lines
         this["TweakClass"] = "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker"
+        this["TweakClass"] = "com.github.indigopolecat.bingobrewers.modapitweaker.HypixelModAPITweaker"
+
         this["MixinConfigs"] = "mixins.$modid.json"
     }
 }
@@ -169,18 +174,16 @@ tasks.shadowJar {
     destinationDirectory.set(layout.buildDirectory.dir("badjars"))
     archiveClassifier.set("all-dev")
     configurations = listOf(shadowImpl)
+    relocate("net.hypixel.modapi.tweaker", "com.github.indigopolecat.bingobrewers.modapitweaker")
     doLast {
         configurations.forEach {
             println("Copying jars into mod: ${it.files}")
         }
     }
-    //relocate("com.google.gson", "com.github.indigopolecat")
 
     // If you want to include other dependencies and shadow them, you can relocate them in here
-    fun relocate(name: String) = relocate(name, "com.github.indigopolecat.$name")
+    //fun relocate(name: String) = relocate(name, "com.github.indigopolecat.$name")
 }
 tasks.assemble.get().dependsOn(tasks.shadowJar)
 tasks.assemble.get().dependsOn(tasks.remapJar)
-
-
 
