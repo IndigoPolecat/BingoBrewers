@@ -224,9 +224,10 @@ public class ServerConnection extends Listener implements Runnable {
     public void reconnect() {
         BingoBrewers.client.close();
         BingoBrewers.client.removeListener(this);
-        if (waitTime == 0) {
-            waitTime = (int) (5000 * Math.random() + 2000);
-        }
+        float waitTime = 0;
+
+        waitTime = (int) (5000 * Math.random() + 2000);
+
         System.out.println("Disconnected from server.");
         reconnect = true;
         while (reconnect) {
@@ -243,15 +244,15 @@ public class ServerConnection extends Listener implements Runnable {
 
                 try {
                     System.out.println("Reconnect failed. Trying again in " + waitTime + " milliseconds.");
-                    Thread.sleep(waitTime);
+                    Thread.sleep((int) waitTime);
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
-                if (waitTime < 60000) {
-                    waitTime *= 2;
-                } else {
+
+                waitTime = Math.min(waitTime * 1.5F, 60000);
+
+                if (waitTime == 60000) {
                     waitTime = 60000 - (int) (5000 * Math.random() + 1000); // slightly vary time
-                    System.out.println("Disconnected from server. Reconnecting in " + waitTime + " milliseconds.");
                 }
             }
         }
