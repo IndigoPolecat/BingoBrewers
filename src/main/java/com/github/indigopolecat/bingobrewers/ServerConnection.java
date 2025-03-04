@@ -44,8 +44,6 @@ public class ServerConnection extends Listener implements Runnable {
     // The Hud renderer checks this every time it renders
     public static ArrayList<HashMap<String, ArrayList<String>>> mapList = new ArrayList<>();
     public static ArrayList<String> keyOrder = new ArrayList<>();
-    int waitTime = 0;
-    boolean repeat;
     public static ArrayList<String> hubList = new ArrayList<>();
     long originalTime = -1;
     public static CopyOnWriteArrayList<CHWaypoints> waypoints = new CopyOnWriteArrayList<>();
@@ -348,7 +346,8 @@ public class ServerConnection extends Listener implements Runnable {
         PlayerInfo.subscribedToCurrentCHServer = false;
         // List of all keys that may be used in infopanel, in the order they'll be rendered in an element
         setSplashHudItems();
-        repeat = false;
+
+        // why sleep 300? idk need to look at commit history and see if I explained, seems completely unnecessary
         try {
             Thread.sleep(300);
         } catch (InterruptedException e) {
@@ -583,15 +582,18 @@ public class ServerConnection extends Listener implements Runnable {
     public void reconnect() {
         BingoBrewers.client.close();
         BingoBrewers.client.removeListener(this);
-        if (waitTime == 0 || waitTime > 30000) {
-            waitTime = (int) (3000 * Math.random()) + 2000;
-        }
+        float waitTime;
+        boolean repeat;
+
+        waitTime = (int) (3000 * Math.random()) + 2000;
+
         repeat = true;
         while (repeat) {
             try {
                 System.out.println("Reconnecting to Bingo Brewers server...");
-                BingoBrewers.client = new Client(16384, 16384);
+                BingoBrewers.client = new Client(16384, 16384); // new client is probably unnecessary but I doubt this matters
                 connection();
+                repeat = false;
             } catch (Exception e) {
                 LoggerUtil.LOGGER.info("Server Connection Error: " + e.getMessage());
                 BingoBrewers.client.close();
@@ -599,12 +601,12 @@ public class ServerConnection extends Listener implements Runnable {
                 try {
                     System.out.println("Reconnect failed. Trying again in " + waitTime + " milliseconds.");
 
-                    Thread.sleep(waitTime);
+                    Thread.sleep((int) waitTime);
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
                 if (waitTime < 60000) {
-                    waitTime *= 2;
+                    waitTime *= 1.5F;
                 } else {
                     waitTime = 60000 - (int) (5000 * Math.random() + 1000); // slightly vary time
                 }
