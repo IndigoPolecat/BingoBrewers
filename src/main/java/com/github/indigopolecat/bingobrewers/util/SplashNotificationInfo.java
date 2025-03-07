@@ -62,7 +62,7 @@ public class SplashNotificationInfo {
         }
 
         if (sendNotif) {
-            notification(this.hubNumber, this.dungeonHub);
+            SplashUtils.setReadyToNotify(this.hubNumber, this.dungeonHub);
         }
     }
 
