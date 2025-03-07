@@ -38,7 +38,7 @@ public class SplashNotificationInfo {
     public static boolean inSplashHub;
 
 
-    public SplashNotificationInfo(KryoNetwork.SplashNotification notificationInfo, boolean sendNotif) {
+    public SplashNotificationInfo(KryoNetwork.SplashNotification notificationInfo, boolean sendNotif, SplashNotificationInfo oldSplash) {
         if (notificationInfo == null || notificationInfo.timestamp == 0 || notificationInfo.hub == null) return;
         this.id = notificationInfo.splash;
         this.timestamp = notificationInfo.timestamp;
@@ -54,6 +54,15 @@ public class SplashNotificationInfo {
             this.bingoPartyJoinCommand = notificationInfo.partyHost;
         } else {
             this.bingoPartyJoinCommand = "/p join " + notificationInfo.partyHost;
+        }
+
+        if (oldSplash != null) { // null is the indicator that there isn't a previous splash to build on
+            // copy over the player count, there is other code that ensures this is removed if the server changes
+            this.lobbyPlayerCount = oldSplash.lobbyPlayerCount;
+        }
+
+        if (sendNotif) {
+            notification(this.hubNumber, this.dungeonHub);
         }
     }
 

@@ -87,14 +87,14 @@ public class KryoNetwork {
 
     public static class PlayerCount {
         public String splashID;
-        public String splasher;
         public int playerCount;
         public String hub;
         public String serverID;
     }
 
     public static class PlayerCountBroadcast {
-        public HashMap<String, String> playerCounts = new HashMap<>();
+        public int playerCount;
+        public String serverID;
     }
 
 

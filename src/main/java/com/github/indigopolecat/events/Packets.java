@@ -2,24 +2,15 @@ package com.github.indigopolecat.events;
 
 import com.github.indigopolecat.bingobrewers.*;
 import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
-import com.github.indigopolecat.kryo.KryoNetwork;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
-import ibxm.Player;
+import com.github.indigopolecat.bingobrewers.util.SplashUtils;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.play.client.C17PacketCustomPayload;
 import net.minecraft.network.play.server.*;
 import net.minecraft.util.BlockPos;
-import net.minecraft.world.World;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import com.github.indigopolecat.events.PacketEvent;
 
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,27 +39,35 @@ public class Packets {
             for (S38PacketPlayerListItem.AddPlayerData data : packet.getEntries()) {
                 if (!data.getDisplayName().getUnformattedText().contains("Players")) return;
 
+                String splashID = "";
                 for (int i = 0; i < activeSplashes.size(); i++) {
                     // only send if the splasher is within your render distance or you are in the recognized server id
                     SplashNotificationInfo splash = activeSplashes.get(i);
 
+                    // escape the loop once we know we are in the correct server and send the packet
                     if (splash.serverID.equalsIgnoreCase(PlayerInfo.currentServer)) {
+                        splashID = splash.id;
                         break;
                     }
 
+                    // escape the loop early if the splasher is in our lobby
                     if (PlayerInfo.currentRenderedPlayerEntities.contains(splash.splasherIGN)) {
+                        splashID = splash.id;
                         break;
                     }
 
+                    // don't send the playercount packet at all if we're not in a splash lobby
                     if (i == activeSplashes.size() - 1) {
                         return;
                     }
                 }
 
+                if (splashID.isEmpty()) return;
+
                 Pattern playerCount = Pattern.compile("Players \\(([0-9]+)\\)");
                 Matcher playerCountMatcher = playerCount.matcher(data.getDisplayName().getUnformattedText());
                 if (playerCountMatcher.find()) {
-                    PlayerInfo.setPlayerCount(Integer.parseInt(playerCountMatcher.group(1)));
+                    SplashUtils.setPlayerCount(Integer.parseInt(playerCountMatcher.group(1)), splashID);
                 }
             }
         }
@@ -153,5 +152,7 @@ public class Packets {
 
     public static class InventoryLoadingDoneEvent extends Event {
     }
+
+
 
 }

@@ -173,7 +173,7 @@ public class ServerConnection extends Listener implements Runnable {
             LoggerUtil.LOGGER.info("Client is null");
             return;
         }
-        currentClient.sendUDP(count);
+        currentClient.sendTCP(count);
     }
 
     public static synchronized void SubscribeToCHServer(SubscribeToCHServer server) {

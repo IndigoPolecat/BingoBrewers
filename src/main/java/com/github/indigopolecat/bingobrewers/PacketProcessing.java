@@ -102,24 +102,47 @@ public class PacketProcessing {
             for (int i = 0; i < SplashInfoHud.activeSplashes.size(); i++) {
                 SplashNotificationInfo splashNotificationInfo = SplashInfoHud.activeSplashes.get(i);
                 if (splashNotificationInfo.id.equals(notif.splash)) {
-                    SplashInfoHud.activeSplashes.set(i, new SplashNotificationInfo(notif, false)); // add the updated splash in the original location
 
-                    // remove the notification if the server has parsed the splasher signaling the end of a splash (e.g. "done" at the end of the message)
-                    if (notif.remove) SplashInfoHud.activeSplashes.remove(i);
+                    if (notif.remove) {
+                        // remove the notification if the server has parsed the splasher signaling the end of a splash (e.g. "done" at the end of the message)
+                        SplashInfoHud.activeSplashes.remove(i);
+                        return;
+                    }
+
+                    SplashNotificationInfo updatedSplash;
+
+                    if (splashNotificationInfo.hubNumber.equals(notif.hub) && splashNotificationInfo.dungeonHub == notif.dungeonHub) {
+                        updatedSplash = new SplashNotificationInfo(notif, false, splashNotificationInfo);
+                        updatedSplash.lobbyPlayerCount = splashNotificationInfo.lobbyPlayerCount; // copy over the player count since the hub hasn't changed
+                         // add the updated splash in the original location in the arraylist
+                    } else {
+                        updatedSplash = new SplashNotificationInfo(notif, true, splashNotificationInfo); // if the hub or dungeon hub status changed, resend the notification
+                    }
+
+                    if (!splashNotificationInfo.serverID.equals(updatedSplash.serverID) && !splashNotificationInfo.serverID.isEmpty()) {
+                        // if the new server ID doesn't match the old, and the old did have a value (i.e. it isn't being set for the first time), then clear the player count
+                        updatedSplash.lobbyPlayerCount = "";
+                    }
+
+                    SplashInfoHud.activeSplashes.set(i, updatedSplash);
+
                     return;
                 }
             }
 
             if (notif.timestamp + 120_000 > System.currentTimeMillis()) return;
 
-            SplashInfoHud.activeSplashes.add(new SplashNotificationInfo(notif, true));
+            SplashInfoHud.activeSplashes.add(new SplashNotificationInfo(notif, true, null));
+
         } else if (packet instanceof KryoNetwork.PlayerCountBroadcast) {
-            KryoNetwork.PlayerCountBroadcast request = (KryoNetwork.PlayerCountBroadcast) packet;
+            KryoNetwork.PlayerCountBroadcast playerCountBroadcast = (KryoNetwork.PlayerCountBroadcast) packet;
+
             for (SplashNotificationInfo info : SplashInfoHud.activeSplashes) {
-                if (request.playerCounts.containsKey(info.hubNumber)) {
-                    info.lobbyPlayerCount = "(" + request.playerCounts.get(info.hubNumber) + ")";
+                if (playerCountBroadcast.serverID.equals(info.serverID)) {
+                    info.lobbyPlayerCount = "(" + playerCountBroadcast.playerCount + ")";
                 }
             }
+
         } else if (packet instanceof KryoNetwork.ClientReceiveServerConstantValues) {
             KryoNetwork.ClientReceiveServerConstantValues request = (KryoNetwork.ClientReceiveServerConstantValues) packet;
             HashMap<String, Object> constants = request.constants;

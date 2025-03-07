@@ -6,8 +6,6 @@ import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
@@ -17,8 +15,6 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-
-import static com.github.indigopolecat.bingobrewers.Hud.SplashInfoHud.activeSplashes;
 
 public class PlayerInfo {
     public static String playerLocation = "";
@@ -106,12 +102,7 @@ public class PlayerInfo {
                     }
                 }
             }
-            if (!activeSplashes.isEmpty()) {
-                for (EntityPlayer player : Minecraft.getMinecraft().theWorld.playerEntities) {
-                    System.out.println(player.getName());
-                    currentRenderedPlayerEntities.add(player.getName());
-                }
-            }
+
             // Expire notification after 5s
             if (System.currentTimeMillis() - lastNotification > 5000) readyToNotify = false;
             if (readyToNotify && Minecraft.getMinecraft().thePlayer != null) {
@@ -128,32 +119,5 @@ public class PlayerInfo {
                 ServerConnection.joinChat = null;
             }
         }
-    }
-
-
-    public static void setPlayerCount(int playercount) {
-        int currentCount = playerCount;
-        PlayerInfo.playerCount = playercount;
-        // If the player count has changed
-        if (currentCount != playercount) {
-            KryoNetwork.PlayerCount count = new KryoNetwork.PlayerCount();
-            count.playerCount = playercount;
-            if (playerHubNumber == null) {
-                System.out.println("Player hub number is null");
-                return;
-            }
-            count.hub = playerHubNumber;
-            count.serverID = currentServer;
-
-            ServerConnection serverConnection = new ServerConnection();
-            serverConnection.sendPlayerCount(count);
-        }
-    }
-
-    public static void setReadyToNotify(String hub, boolean dungeonHub) {
-        readyToNotify = true;
-        splashHubNumberForNotification = hub;
-        readyToNotifyDungeon = dungeonHub;
-        lastNotification = System.currentTimeMillis();
     }
 }
