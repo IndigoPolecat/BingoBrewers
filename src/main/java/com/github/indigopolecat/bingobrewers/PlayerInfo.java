@@ -25,8 +25,6 @@ public class PlayerInfo {
     public static long lastPositionUpdate = -1;
     // This is in this class so it is stored between game instances
     public static boolean onBingo = false;
-    private static boolean newLoad = false;
-    public static long lastSplashHubPresenceUpdate = -1;
     public static int playerCount;
     public static HashSet<String> currentRenderedPlayerEntities;
     public static String currentServer = "";

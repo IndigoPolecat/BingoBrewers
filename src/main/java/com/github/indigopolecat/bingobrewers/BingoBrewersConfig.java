@@ -40,15 +40,11 @@ public class BingoBrewersConfig extends Config {
         addCallback("junk", BingoBrewersConfig::miscCall);
         addCallback("crystalHollowsWaypointsToggle", BingoBrewersConfig::SubscribeToServer);
 
-        addCallback("showSplasher",  ServerConnection::setSplashHudItems);
-        addCallback("showParty",  ServerConnection::setSplashHudItems);
-        addCallback("showLocation",  ServerConnection::setSplashHudItems);
-        addCallback("showNote",  ServerConnection::setSplashHudItems);
-
     }
 
     public static void addHuds() {
         HudManager.register(new SplashInfoHud());
+        HudManager.register(new CrystalHollowsHud());
     }
 
     /* -----------------------------------------------------------
@@ -147,11 +143,24 @@ public class BingoBrewersConfig extends Config {
     )
     public static boolean crystalHollowsWaypointsToggle = true;
 
-    @HUD(
-            name = "Crystal Hollows Loot",
-            category = "Crystal Hollows Waypoints"
+    @DualOption(
+            name = "Alignment",
+            left = "Left",
+            right = "Justify",
+            category = "Crystal Hollows Waypoints",
+            description = "The alignment of the HUD text"
     )
-    public CrystalHollowsHud CHHud = new CrystalHollowsHud();
+    public static boolean justifyAlignmentCHHud = false;
+
+    @Slider(
+            title = "Justify Separation",
+            min = 150,
+            max = 300,
+            step = 5,
+            category = "Crystal Hollows Waypoints",
+            description = "How far the separation is for the justified HUD"
+    )
+    public static Integer justifySeparation = 175;
 
     @Dropdown(
             title = "Waypoints After Opening",

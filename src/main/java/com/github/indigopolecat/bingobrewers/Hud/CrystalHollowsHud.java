@@ -1,7 +1,6 @@
 package com.github.indigopolecat.bingobrewers.Hud;
 
-import org.polyfrost.oneconfig.api.config.v1.annotations.*;
-import org.polyfrost.oneconfig.hud.Hud;
+import org.polyfrost.oneconfig.api.hud.v1.LegacyHud;
 import org.polyfrost.universal.UMatrixStack;
 import com.github.indigopolecat.bingobrewers.BingoBrewersConfig;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
@@ -15,7 +14,10 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-public class CrystalHollowsHud extends Hud {
+import static com.github.indigopolecat.bingobrewers.BingoBrewersConfig.justifyAlignmentCHHud;
+import static com.github.indigopolecat.bingobrewers.BingoBrewersConfig.justifySeparation;
+
+public class CrystalHollowsHud extends LegacyHud {
     float lastLineRenderedAtY = 0;
     int totalLines = 0;
     long renderCounter = 0;
@@ -26,25 +28,6 @@ public class CrystalHollowsHud extends Hud {
 
     public CrystalHollowsHud() {
     }
-
-    @DualOption(
-            name = "Alignment",
-            left = "Left",
-            right = "Justify",
-            category = "Crystal Hollows Waypoints",
-            description = "The alignment of the HUD text"
-    )
-    public static boolean justifyAlignmentCHHud = false;
-
-    @Slider(
-            name = "Justify Separation",
-            min = 150,
-            max = 300,
-            step = 5,
-            category = "Crystal Hollows Waypoints",
-            description = "How far the separation is for the justified HUD"
-    )
-    public static Integer justifySeparation = 175;
 
     @Override
     protected void draw(UMatrixStack matrices, float x, float y, float scale, boolean example) {
