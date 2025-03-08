@@ -153,7 +153,7 @@ tasks.withType(Jar::class) {
         this["TweakOrder"] = 0
 
         // If you don't want mixins, remove these lines
-        this["TweakClass"] = "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker, com.github.indigopolecat.bingobrewers.modapitweaker.HypixelModAPITweaker"
+        this["TweakClass"] = "com.github.indigopolecat.bingobrewers.tweaker.BingoBrewersTweaker"
         this["MixinConfigs"] = "mixins.$modid.json"
     }
 }
