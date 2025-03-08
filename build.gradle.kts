@@ -12,16 +12,19 @@ plugins {
     //idea
     java
     //id("dev.deftu.gradle.multiversion") version "2.12.2"
-    id("dev.deftu.gradle.tools") version "2.15.0"
-    id("dev.deftu.gradle.tools.resources") version "2.15.0"
-    id("dev.deftu.gradle.tools.bloom") version "2.15.0"
-    id("dev.deftu.gradle.tools.shadow") version "2.15.0"
-    id("dev.deftu.gradle.tools.minecraft.loom") version "2.15.0"
+    id("dev.deftu.gradle.tools") version "2.22.0"
+    id("dev.deftu.gradle.tools.resources") version "2.22.0"
+    id("dev.deftu.gradle.tools.bloom") version "2.22.0"
+    id("dev.deftu.gradle.tools.shadow") version "2.22.0"
+    id("dev.deftu.gradle.tools.minecraft.loom") version "2.22.0"
+
+
     /*
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("gg.essential.loom") version "0.10.0.+"
     id("dev.architectury.architectury-pack200") version "0.1.3"
     id("net.kyori.blossom") version "1.3.1"
+
     id("signing")
      */
 }
@@ -31,8 +34,8 @@ plugins {
 toolkitLoomHelper {
     // Adds OneConfig to our project
     useOneConfig {
-        version = "1.0.0-alpha.47"
-        loaderVersion = "1.1.0-alpha.34"
+        version = "1.0.0-alpha.55"
+        loaderVersion = "1.1.0-alpha.35"
 
         usePolyMixin = true
         polyMixinVersion = "0.8.4+build.2"
@@ -43,7 +46,7 @@ toolkitLoomHelper {
         +"ui"
     }
 
-    useDevAuth()
+    useDevAuth("1.2.1")
     // Removes the server configs from IntelliJ IDEA, leaving only client runs.
     // If you're developing a server-side mod, you can remove this line.
     disableRunConfigs(GameSide.SERVER)
