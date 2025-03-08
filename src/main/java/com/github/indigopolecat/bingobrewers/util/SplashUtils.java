@@ -114,9 +114,7 @@ public class SplashUtils {
                                 info.hubNumber = hubNumber; // update the hub number client side to reflect the server ID found in the hub selector
                             }
                         }
-                        PlayerInfo.hubServerMap.put(server, hubNumber);
                     } else if (dungeonHubSelectorOpen) {
-                        PlayerInfo.dungeonHubServerMap.put(server, hubNumber);
                         for (SplashNotificationInfo info : activeSplashes) {
                             if (!info.hubNumber.equals(hubNumber) && info.serverID.equalsIgnoreCase(server)) {
                                 info.hubNumber = hubNumber; // update the hub number client side to reflect the server ID found in the hub selector

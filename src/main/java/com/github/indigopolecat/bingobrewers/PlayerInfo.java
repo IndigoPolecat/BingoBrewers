@@ -31,8 +31,6 @@ public class PlayerInfo {
     public static HashSet<String> currentRenderedPlayerEntities;
     public static String currentServer = "";
     public static String currentNetwork = "";
-    public static HashMap<String, String> hubServerMap = new HashMap<>();
-    public static HashMap<String, String> dungeonHubServerMap = new HashMap<>();
     public static int tickCounter = 0;
     public static int day;
     public static boolean subscribedToCurrentCHServer;
