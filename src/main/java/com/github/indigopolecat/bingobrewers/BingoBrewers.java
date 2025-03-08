@@ -8,6 +8,7 @@ import com.github.indigopolecat.bingobrewers.commands.TempWarpCommand;
 import com.github.indigopolecat.bingobrewers.util.AutoUpdater;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
+import com.github.indigopolecat.bingobrewers.util.SplashUtils;
 import com.github.indigopolecat.events.HypixelPackets;
 import com.github.indigopolecat.events.Packets;
 import com.sun.xml.internal.bind.v2.runtime.reflect.Lister;
@@ -57,6 +58,7 @@ public class BingoBrewers {
         MinecraftForge.EVENT_BUS.register(autoUpdater);
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(new HypixelPackets());
+        MinecraftForge.EVENT_BUS.register(new SplashUtils());
 
         config = new BingoBrewersConfig();
         config.preload();

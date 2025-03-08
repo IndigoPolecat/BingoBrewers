@@ -1,7 +1,9 @@
 package com.github.indigopolecat.bingobrewers;
 
+import com.github.indigopolecat.bingobrewers.Hud.SplashInfoHud;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
+import com.github.indigopolecat.bingobrewers.util.SplashUtils;
 import com.github.indigopolecat.events.Packets;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.inventory.Container;
@@ -33,7 +35,7 @@ public class ChestInventories {
     public static final int POINTS_PER_BINGO = 85;
     public static boolean bingoShopOpen = false;
     boolean calculationsReady = false;
-    ContainerChest containerChest;
+    public static ContainerChest containerChest;
     String itemName = null;
     String coinsPerPoint = null;
     int finalCostLineIndex;
@@ -41,15 +43,20 @@ public class ChestInventories {
     String finalExtraCost2;
     ArrayList<TooltipInfo> tooltipInfoList = new ArrayList<>();
     long lastRan;
-    boolean hubSelectorOpen = false;
-    boolean dungeonHubSelectorOpen = false;
     private int currentBingoPoints;
     public static boolean shiftPressed = false;
     public static HashMap<Integer, Integer> rankPriceMap = new HashMap<>();
     public static int bingoRank;
 
     @SubscribeEvent
-    public void onShopOpen(GuiOpenEvent event) {
+    public void onChestOpen(GuiOpenEvent event) {
+        SplashUtils.splashServerIDs.clear(); // clear this so random items aren't highlighted
+        for (SplashNotificationInfo splashNotificationInfo : activeSplashes) {
+            if (splashNotificationInfo.serverID.isEmpty()) continue;
+
+            SplashUtils.splashServerIDs.add(splashNotificationInfo.serverID);
+        }
+
         calculationsReady = false;
         bingoShopOpen = false;
         shiftPressed = false;
@@ -73,11 +80,11 @@ public class ChestInventories {
                         break;
                     case "SkyBlock Hub Selector":
                         LoggerUtil.LOGGER.info("Hub Selector Open");
-                        hubSelectorOpen = true;
+                        SplashUtils.hubSelectorOpen = true;
                         break;
                     case "Dungeon Hub Selector":
                         LoggerUtil.LOGGER.info("Dungeon Hub Selector Open");
-                        dungeonHubSelectorOpen = true;
+                        SplashUtils.dungeonHubSelectorOpen = true;
                         break;
                 }
             }
@@ -241,48 +248,6 @@ public class ChestInventories {
                 });
             });
 
-        } else if (hubSelectorOpen || dungeonHubSelectorOpen) {
-            List<ItemStack> chestInventory = containerChest.getInventory();
-            // Remove the last 36 slots in the chest inventory, which are the player inventory
-            chestInventory.subList(chestInventory.size() - 36, chestInventory.size()).clear();
-
-            // TODO: Change this to just directly update the hub # based on known server ids
-            // loop through the items in the chest
-            for (ItemStack item : chestInventory) {
-                // verify the item slot isn't empty
-                if (item != null) {
-                    // Get the lore of the item
-                    List<String> itemLore = item.getTooltip(Minecraft.getMinecraft().thePlayer, false);
-                    String hubNumber = null;
-                    String server = null;
-                    // loop through the lore lines of the item
-                    for (String s : itemLore) {
-                        // look for the lore line that contains the hub number
-                        if (s.contains("Hub #")) {
-                            // Match the hub number and remove formatting codes
-                            hubNumber = s.replaceAll("SkyBlock Hub #(\\d+)", "$1");
-                            hubNumber = hubNumber.replaceAll("Dungeon Hub #(\\d+)", "$1");
-                            hubNumber = removeFormatting(hubNumber);
-                        } else if (s.contains("Server:") && hubNumber != null) { // Look for the lore line containing the server id, but if the hub number hasn't been set yet ignore
-                            // Match the server id and remove formatting codes
-                            server = s.replaceAll("Server: (.+)", "$1");
-                            server = removeFormatting(server);
-
-                        }
-                        // if we're in a hub selector, add the server and hub number to the hubServerMap
-                        if (hubNumber != null && server != null && hubSelectorOpen) {
-                            for (SplashNotificationInfo info : activeSplashes) {
-                                if (info.hubNumber.equals(hubNumber) && info.serverID.equalsIgnoreCase(server)) {
-
-                                }
-                            }
-                            PlayerInfo.hubServerMap.put(server, hubNumber);
-                        } else if (hubNumber != null && server != null && dungeonHubSelectorOpen) { // if we're in a dungeon hub selector, add the server and hub number to the dungeonHubServerMap
-                            PlayerInfo.dungeonHubServerMap.put(server, hubNumber);
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -384,7 +349,7 @@ public class ChestInventories {
         }
     }
 
-    private static String removeFormatting(String s) {
+    public static String removeFormatting(String s) {
         String news = s.replaceAll("§.", "");
         if (news.endsWith(" Bingo Points")) {
             news = news.substring(0, news.length() - 13);

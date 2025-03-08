@@ -30,8 +30,7 @@ public class Packets {
     @SubscribeEvent
     public void onPacketReceived(PacketEvent.Received event) {
         if (event.getPacket() instanceof S38PacketPlayerListItem) {
-            if (System.currentTimeMillis() - PlayerInfo.lastSplashHubPresenceUpdate > 120000) {
-            }
+
 
             S38PacketPlayerListItem packet = (S38PacketPlayerListItem) event.getPacket();
             if (packet.getAction() != S38PacketPlayerListItem.Action.UPDATE_DISPLAY_NAME) return;
@@ -40,10 +39,8 @@ public class Packets {
                 if (!data.getDisplayName().getUnformattedText().contains("Players")) return;
 
                 String splashID = "";
-                for (int i = 0; i < activeSplashes.size(); i++) {
+                for (SplashNotificationInfo splash : activeSplashes) {
                     // only send if the splasher is within your render distance or you are in the recognized server id
-                    SplashNotificationInfo splash = activeSplashes.get(i);
-
                     // escape the loop once we know we are in the correct server and send the packet
                     if (splash.serverID.equalsIgnoreCase(PlayerInfo.currentServer)) {
                         splashID = splash.id;
@@ -54,11 +51,6 @@ public class Packets {
                     if (PlayerInfo.currentRenderedPlayerEntities.contains(splash.splasherIGN)) {
                         splashID = splash.id;
                         break;
-                    }
-
-                    // don't send the playercount packet at all if we're not in a splash lobby
-                    if (i == activeSplashes.size() - 1) {
-                        return;
                     }
                 }
 
@@ -148,6 +140,7 @@ public class Packets {
 
         }
     }
+
 
 
     public static class InventoryLoadingDoneEvent extends Event {
