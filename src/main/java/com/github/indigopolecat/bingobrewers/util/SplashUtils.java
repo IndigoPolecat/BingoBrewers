@@ -22,6 +22,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import static com.github.indigopolecat.bingobrewers.ChestInventories.removeFormatting;
@@ -72,7 +73,7 @@ public class SplashUtils {
 
     public static boolean hubSelectorOpen;
     public static boolean dungeonHubSelectorOpen;
-    public static ArrayList<String> splashServerIDs = new ArrayList<>(); // used to update the rendered item
+    public static HashSet<String> splashServerIDs = new HashSet<>(); // used to update the rendered item
 
     @SubscribeEvent
     public void onInventoryLastItemLoaded(Packets.InventoryLoadingDoneEvent event) {

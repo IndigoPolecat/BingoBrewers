@@ -19,8 +19,15 @@ import static com.github.indigopolecat.bingobrewers.ChestInventories.removeForma
 
 @Mixin(ItemModelMesher.class)
 public abstract class ItemModelMesherMixin {
+
     @Unique
     private static ItemStack bingoBrewers$lastItemProcessed;
+    @Unique
+    private static final int bingoBrewers$STAINED_HARDENED_CLAY_ID = 159;
+    @Unique
+    private static final int bingoBrewers$RED_DAMAGE = 14; // damage is the color of the item, 14 is red
+    @Unique
+    private static final int bingoBrewers$YELLOW_DAMAGE = 4; // damage is the color, 4 is yellow
 
     // chat gpt's method of calling the original method again
     @Invoker("getItemModel")
@@ -28,12 +35,15 @@ public abstract class ItemModelMesherMixin {
 
     @Inject(method = "getItemModel(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/client/resources/model/IBakedModel;", at = @At("HEAD"), cancellable = true)
     private void getItemModel_bb(ItemStack item, CallbackInfoReturnable<IBakedModel> cir) {
-        if (item == null || item.isItemEqual(bingoBrewers$lastItemProcessed)) return;
+        if (item == null || item.isItemEqual(bingoBrewers$lastItemProcessed)) return; // don't process the same item twice
 
         // Get the lore of the item
         List<String> itemLore = item.getTooltip(Minecraft.getMinecraft().thePlayer, false);
         boolean hubSelectorItem = false;
         String server = null;
+
+        // 14 is the color red, 159 is hardened clay, which represents the hub you are currently in
+        if (Item.getIdFromItem(item.getItem()) == bingoBrewers$STAINED_HARDENED_CLAY_ID && item.getItemDamage() == bingoBrewers$RED_DAMAGE) return;
         // loop through the lore lines of the item
         for (String s : itemLore) {
             // look for the lore line that contains the hub number
@@ -49,7 +59,9 @@ public abstract class ItemModelMesherMixin {
 
             if (server != null && SplashUtils.splashServerIDs.contains(server)) {
                 ItemStack newItem = item.copy();
-                newItem.setItem(Item.getItemById(159));
+                newItem.setItem(Item.getItemById(bingoBrewers$STAINED_HARDENED_CLAY_ID));
+                newItem.setItemDamage(bingoBrewers$YELLOW_DAMAGE);
+
 
                 bingoBrewers$lastItemProcessed = newItem;
                 IBakedModel model = invokeGetItemModel(newItem);
