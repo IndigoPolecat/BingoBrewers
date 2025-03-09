@@ -54,20 +54,20 @@ public abstract class ItemModelMesherMixin {
                 // Match the server id and remove formatting codes
                 server = s.replaceAll("Server: ((mini|mega)\\d{1,4}[a-zA-Z]{1,4})", "$1");
                 server = removeFormatting(server);
+                break;
             }
+        }
+
+        if (server != null && SplashUtils.splashServerIDs.contains(server)) {
+            ItemStack newItem = item.copy();
+            newItem.setItem(Item.getItemById(bingoBrewers$STAINED_HARDENED_CLAY_ID));
+            newItem.setItemDamage(bingoBrewers$YELLOW_DAMAGE);
 
 
-            if (server != null && SplashUtils.splashServerIDs.contains(server)) {
-                ItemStack newItem = item.copy();
-                newItem.setItem(Item.getItemById(bingoBrewers$STAINED_HARDENED_CLAY_ID));
-                newItem.setItemDamage(bingoBrewers$YELLOW_DAMAGE);
+            bingoBrewers$lastItemProcessed = newItem;
+            IBakedModel model = invokeGetItemModel(newItem);
+            cir.setReturnValue(model);
 
-
-                bingoBrewers$lastItemProcessed = newItem;
-                IBakedModel model = invokeGetItemModel(newItem);
-                cir.setReturnValue(model);
-
-            }
         }
     }
 }
