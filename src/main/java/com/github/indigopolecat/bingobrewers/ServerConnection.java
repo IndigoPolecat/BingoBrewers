@@ -605,10 +605,11 @@ public class ServerConnection extends Listener implements Runnable {
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
-                if (waitTime < 60000) {
+                // keep reconnects under 45s between
+                if (waitTime * 1.5 < 45000) {
                     waitTime *= 1.5F;
                 } else {
-                    waitTime = 60000 - (int) (5000 * Math.random() + 1000); // slightly vary time
+                    waitTime = 45000 - (int) (5000 * Math.random() + 1000); // slightly vary time
                 }
             }
         }
