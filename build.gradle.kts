@@ -26,6 +26,7 @@ plugins {
     id("net.kyori.blossom") version "1.3.1"
 
     id("signing")
+
      */
 }
 
@@ -73,7 +74,7 @@ loom {
             if (SystemUtils.IS_OS_MAC_OSX) {
                 // This argument causes a crash on macOS
                 vmArgs.remove("-XstartOnFirstThread")
-                programArgs("--tweakClass", "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker")
+                programArgs("--tweakClass", "org.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker")
                 property("mixin.debug.export", "true")
             }
         }
