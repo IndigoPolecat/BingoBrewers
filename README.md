@@ -21,7 +21,7 @@ https://i.imgur.com/bliIBRX.png
 ## Crystal Hollows Crowdsourced Chest Waypoints
 This feature crowdsources loot from chests in the Crystal Hollows and displays it to all mod users when they join a lobby. There are filters and other settings allowing you to customize what you see.
 ![Ekxb59A](https://github.com/IndigoPolecat/BingoBrewers/assets/115671621/406b8652-72a9-4c4d-b200-f73b670b04e8)
-The accompanying HUD also comes with a justify setting, allowing you to place it anywhere on the screen.
+The accompanying HUD shows the totals in a lobby and also comes with a justify setting, allowing you to place it anywhere on the screen.
 
 ## Minor Features
 ### Coins/Bingo Point Calculator
