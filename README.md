@@ -4,7 +4,7 @@
 The mod relies on the Hypixel Mod API and OneConfig, both are loaded with tweakers and don't require any separate mod installs.
 
 ## Splash Notifications
-When a splasher splashes in #splashes, your client will be sent a notification including the:
+When a splasher pings @Splash Pings in the #splashes channel in the Bingo Brewers discord, your client will be sent a notification including the:
 - Hub/Dungeon Hub Number
 - Splasher
 - Bingo Party listed in splash message
