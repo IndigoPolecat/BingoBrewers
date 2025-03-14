@@ -39,7 +39,7 @@ The mod comes with an "auto" updater which will prompt you with patch notes when
 - Nope, not logging it, not printing it, not doing anything with it.
 
 **What is OneConfig?**
-- OneConfig is the config library I'm using that is similar to Essential, but without the cosmetics and general bullshit. It's an open source mod by [PolyFrost](https://polyfrost.org/) and is likely compatible with several of your other Skyblock Mods such as NEU. It will be installed when you first launch your game.
+- OneConfig is the config library I'm using that is similar to Essential, but without the cosmetics and general bloat. It's an open source mod by [PolyFrost](https://polyfrost.org/) and is likely compatible with several of your other Skyblock Mods such as NEU. It will be installed when you first launch your game.
 
 **Is it a RAT?**
 - Nope, but you shouldn't trust me on that. You can read the source and compile yourself at https://github.com/IndigoPolecat/BingoBrewers.
