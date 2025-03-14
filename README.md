@@ -1,11 +1,7 @@
 # Introducing The Bingo Brewers Mod Public Beta
 [Bingo Brewers](<https://github.com/IndigoPolecat/BingoBrewers/releases/latest>) is an open source mod intended to help with bingo, it is currently under development and has 2 key features.
 
-**IMPORTANT**: The Hypixel Mod API mod is a required dependency and must also be placed in your mods folder. You can download it from [Modrinth](<https://modrinth.com/mod/hypixel-mod-api/version/1.0>) with the [source](<https://github.com/HypixelDev/ForgeModAPI>) available. 
-
-If you don't know what the Mod API is, read [this](<https://hypixel.net/threads/hypixel-mod-api-developer-preview-feedback.5635119/>)
-
-If you would like to know why an external mod is required for this, read [this](<https://github.com/HypixelDev/ModAPI/wiki/FAQ#can-i-use-a-third-party-or-self-made-implementation-of-the-mod-api>).
+The mod relies on the Hypixel Mod API and OneConfig, both are loaded with tweakers and don't require any separate mod installs.
 
 ## Splash Notifications
 When a splasher splashes in #splashes, your client will be sent a notification including the:
@@ -46,10 +42,12 @@ The mod comes with an "auto" updater which will prompt you with patch notes when
 - OneConfig is the config library I'm using that is similar to Essential, but without the cosmetics and general bullshit. It's an open source mod by [PolyFrost](https://polyfrost.org/) and is likely compatible with several of your other Skyblock Mods such as NEU. It will be installed when you first launch your game.
 
 **Is it a RAT?**
-- Nope, you can read the source and compile yourself at https://github.com/IndigoPolecat/BingoBrewers.
+- Nope, but you shouldn't trust me on that. You can read the source and compile yourself at https://github.com/IndigoPolecat/BingoBrewers.
 
 # Upcoming Features
 - Port the mod to Fabric, we believe that the foraging update is coming sooner rather than later and want the mod to be available for it on release.
 - Warp network of sorts, utilizing clients that have enabled the setting to warp people into crystal hollows lobbies with items they want.
 - Adding support for other CH related elements to be shared (structure locations, key guardian)
 - Improve Bingo Shop calculator
+- Rewrite of most features
+- Update to support OneConfig's v1 update.
