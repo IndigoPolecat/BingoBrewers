@@ -4,10 +4,8 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.EndPoint;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class KryoNetwork {
 
@@ -44,6 +42,7 @@ public class KryoNetwork {
         kryo.register(JoinAlert.class);
         kryo.register(WarperInfo.class);
         kryo.register(PollQueuePosition.class);
+        kryo.register(TestPacket.class);
     }
 
     public static class ConnectionIgn {
@@ -190,5 +189,20 @@ public class KryoNetwork {
     }
     public static class PollQueuePosition {
         public String server;
+    }
+    public static class TestPacket {
+        public Long timeSent;
+        public String protocol;
+        public String identification = "Unix Timestamp TestPacket.";
+
+    }
+    public static TestPacket testPacketCreator(String protocol) {
+        TestPacket packet = new TestPacket();
+        packet.protocol = protocol;
+        packet.timeSent = System.currentTimeMillis();
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm:ss z");
+        System.out.println("[" + dateFormat.format(new Date()) + "] Sending " + protocol + " Test Packet: " + packet.timeSent);
+        return packet;
     }
 }

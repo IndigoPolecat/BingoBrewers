@@ -95,6 +95,11 @@ public class Packets {
 
         if (event.getPacket() instanceof S23PacketBlockChange) {
             if (!BingoBrewersConfig.crystalHollowsWaypointsToggle) return;
+            if (Minecraft.getMinecraft().theWorld == null) {
+                System.out.println("Error: World is null!");
+                return;
+            }
+
             // coordinates of the block that changed
             BlockPos coords = ((S23PacketBlockChange) event.getPacket()).getBlockPosition();
             // old block

@@ -34,7 +34,7 @@ public class BingoBrewers {
     public static volatile Client client;
     // controls which server is connected to
     public static final boolean TEST_INSTANCE = false;
-    public static boolean onHypixel = false;
+    public static boolean onHypixel = false; // TODO: this doesn't work if someone is using a proxy to connect to hypixel, need better detection
 
     public static AutoUpdater autoUpdater = new AutoUpdater();
     public static HashMap<String, Integer> minecraftColors = new HashMap<>();

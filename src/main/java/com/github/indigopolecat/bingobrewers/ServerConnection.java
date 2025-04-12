@@ -21,6 +21,7 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import org.lwjgl.Sys;
 
 import java.net.InetAddress;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -73,7 +74,7 @@ public class ServerConnection extends Listener implements Runnable {
     }
 
     private void connection() throws IOException {
-        Log.set(LEVEL_ERROR);
+        Log.set(LEVEL_TRACE);
         KryoNetwork.register(BingoBrewers.client);
 
         BingoBrewers.client.addListener(new Listener() {
@@ -313,6 +314,11 @@ public class ServerConnection extends Listener implements Runnable {
                         partyInvites = new ArrayList<>();
                         timeOfInvite = 0;
                     }
+                } else if (object instanceof TestPacket) {
+                    TestPacket testPacket = (TestPacket) object;
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm:ss z");
+
+                    System.out.println("[" + testPacket.protocol + "]" + " [" + dateFormat.format(new Date()) + "] Time Sent (Unix): " + testPacket.timeSent + " Time Received: " + System.currentTimeMillis());
                 }
             }
 
@@ -355,6 +361,25 @@ public class ServerConnection extends Listener implements Runnable {
         }
         PlayerInfo.subscribedToCurrentCHServer = false;
         BingoBrewersConfig.SubscribeToServer();
+
+        Runnable pingThread = () -> {
+            while (true) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                if (!getClient().isConnected()) return;
+                sendTCP(KryoNetwork.testPacketCreator("TCP"));
+                getClient().sendUDP(KryoNetwork.testPacketCreator("UDP"));
+                getClient().updateReturnTripTime();
+                System.out.println("Current Ping with connection " + getClient().getID() + ": " + getClient().getReturnTripTime());
+
+            }
+        };
+
+        Thread thread = new Thread(pingThread);
+        //thread.start();
     }
 
     public static void setSplashHudItems() {
