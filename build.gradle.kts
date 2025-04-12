@@ -12,11 +12,11 @@ plugins {
     //idea
     java
     //id("dev.deftu.gradle.multiversion") version "2.12.2"
-    id("dev.deftu.gradle.tools") version "2.22.0"
-    id("dev.deftu.gradle.tools.resources") version "2.22.0"
-    id("dev.deftu.gradle.tools.bloom") version "2.22.0"
-    id("dev.deftu.gradle.tools.shadow") version "2.22.0"
-    id("dev.deftu.gradle.tools.minecraft.loom") version "2.22.0"
+    id("dev.deftu.gradle.tools") version "2.30.0"
+    id("dev.deftu.gradle.tools.resources") version "2.30.0"
+    id("dev.deftu.gradle.tools.bloom") version "2.30.0"
+    id("dev.deftu.gradle.tools.shadow") version "2.30.0"
+    id("dev.deftu.gradle.tools.minecraft.loom") version "2.30.0"
 
 
     /*
@@ -122,7 +122,7 @@ dependencies {
     annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT")
 
     // If you don't want to log in with your real minecraft account, remove this line
-    runtimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.1.2")
+    //runtimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.2.1")
     implementation("com.google.code.gson:gson:2.9.1")
     shadowImpl("com.esotericsoftware:kryonet:2.22.0-RC1")
     // Basic OneConfig dependencies for legacy versions. See OneConfig example mod for more info
