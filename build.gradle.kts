@@ -130,7 +130,7 @@ tasks.withType(Jar::class) {
         this["TweakOrder"] = 0
 
         // If you don't want mixins, remove these lines
-        this["TweakClass"] = "com.github.indigopolecat.bingobrewers.tweaker.BingoBrewersTweaker"
+        this["TweakClass"] = "org.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker"
         this["MixinConfigs"] = "mixins.$modid.json"
     }
 }
@@ -140,18 +140,18 @@ tasks.processResources {
 }
 
 // equivalent of shadowJar in DGT
-tasks.fatJar {
-    destinationDirectory.set(layout.buildDirectory.dir("badjars"))
-    archiveClassifier.set("all-dev")
-    configurations = listOf(shadowImpl)
-    relocate("net.hypixel.modapi.tweaker", "com.github.indigopolecat.bingobrewers.modapitweaker")
-
-    doLast {
-        configurations.forEach {
-            println("Copying jars into mod: ${it.files}")
-        }
-    }
-}
+//tasks.fatJar {
+//    destinationDirectory.set(layout.buildDirectory.dir("badjars"))
+//    archiveClassifier.set("all-dev")
+//    configurations = listOf(shadowImpl)
+//    //relocate("net.hypixel.modapi.tweaker", "com.github.indigopolecat.bingobrewers.modapitweaker")
+//
+//    doLast {
+//        configurations.forEach {
+//            println("Copying jars into mod: ${it.files}")
+//        }
+//    }
+//}
 
 //tasks.assemble.get().dependsOn(tasks.shadowJar)
 //tasks.assemble.get().dependsOn(tasks.remapJar)
