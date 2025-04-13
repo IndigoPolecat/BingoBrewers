@@ -9,10 +9,10 @@ import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import net.minecraft.client.Minecraft;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
+import org.polyfrost.oneconfig.internal.OneConfig;
 import org.polyfrost.polyui.color.PolyColor;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 import static com.github.indigopolecat.bingobrewers.CHWaypoints.filteredWaypoints;
 import static com.github.indigopolecat.bingobrewers.CHWaypoints.itemCounts;
@@ -39,6 +39,7 @@ public class BingoBrewersConfig extends Config {
         addCallback("jasperGemstones", BingoBrewersConfig::roughCall);
         addCallback("junk", BingoBrewersConfig::miscCall);
         addCallback("crystalHollowsWaypointsToggle", BingoBrewersConfig::SubscribeToServer);
+
 
     }
 
@@ -143,14 +144,17 @@ public class BingoBrewersConfig extends Config {
     )
     public static boolean crystalHollowsWaypointsToggle = true;
 
-    @DualOption(
-            name = "Alignment",
-            left = "Left",
-            right = "Justify",
+    public enum TextAlignment {
+        LEFT, TABLE, RIGHT
+    }
+    
+    @RadioButton(
+            title = "Alignment",
+            description = "The text alignment for HUD Text",
             category = "Crystal Hollows Waypoints",
-            description = "The alignment of the HUD text"
+            options = {"Left", "Table", "Right"}
     )
-    public static boolean justifyAlignmentCHHud = false;
+    public static TextAlignment textAlignmentCHHud = TextAlignment.TABLE;
 
     @Slider(
             title = "Justify Separation",

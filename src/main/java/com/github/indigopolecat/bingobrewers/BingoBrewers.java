@@ -7,11 +7,9 @@ import com.github.indigopolecat.bingobrewers.commands.ConfigCommand;
 import com.github.indigopolecat.bingobrewers.commands.TempWarpCommand;
 import com.github.indigopolecat.bingobrewers.util.AutoUpdater;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
-import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
 import com.github.indigopolecat.bingobrewers.util.SplashUtils;
 import com.github.indigopolecat.events.HypixelPackets;
 import com.github.indigopolecat.events.Packets;
-import com.sun.xml.internal.bind.v2.runtime.reflect.Lister;
 import net.hypixel.modapi.HypixelModAPI;
 import net.hypixel.modapi.packet.HypixelPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPartyInfoPacket;
@@ -70,9 +68,9 @@ public class BingoBrewers {
         ClientCommandHandler.instance.registerCommand(new ConfigCommand());
         ClientCommandHandler.instance.registerCommand(new TempWarpCommand());
 
-        HypixelModAPI.getInstance().registerHandler(ClientboundPingPacket.class, HypixelPackets::onPingPacket);
-        HypixelModAPI.getInstance().registerHandler(ClientboundPartyInfoPacket.class, HypixelPackets::onPartyInfoPacket);
-        HypixelModAPI.getInstance().registerHandler(ClientboundLocationPacket.class, HypixelPackets::onLocationEvent);
+        HypixelModAPI.getInstance().createHandler(ClientboundPingPacket.class, HypixelPackets::onPingPacket);
+        HypixelModAPI.getInstance().createHandler(ClientboundPartyInfoPacket.class, HypixelPackets::onPartyInfoPacket);
+        HypixelModAPI.getInstance().createHandler(ClientboundLocationPacket.class, HypixelPackets::onLocationEvent);
         HypixelModAPI.getInstance().subscribeToEventPacket(ClientboundLocationPacket.class);
     }
 

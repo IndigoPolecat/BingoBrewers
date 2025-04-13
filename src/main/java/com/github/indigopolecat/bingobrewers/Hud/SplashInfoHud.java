@@ -4,6 +4,7 @@ import com.github.indigopolecat.bingobrewers.BingoBrewers;
 import com.github.indigopolecat.bingobrewers.BingoBrewersConfig;
 import com.github.indigopolecat.bingobrewers.PlayerInfo;
 import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
+import dev.deftu.omnicore.client.render.OmniMatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
@@ -11,7 +12,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.jetbrains.annotations.NotNull;
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud;
-import org.polyfrost.universal.UMatrixStack;
 
 import java.awt.*;
 import java.util.*;
@@ -58,7 +58,7 @@ public class SplashInfoHud extends LegacyHud {
     }
 
     @Override
-    public void render(@NotNull UMatrixStack uMatrixStack, float x, float y, float scaleX, float scaleY) {
+    public void render(@NotNull OmniMatrixStack omniMatrixStack, float x, float y, float scaleX, float scaleY) {
         // don't divide by 0
         if (scaleX < 0.3) {
             scaleX = 0.3f;
@@ -75,7 +75,7 @@ public class SplashInfoHud extends LegacyHud {
         y = (y / scaleY);
         y = Math.min(y, heightScaled); // this is supposed to be heightScaled - getHeight()
 
-        uMatrixStack.scale(scaleX, scaleY, 1);
+        omniMatrixStack.scale(scaleX, scaleY, 1f);
 
         boolean example = !isReal();
 

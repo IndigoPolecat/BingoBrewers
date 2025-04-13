@@ -35,7 +35,7 @@ plugins {
 toolkitLoomHelper {
     // Adds OneConfig to our project
     useOneConfig {
-        version = "1.0.0-alpha.55"
+        version = "1.0.0-alpha.77"
         loaderVersion = "1.1.0-alpha.35"
 
         usePolyMixin = true
@@ -111,39 +111,15 @@ val shadowImpl: Configuration by configurations.creating {
 }
 
 dependencies {
-    minecraft("com.mojang:minecraft:1.8.9")
-    //mappings("de.oceanlabs.mcp:mcp_stable:22-1.8.9")
-    forge("net.minecraftforge:forge:1.8.9-11.15.1.2318-1.8.9")
+    shade(implementation("com.google.code.gson:gson:2.2.4")!!) // !! means ignore null checks in kotlin
+    shade(implementation("com.esotericsoftware:kryonet:2.22.0-RC1")!!)
 
-    // If you don't want mixins, remove these lines
-    shadowImpl("org.spongepowered:mixin:0.7.11-SNAPSHOT") {
-        isTransitive = false
-    }
-    annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT")
-
-    // If you don't want to log in with your real minecraft account, remove this line
-    //runtimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.2.1")
-    shadowImpl("com.google.code.gson:gson:2.9.1")
-    shadowImpl("com.esotericsoftware:kryonet:2.22.0-RC1")
-    // Basic OneConfig dependencies for legacy versions. See OneConfig example mod for more info
-    //modCompileOnly("cc.polyfrost:oneconfig-1.8.9-forge:0.2.2-alpha+") // Should not be included in jar
-    // include should be replaced with a configuration that includes this in the jar
-    //shadowImpl("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+") // Should be included in jar
-    shadowImpl("moe.nea:libautoupdate:1.3.1") // Should be included in jar
+    shade(implementation("moe.nea:libautoupdate:1.3.1")!!)
 
     // mod API tweaker and dependency
     modImplementation("net.hypixel:mod-api-forge:1.0.1.1")
-    shadowImpl("net.hypixel:mod-api-forge-tweaker:1.0.1.1")
+    shade(implementation("net.hypixel:mod-api-forge-tweaker:1.0.1.1")!!)
 
-    compileOnly("io.github.llamalad7:mixinextras-common:0.4.1")
-    annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")
-    compileOnly("org.polyfrost:polymixin:0.8.4+build.2")
-    //modCompileOnly("org.polyfrost.oneconfig:internal:1.0.0-alpha.47")
-
-}
-
-tasks.withType(JavaCompile::class) {
-    options.encoding = "UTF-8"
 }
 
 tasks.withType(Jar::class) {
@@ -172,19 +148,6 @@ tasks.processResources {
     rename("(.+_at.cfg)", "META-INF/$1")
 }
 
-/*
-val remapJar by tasks.named<net.fabricmc.loom.task.RemapJarTask>("remapJar") {
-    archiveClassifier.set("")
-    from(tasks.shadowJar)
-    input.set(tasks.shadowJar.get().archiveFile)
-}
- */
-
-tasks.jar {
-    archiveClassifier.set("without-deps")
-    destinationDirectory.set(layout.buildDirectory.dir("badjars"))
-}
-
 // equivalent of shadowJar in DGT
 tasks.fatJar {
     destinationDirectory.set(layout.buildDirectory.dir("badjars"))
@@ -197,17 +160,6 @@ tasks.fatJar {
             println("Copying jars into mod: ${it.files}")
         }
     }
-}
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21)) // Ensure Java 21 Toolchain
-    }
-}
-
-tasks.withType<JavaCompile> {
-    sourceCompatibility = "21" // Set source compatibility to match Java 21
-    targetCompatibility = "21" // Set target compatibility to match Java 21
 }
 
 //tasks.assemble.get().dependsOn(tasks.shadowJar)

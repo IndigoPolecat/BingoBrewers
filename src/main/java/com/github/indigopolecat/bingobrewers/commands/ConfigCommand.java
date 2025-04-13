@@ -5,6 +5,7 @@ import com.github.indigopolecat.bingobrewers.BingoBrewersConfig;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import org.polyfrost.oneconfig.utils.v1.dsl.ScreensKt;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +23,8 @@ public class ConfigCommand extends CommandBase {
 
     @Override
     public void processCommand(ICommandSender sender, String[] args) throws CommandException {
-        BingoBrewers.config.openGui();
+        //BingoBrewers.config.openGui();
+        ScreensKt.openUI(BingoBrewers.config);
     }
 
     @Override

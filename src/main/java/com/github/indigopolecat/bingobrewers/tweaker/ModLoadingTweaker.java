@@ -4,6 +4,7 @@ import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecraftforge.fml.relauncher.CoreModManager;
 import org.spongepowered.asm.launch.MixinBootstrap;
+import org.spongepowered.asm.launch.platform.container.ContainerHandleURI;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -21,7 +22,7 @@ public class ModLoadingTweaker implements ITweaker {
         if (location == null) return;
         if (!"file".equals(location.getProtocol())) return;
         try {
-            MixinBootstrap.getPlatform().addContainer(location.toURI());
+            MixinBootstrap.getPlatform().addContainer(new ContainerHandleURI(location.toURI()));
             String file = new File(location.toURI()).getName();
             CoreModManager.getIgnoredMods().remove(file);
             CoreModManager.getReparseableCoremods().add(file);
