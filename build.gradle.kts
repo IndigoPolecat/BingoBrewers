@@ -123,7 +123,7 @@ dependencies {
 
     // If you don't want to log in with your real minecraft account, remove this line
     //runtimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.2.1")
-    implementation("com.google.code.gson:gson:2.9.1")
+    shadowImpl("com.google.code.gson:gson:2.9.1")
     shadowImpl("com.esotericsoftware:kryonet:2.22.0-RC1")
     // Basic OneConfig dependencies for legacy versions. See OneConfig example mod for more info
     //modCompileOnly("cc.polyfrost:oneconfig-1.8.9-forge:0.2.2-alpha+") // Should not be included in jar
@@ -197,6 +197,17 @@ tasks.fatJar {
             println("Copying jars into mod: ${it.files}")
         }
     }
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21)) // Ensure Java 21 Toolchain
+    }
+}
+
+tasks.withType<JavaCompile> {
+    sourceCompatibility = "21" // Set source compatibility to match Java 21
+    targetCompatibility = "21" // Set target compatibility to match Java 21
 }
 
 //tasks.assemble.get().dependsOn(tasks.shadowJar)
