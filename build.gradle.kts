@@ -36,7 +36,7 @@ toolkitLoomHelper {
     // Adds OneConfig to our project
     useOneConfig {
         version = "1.0.0-alpha.77"
-        loaderVersion = "1.1.0-alpha.35"
+        loaderVersion = "1.1.0-alpha.44"
 
         usePolyMixin = true
         polyMixinVersion = "0.8.4+build.2"
@@ -111,14 +111,14 @@ val shadowImpl: Configuration by configurations.creating {
 }
 
 dependencies {
-    shade(implementation("com.google.code.gson:gson:2.2.4")!!) // !! means ignore null checks in kotlin
-    shade(implementation("com.esotericsoftware:kryonet:2.22.0-RC1")!!)
+    shadowImpl("com.google.code.gson:gson:2.2.4")
+    shadowImpl("com.esotericsoftware:kryonet:2.22.0-RC1")
 
-    shade(implementation("moe.nea:libautoupdate:1.3.1")!!)
+    shadowImpl("moe.nea:libautoupdate:1.3.1")
 
     // mod API tweaker and dependency
     modImplementation("net.hypixel:mod-api-forge:1.0.1.1")
-    shade(implementation("net.hypixel:mod-api-forge-tweaker:1.0.1.1")!!)
+    shadowImpl("net.hypixel:mod-api-forge-tweaker:1.0.1.1")
 
 }
 
