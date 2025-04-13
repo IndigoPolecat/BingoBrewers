@@ -136,15 +136,6 @@ tasks.withType(Jar::class) {
 }
 
 tasks.processResources {
-    inputs.property("version", project.version)
-    inputs.property("mcversion", mcVersion)
-    inputs.property("modid", modid)
-    inputs.property("mixinGroup", mixinGroup)
-
-    filesMatching(listOf("mcmod.info", "mixins.$modid.json")) {
-        expand(inputs.properties)
-    }
-
     rename("(.+_at.cfg)", "META-INF/$1")
 }
 
