@@ -8,13 +8,12 @@ import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
-import org.lwjgl.opengl.GL11;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import static com.github.indigopolecat.bingobrewers.BingoBrewersConfig.textAlignmentCHHud;
-import static com.github.indigopolecat.bingobrewers.BingoBrewersConfig.justifySeparation;
+import static com.github.indigopolecat.bingobrewers.BingoBrewersConfig.hudWidth;
 
 public class CrystalHollowsHud extends LegacyHud {
     float lastLineRenderedAtY = 0;
@@ -145,7 +144,7 @@ public class CrystalHollowsHud extends LegacyHud {
                 if (l == 1) nextStart = 0;
 
                 if (textAlignmentCHHud == BingoBrewersConfig.TextAlignment.TABLE) {
-                    maxWidth = justifySeparation * scaleX;
+                    maxWidth = hudWidth * scaleX;
                     nextStart = (maxWidth / scaleX) - (fontRenderer.getStringWidth(line));
                 } else if (fontRenderer.getStringWidth(line) + nextStart > longestWidth) {
                     longestWidth = fontRenderer.getStringWidth(line) + nextStart;

@@ -9,7 +9,6 @@ import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import net.minecraft.client.Minecraft;
 import org.polyfrost.oneconfig.api.hud.v1.HudManager;
-import org.polyfrost.oneconfig.internal.OneConfig;
 import org.polyfrost.polyui.color.PolyColor;
 
 import java.util.*;
@@ -25,11 +24,10 @@ public class BingoBrewersConfig extends Config {
         //super(new Mod("Bingo Brewers", ModType.SKYBLOCK), "bingobrewers.json");
         super("bingobrewers.json", "Bingo Brewers", Category.HYPIXEL);
 
-        List<String> crystalHollowsWaypoints = Arrays.asList("robotParts", "powder", "prehistoricEggs", "pickonimbus", "goblinEggs", "roughGemstones", "jasperGemstones", "junk", "CHHud", "waypointFate");
+        List<String> crystalHollowsWaypoints = Arrays.asList("robotParts", "powder", "prehistoricEggs", "pickonimbus", "goblinEggs", "roughGemstones", "jasperGemstones", "junk", "waypointFate");
         for (String option : crystalHollowsWaypoints) {
             addDependency(option, "crystalHollowsWaypointsToggle");
         }
-        addDependency("justifySeparation", "justifyAlignmentCHHud");
         addCallback("robotParts", BingoBrewersConfig::robotPartsCall);
         addCallback("powder", BingoBrewersConfig::powderCall);
         addCallback("prehistoricEggs", BingoBrewersConfig::prehistoricEggsCall);
@@ -39,8 +37,6 @@ public class BingoBrewersConfig extends Config {
         addCallback("jasperGemstones", BingoBrewersConfig::roughCall);
         addCallback("junk", BingoBrewersConfig::miscCall);
         addCallback("crystalHollowsWaypointsToggle", BingoBrewersConfig::SubscribeToServer);
-
-
     }
 
     public static void addHuds() {
@@ -151,8 +147,7 @@ public class BingoBrewersConfig extends Config {
     @RadioButton(
             title = "Alignment",
             description = "The text alignment for HUD Text",
-            category = "Crystal Hollows Waypoints",
-            options = {"Left", "Table", "Right"}
+            category = "Crystal Hollows Waypoints"
     )
     public static TextAlignment textAlignmentCHHud = TextAlignment.TABLE;
 
@@ -164,7 +159,7 @@ public class BingoBrewersConfig extends Config {
             category = "Crystal Hollows Waypoints",
             description = "How far the separation is for the justified HUD"
     )
-    public static Integer justifySeparation = 175;
+    public static Integer hudWidth = 175;
 
     @Dropdown(
             title = "Waypoints After Opening",

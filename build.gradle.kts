@@ -37,6 +37,7 @@ toolkitLoomHelper {
     useOneConfig {
         version = "1.0.0-alpha.77"
         loaderVersion = "1.1.0-alpha.44"
+        applyLoaderTweaker = true
 
         usePolyMixin = true
         polyMixinVersion = "0.8.4+build.2"
@@ -57,9 +58,10 @@ toolkitLoomHelper {
         useMixinRefMap(modData.id)
     }
 
+
     // Adds the tweak class if we are building legacy version of forge as per the documentation (https://docs.polyfrost.org)
     if (mcData.isLegacyForge) {
-        useTweaker("org.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker", GameSide.CLIENT)
+        //useTweaker("org.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker", GameSide.CLIENT)
         useForgeMixin(modData.id) // Configures the mixins if we are building for forge, useful for when we are dealing with cross-platform projects.
     }
 
@@ -111,14 +113,14 @@ val shadowImpl: Configuration by configurations.creating {
 }
 
 dependencies {
-    shadowImpl("com.google.code.gson:gson:2.2.4")
-    shadowImpl("com.esotericsoftware:kryonet:2.22.0-RC1")
+    implementation("com.google.code.gson:gson:2.2.4")
+    shade(implementation("com.esotericsoftware:kryonet:2.22.0-RC1")!!)
 
-    shadowImpl("moe.nea:libautoupdate:1.3.1")
+    shade(implementation("moe.nea:libautoupdate:1.3.1")!!)
 
     // mod API tweaker and dependency
     modImplementation("net.hypixel:mod-api-forge:1.0.1.1")
-    shadowImpl("net.hypixel:mod-api-forge-tweaker:1.0.1.1")
+    shade(implementation("net.hypixel:mod-api-forge-tweaker:1.0.1.1")!!)
 
 }
 
