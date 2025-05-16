@@ -74,14 +74,21 @@ public class KryoNetwork {
 
     public static class SplashNotification {
         public long timestamp;
+
         public String hub;
         public String serverID;
+        public boolean isPrivate;
+        public boolean dungeonHub;
+
         public String splasher;
+        public boolean splasherRealIGN;
+
         public String partyHost;
+
         public ArrayList<String> note;
+
         public String location;
         public String splash;
-        public boolean dungeonHub;
         public boolean remove;
     }
 

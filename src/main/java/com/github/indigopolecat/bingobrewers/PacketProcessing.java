@@ -7,7 +7,7 @@ import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
-import com.github.indigopolecat.kryo.KryoNetwork;
+import com.github.indigopolecat.kryo.KryoNetwork.*;
 import com.github.indigopolecat.kryo.ServerSummary;
 import com.mojang.authlib.exceptions.AuthenticationException;
 import net.minecraft.client.Minecraft;
@@ -25,8 +25,8 @@ public class PacketProcessing {
     private static ServerConnection CLIENT_INSTANCE;
 
     public static void processPacket(Connection connection, Object packet) {
-        if (packet instanceof KryoNetwork.ServerPublicKey) {
-            KryoNetwork.ServerPublicKey serverPublicKey = (KryoNetwork.ServerPublicKey) packet;
+        if (packet instanceof ServerPublicKey) {
+            ServerPublicKey serverPublicKey = (ServerPublicKey) packet;
             String public_key = serverPublicKey.public_key;
             SecretKey symmetricKey;
 
@@ -37,7 +37,7 @@ public class PacketProcessing {
                     throw new RuntimeException(e);
                 }
 
-                KryoNetwork.ClientSymmetricKey key = new KryoNetwork.ClientSymmetricKey();
+                ClientSymmetricKey key = new ClientSymmetricKey();
                 key.symmetric_key = encryptObjectPublicKey(symmetricKey, loadPublicKeyFromBase64(public_key));
                 sendTCP(key);
             } else {
@@ -49,8 +49,8 @@ public class PacketProcessing {
                 return;
             }
 
-        } else if (packet instanceof KryoNetwork.Authentication) {
-            KryoNetwork.Authentication authentication = (KryoNetwork.Authentication) packet;
+        } else if (packet instanceof Authentication) {
+            Authentication authentication = (Authentication) packet;
             String serverAuthID = decryptString(authentication.AuthID);
 
             String clientAuthID = UUID.randomUUID().toString().replaceAll("-", "");
@@ -72,7 +72,7 @@ public class PacketProcessing {
             ign = Minecraft.getMinecraft().getSession().getUsername();
             uuid = Minecraft.getMinecraft().getSession().getProfile().getId().toString();
 
-            KryoNetwork.ConnectionIGN accountInfo = new KryoNetwork.ConnectionIGN();
+            ConnectionIGN accountInfo = new ConnectionIGN();
             accountInfo.IGN = encryptString(ign);
             accountInfo.uuid = encryptString(uuid);
             accountInfo.version = encryptString("v0.4");
@@ -92,10 +92,10 @@ public class PacketProcessing {
             BingoBrewersConfig.SubscribeToServer();
 
 
-        } else if (packet instanceof KryoNetwork.SplashNotification) {
+        } else if (packet instanceof SplashNotification) {
             LoggerUtil.LOGGER.info("Received splash notification");
 
-            KryoNetwork.SplashNotification notif = (KryoNetwork.SplashNotification) packet;
+            SplashNotification notif = (SplashNotification) packet;
             if (notif.hub.isEmpty()) return; // completely ignore splashes without a hub number
 
             // update the active splashes list if the message is edited
@@ -119,11 +119,6 @@ public class PacketProcessing {
                         updatedSplash = new SplashNotificationInfo(notif, true, splashNotificationInfo); // if the hub or dungeon hub status changed, resend the notification
                     }
 
-                    if (!splashNotificationInfo.serverID.equals(updatedSplash.serverID) && !splashNotificationInfo.serverID.isEmpty()) {
-                        // if the new server ID doesn't match the old, and the old did have a value (i.e. it isn't being set for the first time), then clear the player count
-                        updatedSplash.lobbyPlayerCount = "";
-                    }
-
                     SplashInfoHud.activeSplashes.set(i, updatedSplash);
 
                     return;
@@ -134,17 +129,17 @@ public class PacketProcessing {
 
             SplashInfoHud.activeSplashes.add(new SplashNotificationInfo(notif, true, null));
 
-        } else if (packet instanceof KryoNetwork.PlayerCountBroadcast) {
-            KryoNetwork.PlayerCountBroadcast playerCountBroadcast = (KryoNetwork.PlayerCountBroadcast) packet;
+        } else if (packet instanceof PlayerCountBroadcast) {
+            PlayerCountBroadcast playerCountBroadcast = (PlayerCountBroadcast) packet;
 
             for (SplashNotificationInfo info : SplashInfoHud.activeSplashes) {
                 if (playerCountBroadcast.serverID.equals(info.serverID)) {
-                    info.lobbyPlayerCount = "(" + playerCountBroadcast.playerCount + ")";
+                    info.lobbyPlayerCount = String.valueOf(playerCountBroadcast.playerCount);
                 }
             }
 
-        } else if (packet instanceof KryoNetwork.ClientReceiveServerConstantValues) {
-            KryoNetwork.ClientReceiveServerConstantValues request = (KryoNetwork.ClientReceiveServerConstantValues) packet;
+        } else if (packet instanceof ClientReceiveServerConstantValues) {
+            ClientReceiveServerConstantValues request = (ClientReceiveServerConstantValues) packet;
             HashMap<String, Object> constants = request.constants;
 
             if (constants.get("bingoRankCosts") != null && constants.get("bingoRankCosts") instanceof HashMap) {
@@ -174,8 +169,8 @@ public class PacketProcessing {
                     newMiscCHItems = (ArrayList<String>) constants.get("newMiscCHItems");
                 }
             }
-            if (constants.get("joinAlert"+ version) != null && constants.get("joinAlert"+ version) instanceof KryoNetwork.JoinAlert) {
-                KryoNetwork.JoinAlert joinAlert = (KryoNetwork.JoinAlert) constants.get("joinAlert"+ version);
+            if (constants.get("joinAlert"+ version) != null && constants.get("joinAlert"+ version) instanceof JoinAlert) {
+                JoinAlert joinAlert = (JoinAlert) constants.get("joinAlert"+ version);
                 if (joinAlert.joinAlertChat != null) {
                     joinChat = joinAlert.joinAlertChat;
                 }
@@ -215,17 +210,17 @@ public class PacketProcessing {
             }
 
 
-        } else if (packet instanceof KryoNetwork.ServerSendCHItems) {
-            KryoNetwork.ServerSendCHItems CHItems = (KryoNetwork.ServerSendCHItems) packet;
+        } else if (packet instanceof ServerSendCHItems) {
+            ServerSendCHItems CHItems = (ServerSendCHItems) packet;
             System.out.println("Received CH Chests for " + CHItems.server);
-            ArrayList<KryoNetwork.ChestInfo> chests = CHItems.chestMap;
+            ArrayList<ChestInfo> chests = CHItems.chestMap;
             if (CHItems.server.equals(PlayerInfo.currentServer)) {
                 if (CHItems.day - 1 > PlayerInfo.day || System.currentTimeMillis() - (CHItems.lastReceivedDayInfo != null ? CHItems.lastReceivedDayInfo : Long.MAX_VALUE) > 25_200_000) return; // ignore if the server is younger than last known, or it's been more than 7 hours since info was received
-                for (KryoNetwork.ChestInfo chest : chests) {
+                for (ChestInfo chest : chests) {
                     CHWaypoints chWaypoints = new CHWaypoints(chest.x, chest.y, chest.z, chest.items);
                     waypoints.add(chWaypoints);
 
-                    for (KryoNetwork.CHChestItem item : chest.items) {
+                    for (CHChestItem item : chest.items) {
                         CrystalHollowsItemTotal.sumItems(item);
                     }
 
@@ -245,8 +240,8 @@ public class PacketProcessing {
 
                 }
             }
-        } else if (packet instanceof KryoNetwork.ServersSummary) {
-            KryoNetwork.ServersSummary servers = (KryoNetwork.ServersSummary) packet;
+        } else if (packet instanceof ServersSummary) {
+            ServersSummary servers = (ServersSummary) packet;
             serverSummaries.putAll(servers.serverInfo);
             // remove outdated entries
             for (ServerSummary server : serverSummaries.values()) {
@@ -254,15 +249,15 @@ public class PacketProcessing {
                     serverSummaries.remove(server.server);
                 }
             }
-        } else if (packet instanceof KryoNetwork.QueuePosition) {
+        } else if (packet instanceof QueuePosition) {
             // if you have to wait in the queue, this will give you your current position
             // gonna leave it for you to implement because I think the permanent value should be stored in the class for rendering the menu
-            KryoNetwork.QueuePosition position = (KryoNetwork.QueuePosition) packet;
+            QueuePosition position = (QueuePosition) packet;
             if (position.positionInWarpQueue == 0) {
                 // server is telling the client there was an unknown error and there are no available warp clients
             }
-        } else if (packet instanceof KryoNetwork.BackgroundWarpTask) {
-            KryoNetwork.BackgroundWarpTask warpTask = (KryoNetwork.BackgroundWarpTask) packet;
+        } else if (packet instanceof BackgroundWarpTask) {
+            BackgroundWarpTask warpTask = (BackgroundWarpTask) packet;
 
             if (warpTask.server.equals(PlayerInfo.currentServer) && !warpTask.accountsToWarp.isEmpty() && accountsToWarp.isEmpty() && !warpTask.accountsToWarp.containsKey(null) && !warpTask.accountsToWarp.containsValue(null)) {
                 accountsToWarp = new ConcurrentHashMap<>(warpTask.accountsToWarp);
@@ -277,7 +272,7 @@ public class PacketProcessing {
 
                 Client client = getClient();
                 if (client != null) {
-                    KryoNetwork.BackgroundWarpTask confirm = new KryoNetwork.BackgroundWarpTask();
+                    BackgroundWarpTask confirm = new BackgroundWarpTask();
                     confirm.accountsToWarp = new HashMap<>();
                     confirm.accountsToWarp.put(uuid, ign);
                     confirm.server = PlayerInfo.currentServer;
@@ -299,9 +294,9 @@ public class PacketProcessing {
                 System.out.println("current accounts: " + accountsToWarp.toString());
                 System.out.println("accounts to warp: " + warpTask.accountsToWarp.toString());
             }
-        } else if (packet instanceof KryoNetwork.WarningBannerInfo) {
+        } else if (packet instanceof WarningBannerInfo) {
 
-        } else if (packet instanceof KryoNetwork.AbortWarpTask) {
+        } else if (packet instanceof AbortWarpTask) {
             Warping.PARTY_EMPTY_KICK = false;
             Warping.kickParty = true;
             accountsToWarp.clear();
@@ -310,11 +305,11 @@ public class PacketProcessing {
                 warpThread.stop = true;
                 warpThread.notify();
             }
-        } else if (packet instanceof KryoNetwork.CancelWarpRequest) {
+        } else if (packet instanceof CancelWarpRequest) {
             requestedWarp = "";
             // sent by server if unable to fulfill a warp
-        } else if (packet instanceof KryoNetwork.WarperInfo) {
-            KryoNetwork.WarperInfo warperInfo = (KryoNetwork.WarperInfo) packet;
+        } else if (packet instanceof WarperInfo) {
+            WarperInfo warperInfo = (WarperInfo) packet;
 
             warperIGN = decryptString(warperInfo.ign);
 

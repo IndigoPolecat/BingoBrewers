@@ -48,7 +48,7 @@ public class Packets {
                     }
 
                     // escape the loop early if the splasher is in our lobby
-                    if (PlayerInfo.currentRenderedPlayerEntities.contains(splash.splasherIGN)) {
+                    if (PlayerInfo.currentRenderedPlayerEntities.contains(splash.splasherIGN) && splash.realIGN) {
                         splashID = splash.id;
                         break;
                     }

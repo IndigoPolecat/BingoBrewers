@@ -105,7 +105,14 @@ public class SplashInfoHud extends LegacyHud {
 
     public static float renderSplashNotification(SplashNotificationInfo info, float x, float scaleY, float heightToRenderAt) {
 
-        String hubPrefix = info.dungeonHub ? SplashNotificationInfo.DUNGEON_HUB : SplashNotificationInfo.HUB;
+        String hubPrefix = SplashNotificationInfo.HUB;
+
+        if (info.dungeonHub) {
+            hubPrefix = SplashNotificationInfo.DUNGEON_HUB;
+        } else if (info.isPrivate) {
+            hubPrefix = SplashNotificationInfo.PRIVATE_HUB;
+        }
+
         String hubInfo = info.serverID.isEmpty() ? info.hubNumber : info.hubNumber + "(" + info.serverID + ")";
         heightToRenderAt = renderSplashHudSection(hubPrefix, Collections.singletonList(hubInfo), x, scaleY, heightToRenderAt);
 
