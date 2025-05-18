@@ -26,7 +26,7 @@ public class PlayerInfo {
     // This is in this class so it is stored between game instances
     public static boolean onBingo = false;
     public static int playerCount;
-    public static HashSet<String> currentRenderedPlayerEntities;
+    public static HashSet<String> currentRenderedPlayerEntities = new HashSet<>();
     public static String currentServer = "";
     public static String currentNetwork = "";
     public static int tickCounter = 0;

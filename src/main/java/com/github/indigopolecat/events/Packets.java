@@ -54,7 +54,7 @@ public class Packets {
                     }
                 }
 
-                if (splashID.isEmpty()) return;
+                if (splashID == null || splashID.isEmpty()) return;
 
                 Pattern playerCount = Pattern.compile("Players \\(([0-9]+)\\)");
                 Matcher playerCountMatcher = playerCount.matcher(data.getDisplayName().getUnformattedText());
