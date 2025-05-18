@@ -37,6 +37,8 @@ public class PacketProcessing {
                     throw new RuntimeException(e);
                 }
 
+                setSymmetricKey(symmetricKey);
+
                 ClientSymmetricKey key = new ClientSymmetricKey();
                 key.symmetric_key = encryptObjectPublicKey(symmetricKey, loadPublicKeyFromBase64(public_key));
                 sendTCP(key);
@@ -97,6 +99,7 @@ public class PacketProcessing {
 
             SplashNotification notif = (SplashNotification) packet;
             if (notif.hub.isEmpty()) return; // completely ignore splashes without a hub number
+            System.out.println("Received Splash Notification: " + notif.hub);
 
             // update the active splashes list if the message is edited
             for (int i = 0; i < SplashInfoHud.activeSplashes.size(); i++) {
@@ -120,14 +123,19 @@ public class PacketProcessing {
                     }
 
                     SplashInfoHud.activeSplashes.set(i, updatedSplash);
+                    System.out.println("Updated Splash Notification: " + updatedSplash.hubNumber);
 
                     return;
                 }
             }
 
-            if (notif.timestamp + 120_000 > System.currentTimeMillis()) return;
+            System.out.println("time to remove: " + (notif.timestamp  + 120_000) + " current time: " + System.currentTimeMillis());
+            if (notif.timestamp + 120_000 < System.currentTimeMillis()) return; // if we received it outdated
 
             SplashInfoHud.activeSplashes.add(new SplashNotificationInfo(notif, true, null));
+            System.out.println("Added Splash Notification: " + notif.hub);
+
+            System.out.println("Active Splashes: " + SplashInfoHud.activeSplashes.toString() );
 
         } else if (packet instanceof PlayerCountBroadcast) {
             PlayerCountBroadcast playerCountBroadcast = (PlayerCountBroadcast) packet;
