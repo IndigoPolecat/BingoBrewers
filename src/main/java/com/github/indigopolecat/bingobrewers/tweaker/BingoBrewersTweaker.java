@@ -11,10 +11,10 @@ public class BingoBrewersTweaker implements ITweaker {
 
     @Override
     public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
-        List<String> tweakClasses = (List<String>) Launch.blackboard.get("TweakClasses"); // always of type List<String>
+        List<String> tweakClasses = (List<String>) Launch.blackboard.get("TweakClasses");
+        tweakClasses.add("org.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker");// always of type List<String>
         tweakClasses.add("net.hypixel.modapi.tweaker.HypixelModAPITweaker");
         tweakClasses.add("com.github.indigopolecat.bingobrewers.tweaker.ModLoadingTweaker");
-        tweakClasses.add("org.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker");
     }
 
     @Override

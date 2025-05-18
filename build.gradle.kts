@@ -35,8 +35,8 @@ plugins {
 toolkitLoomHelper {
     // Adds OneConfig to our project
     useOneConfig {
-        version = "1.0.0-alpha.77"
-        loaderVersion = "1.1.0-alpha.44"
+        version = "1.0.0-alpha.102"
+        loaderVersion = "1.1.0-alpha.46"
         applyLoaderTweaker = true
 
         usePolyMixin = true
@@ -132,7 +132,7 @@ tasks.withType(Jar::class) {
         this["TweakOrder"] = 0
 
         // If you don't want mixins, remove these lines
-        this["TweakClass"] = "org.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker"
+        this["TweakClass"] = "com.github.indigopolecat.bingobrewers.tweaker.BingoBrewersTweaker"
         this["MixinConfigs"] = "mixins.$modid.json"
     }
 }
