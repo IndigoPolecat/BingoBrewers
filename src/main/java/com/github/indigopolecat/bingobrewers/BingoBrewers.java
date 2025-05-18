@@ -68,10 +68,11 @@ public class BingoBrewers {
         ClientCommandHandler.instance.registerCommand(new ConfigCommand());
         ClientCommandHandler.instance.registerCommand(new TempWarpCommand());
 
-        HypixelModAPI.getInstance().registerHandler(ClientboundPingPacket.class, HypixelPackets::onPingPacket);
-        HypixelModAPI.getInstance().registerHandler(ClientboundPartyInfoPacket.class, HypixelPackets::onPartyInfoPacket);
-        HypixelModAPI.getInstance().registerHandler(ClientboundLocationPacket.class, HypixelPackets::onLocationEvent);
         HypixelModAPI.getInstance().subscribeToEventPacket(ClientboundLocationPacket.class);
+
+        HypixelModAPI.getInstance().createHandler(ClientboundPingPacket.class, HypixelPackets::onPingPacket);
+        HypixelModAPI.getInstance().createHandler(ClientboundPartyInfoPacket.class, HypixelPackets::onPartyInfoPacket);
+        HypixelModAPI.getInstance().createHandler(ClientboundLocationPacket.class, HypixelPackets::onLocationEvent);
     }
 
 

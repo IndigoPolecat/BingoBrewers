@@ -105,7 +105,7 @@ repositories {
     // If you don't want to log in with your real minecraft account, remove this line
     maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
     maven("https://repo.nea.moe/releases")
-    //maven("https://repo.hypixel.net/repository/Hypixel/")
+    maven("https://repo.hypixel.net/repository/Hypixel/")
 }
 
 val shadowImpl: Configuration by configurations.creating {
@@ -119,8 +119,10 @@ dependencies {
     shade(implementation("moe.nea:libautoupdate:1.3.1")!!)
 
     // mod API tweaker and dependency
-    modImplementation("net.hypixel:mod-api-forge:1.0.1.1")
-    shade(implementation("net.hypixel:mod-api-forge-tweaker:1.0.1.1")!!)
+    modImplementation("net.hypixel:mod-api-forge:1.0.1.2")
+    shade(implementation("net.hypixel:mod-api-forge-tweaker:1.0.1.2")!!)
+//    modImplementation("net.hypixel:mod-api:1.0.1")
+//    shade(implementation("net.hypixel:mod-api-tweaker:1.0.1")!!)
 
 }
 
