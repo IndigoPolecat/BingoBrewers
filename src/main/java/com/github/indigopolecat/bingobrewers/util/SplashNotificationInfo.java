@@ -63,8 +63,8 @@ public class SplashNotificationInfo {
         this.realIGN = notificationInfo.splasherRealIGN;
 
         this.location = notificationInfo.location;
-        if (notificationInfo.partyHost.equals("No Party")) {
-            this.bingoPartyJoinCommand = notificationInfo.partyHost;
+        if (notificationInfo.partyHost.isEmpty()) {
+            this.bingoPartyJoinCommand = "No Party";
         } else {
             this.bingoPartyJoinCommand = "/p join " + notificationInfo.partyHost;
         }
