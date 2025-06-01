@@ -1,8 +1,10 @@
 package com.github.indigopolecat.bingobrewers.Hud;
 
+import dev.deftu.eventbus.SubscribeEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraftforge.client.event.EntityViewRenderEvent;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
@@ -84,6 +86,11 @@ public class TitleHud {
             fontRenderer.drawStringWithShadow(title, (width - (scaleFactor * fontRenderer.getStringWidth(title))) / (scaleFactor * 2), (height / (scaleFactor * 2)) - 5, color);
             GL11.glPopMatrix();
         }
+
+    }
+
+    @SubscribeEvent
+    public void onRender(EntityViewRenderEvent event) {
 
     }
 

@@ -40,6 +40,9 @@ public class Packets {
 
                 String splashID = "";
                 for (SplashNotificationInfo splash : activeSplashes) {
+                    System.out.println("splash ID: " + splash.id);
+                    System.out.println("Checking " + splash.serverID + " against " + PlayerInfo.currentServer);
+
                     // only send if the splasher is within your render distance or you are in the recognized server id
                     // escape the loop once we know we are in the correct server and send the packet
                     if (splash.serverID.equalsIgnoreCase(PlayerInfo.currentServer)) {

@@ -74,6 +74,7 @@ loom {
     runConfigs {
         "client" {
             if (SystemUtils.IS_OS_MAC_OSX) {
+                // TODO: test on macos and see if the normal tweaker still loads
                 // This argument causes a crash on macOS
                 vmArgs.remove("-XstartOnFirstThread")
                 programArgs("--tweakClass", "org.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker")

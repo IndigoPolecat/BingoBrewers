@@ -106,6 +106,7 @@ public class Warping {
                 for (String message : messageQueue) {
                     if (message.startsWith("/p") && warpThread != null && !whitelistedMessages.contains(message)) continue;
 
+                    System.out.println("sending message: " + message);
                     Minecraft.getMinecraft().thePlayer.sendChatMessage(message);
                     messageQueue.remove(message);
                     break;

@@ -59,6 +59,7 @@ public class SplashInfoHud extends LegacyHud {
 
     @Override
     public void render(@NotNull OmniMatrixStack omniMatrixStack, float x, float y, float scaleX, float scaleY) {
+        System.out.println("SplashInfoHud.render");
         // don't divide by 0
         if (scaleX < 0.3) {
             scaleX = 0.3f;

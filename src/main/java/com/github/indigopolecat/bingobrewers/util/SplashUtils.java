@@ -65,7 +65,6 @@ public class SplashUtils {
             if (activeSplashes.isEmpty()) return;
             PlayerInfo.currentRenderedPlayerEntities.clear(); // super inefficient but I'm pretty sure forge doesn't have an equivalant event for despawning an entity so this it is.
             for (EntityPlayer player : world.playerEntities) {
-                System.out.println(player.getName());
                 PlayerInfo.currentRenderedPlayerEntities.add(player.getName());
             }
         }

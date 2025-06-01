@@ -44,6 +44,13 @@ public class BingoBrewersConfig extends Config {
         HudManager.register(new CrystalHollowsHud());
     }
 
+    @Switch(
+            title = "Splash Notifications",
+            category = "General",
+            description = "Enable or disable splash notifications"
+    )
+    public static boolean test = true;
+
     /* -----------------------------------------------------------
          Splash Notifications
        ----------------------------------------------------------- */
