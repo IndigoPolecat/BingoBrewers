@@ -208,8 +208,11 @@ public class SplashHud extends Hud {
                         }
 
                         if (lineCount >= 14) {
-                            line = line.substring(0, line.length() - 2) + "...";
                             listTooLong = true;
+
+                            if (line.length() > 3) {
+                                line = line.substring(0, line.length() - 2) + "...";
+                            }
                         }
 
 
