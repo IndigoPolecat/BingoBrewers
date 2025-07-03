@@ -83,6 +83,11 @@ public class Packets {
             hardstone.entrySet().removeIf(entry -> System.currentTimeMillis() - entry.getValue() > 60000);
             if (!BingoBrewersConfig.crystalHollowsWaypointsToggle) return;
             for (int i = 0; i < blockUpdateData.length; i++) {
+                if (Minecraft.getMinecraft().theWorld == null) {
+                    System.out.println("Error: World is null!");
+                    return;
+                }
+
                 BlockPos coords = blockUpdateData[i].getPos();
                 // get old block
                 Block block = Minecraft.getMinecraft().theWorld.getBlockState(coords).getBlock();
