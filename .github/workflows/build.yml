@@ -17,7 +17,7 @@ jobs:
       - name: Execute Gradle build
         run: ./gradlew build
       - name: Upload built mod JAR
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: mod-jar
           path: build/libs/*.jar
