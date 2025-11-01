@@ -50,7 +50,7 @@ public class ScoreBoard {
         int size = scoreBoardLines.size() - 1;
         for (int i = 0; i < scoreBoardLines.size(); i++) {
             String line = EnumChatFormatting.getTextWithoutFormattingCodes(scoreBoardLines.get(size - i).toLowerCase());
-            if(line.contains("bingo")) return true;
+            if(line.contains("Ⓑ")) return true;
         }
         return false;
     }
