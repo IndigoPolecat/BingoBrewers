@@ -2,13 +2,11 @@ package com.github.indigopolecat.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.EndPoint;
-import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class KryoNetwork {
-
     public static void register(EndPoint endPoint) {
         Kryo kryo = endPoint.getKryo();
         kryo.register(ConnectionIgn.class);
@@ -80,7 +78,6 @@ public class KryoNetwork {
         public LinkedHashSet<String> CHItemOrder = new LinkedHashSet<>();
 
     }
-
 
     // Request the lbin of any item on ah/bz by item id
     // If they don't exist, they won't be included in the response
@@ -171,11 +168,13 @@ public class KryoNetwork {
     public static class RequestLiveUpdatesForServerInfo {
         public boolean unrequest;
     }
+    
     public static class WarningBannerInfo {
         public String text;
         public Integer textColor = 0xFFFFFF;
         public Integer backgroundColor = 0x000000;
     }
+    
     public static class ReceiveConstantsOnStartupModern {
         public HashMap<String, Object> constants = new HashMap<>();
     }
@@ -184,18 +183,22 @@ public class KryoNetwork {
         public String joinAlertChat;
         public String joinAlertTitle;
     }
+    
     public static class WarperInfo {
         public String ign;
     }
+    
     public static class PollQueuePosition {
         public String server;
     }
+    
     public static class TestPacket {
         public Long timeSent;
         public String protocol;
         public String identification = "Unix Timestamp TestPacket.";
 
     }
+    
     public static TestPacket testPacketCreator(String protocol) {
         TestPacket packet = new TestPacket();
         packet.protocol = protocol;

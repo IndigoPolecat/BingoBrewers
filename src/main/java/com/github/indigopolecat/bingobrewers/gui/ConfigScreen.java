@@ -8,8 +8,6 @@ import me.shedaniel.autoconfig.AutoConfig;
 public class ConfigScreen implements ModMenuApi {
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        return parent -> AutoConfig.getConfigScreen(BingoBrewersConfig.class, parent).get();
+        return parent -> AutoConfig.getConfigScreen(BingoBrewersConfig.class, parent).get();//TODO: check this
     }
-    
-    
 }

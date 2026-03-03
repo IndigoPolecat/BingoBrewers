@@ -2,20 +2,20 @@ package com.github.indigopolecat.bingobrewers;
 
 import com.github.indigopolecat.events.HypixelPackets;
 import net.minecraft.client.Minecraft;
-import net.minecraft.scoreboard.Score;
-import net.minecraft.scoreboard.ScoreObjective;
-import net.minecraft.scoreboard.ScorePlayerTeam;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.scores.Score;
+import net.minecraft.world.scores.Scoreboard;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 public class ScoreBoard {
+    //TODO (matita): check the mappings
+    /*
     private static List<String> getScoreboard() {
         ArrayList<String> scoreboardAsText = new ArrayList<>();
-        if (Minecraft.getMinecraft() == null || Minecraft.getMinecraft().theWorld == null) {
+        if (Minecraft.getMinecraft().theWorld == null) {
             return scoreboardAsText;
         }
         Scoreboard scoreboard = Minecraft.getMinecraft().theWorld.getScoreboard();
@@ -53,5 +53,5 @@ public class ScoreBoard {
             if(line.contains("ⓑ")) return true; // bingo tag (lowercase)
         }
         return false;
-    }
+    }*/
 }

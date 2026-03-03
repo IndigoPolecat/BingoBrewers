@@ -1,7 +1,6 @@
 package com.github.indigopolecat.events;
 
 import com.github.indigopolecat.bingobrewers.*;
-import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import net.hypixel.modapi.packet.HypixelPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundHelloPacket;
@@ -14,9 +13,6 @@ import net.hypixel.modapi.packet.impl.serverbound.ServerboundPingPacket;
 import net.hypixel.modapi.packet.impl.serverbound.ServerboundPlayerInfoPacket;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -50,9 +46,9 @@ public class HypixelPackets {
         }
         PlayerInfo.partyMembers = uuids;
 
-        if (Warping.warpThread != null) {
+        /*if (Warping.warpThread != null) {
             Warping.warpThread.resume();
-        }
+        }*///TODO (matita): removed Warping system
 
     }
 
@@ -74,11 +70,11 @@ public class HypixelPackets {
             if (!packet.getMode().isPresent()) return;
             PlayerInfo.playerLocation = packet.getMode().get();
             // Check if the scoreboard contains "bingo" and set the onBingo flag once we know if we're on skyblock
-            SplashHud.inSkyblockorPTLobby = true;
+            //SplashHud.inSkyblockorPTLobby = true; //TODO(matita): removed HUDs
         } else if (PlayerInfo.playerGameType.equalsIgnoreCase("prototype")) {
-            SplashHud.inSkyblockorPTLobby = true;
+            //SplashHud.inSkyblockorPTLobby = true; //TODO(matita): removed HUDs
         } else {
-            SplashHud.inSkyblockorPTLobby = false;
+            //SplashHud.inSkyblockorPTLobby = false; //TODO(matita): removed HUDs
         }
 
 
@@ -105,8 +101,9 @@ public class HypixelPackets {
             subscribeToCHServerTime = System.currentTimeMillis() + 2000;
         }
     }
-
-    @SubscribeEvent
+    
+    //TODO (matita): event system
+    /*
     public void onTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             if (System.currentTimeMillis() > checkScoreboardForBingoTime && BingoBrewers.onHypixel && PlayerInfo.playerGameType.equalsIgnoreCase("skyblock")) {
@@ -151,5 +148,5 @@ public class HypixelPackets {
                 BingoBrewers.packetHold.remove(packet);
             }
         }
-    }
+    }*/
 }

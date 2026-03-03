@@ -3,10 +3,6 @@ package com.github.indigopolecat.bingobrewers;
 import com.github.indigopolecat.events.Packets;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.CHChestItem;
-import net.minecraft.client.Minecraft;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,9 +27,8 @@ public class CHChests {
     public static String signalLootChatMessageEnd = "§r§d§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬§r";
     public static Pattern ITEM_PATTERN = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
     // potentially store this as a constant in the server that is downloaded on launch
-
-
-    @SubscribeEvent
+    
+    /*
     public void onRightClickChest(PlayerInteractEvent event) {
         if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) return;
         if (!event.world.getBlockState(event.pos).getBlock().getUnlocalizedName().contains("chest")) return;
@@ -57,10 +52,9 @@ public class CHChests {
 
     }
 
-    @SubscribeEvent
     public void clientTick(TickEvent.ClientTickEvent event) {
         if (System.currentTimeMillis() - lastHardstoneChest > 500) expectingHardstoneLoot = false;
-    }
+    }*/
 
     public static void addChatMessage(String message) {
         if (!expectingHardstoneLoot) {
@@ -110,7 +104,7 @@ public class CHChests {
 
         KryoNetwork.sendCHItems chestLoot = new KryoNetwork.sendCHItems();
         chestLoot.server = PlayerInfo.currentServer;
-        chestLoot.day = (int) Minecraft.getMinecraft().theWorld.getWorldTime() / 24000;
+        chestLoot.day = 1; //TODO (matita): where is the world instance? //(int) Minecraft.getMinecraft().theWorld.getWorldTime() / 24000;
         // coords are in the format BlockPos{x=420, y=124, z=576}
         Pattern coordPattern = Pattern.compile("BlockPos\\{x=(\\d+), y=(\\d+), z=(\\d+)}");
         Matcher coordMatcher = coordPattern.matcher(coords);

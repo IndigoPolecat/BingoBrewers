@@ -1,17 +1,6 @@
 package com.github.indigopolecat.bingobrewers;
 
-import com.esotericsoftware.kryonet.Server;
-import com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud;
-import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
 import com.github.indigopolecat.kryo.KryoNetwork;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.world.World;
-import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,7 +31,8 @@ public class PlayerInfo {
     public volatile static long lastNotification = 0;
     public volatile static ArrayList<String> partyMembers = new ArrayList<>(); // uuids, leader not included
 
-    @SubscribeEvent
+    //TODO(matita): do event system
+    /*
     public void onWorldJoin(WorldEvent event) {
         if (event instanceof WorldEvent.Load) {
             // for some reason this packet is sent before you load the server, so we have a timer on client tick below
@@ -71,7 +61,6 @@ public class PlayerInfo {
         }
     }
 
-    @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             // /locraw 2s after you join the server and every 20s after
@@ -120,8 +109,7 @@ public class PlayerInfo {
                 ServerConnection.joinChat = null;
             }
         }
-    }
-
+    }*/
 
     public void setPlayerCount(int playercount) {
         int currentCount = playerCount;
@@ -130,7 +118,8 @@ public class PlayerInfo {
         if (currentCount != playercount) {
             KryoNetwork.PlayerCount count = new KryoNetwork.PlayerCount();
             count.playerCount = playercount;
-            count.IGN = Minecraft.getMinecraft().thePlayer.getName();
+            //count.IGN = Minecraft.getMinecraft().thePlayer.getName(); //TODO (matita)
+            count.IGN = "testing";
             if (playerHubNumber == null) {
                 System.out.println("Player hub number is null");
                 return;

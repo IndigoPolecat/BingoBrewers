@@ -1,7 +1,6 @@
 package com.github.indigopolecat.bingobrewers.gui;
 
 import com.github.indigopolecat.bingobrewers.BingoBrewers;
-import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
 import moe.nea.libautoupdate.UpdateUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -11,8 +10,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 import javax.net.ssl.HttpsURLConnection;
-
-import static com.github.indigopolecat.bingobrewers.util.AutoUpdater.ctx;
 
 public class UpdateScreen extends Screen {
    public String changelog = BingoBrewers.autoUpdater.getChangelog();
@@ -27,7 +24,7 @@ public class UpdateScreen extends Screen {
       Button updateNowButton = Button.builder(Component.literal("Update and Close Game"), b->{
          UpdateUtils.patchConnection(connection->{
             if(connection instanceof HttpsURLConnection) {
-               ((HttpsURLConnection)connection).setSSLSocketFactory(ctx.getSocketFactory());
+               //((HttpsURLConnection)connection).setSSLSocketFactory(ctx.getSocketFactory()); //TODO matita: removed keystore (don't ask me why)
             }
          });
          
@@ -38,13 +35,13 @@ public class UpdateScreen extends Screen {
       Button updateLaterButton = Button.builder(Component.literal("Update on Next Launch"), b->{
          UpdateUtils.patchConnection(connection->{
             if(connection instanceof HttpsURLConnection) {
-               ((HttpsURLConnection)connection).setSSLSocketFactory(ctx.getSocketFactory());
+               //((HttpsURLConnection)connection).setSSLSocketFactory(ctx.getSocketFactory()); //TODO matita: removed keystore (don't ask me why)
             }
          });
          BingoBrewers.autoUpdater.checkUpdate().thenAccept(updateAvailable->{
             if(updateAvailable) {
                BingoBrewers.autoUpdater.update();
-               BingoBrewers.activeTitle = new TitleHud("Bingo Brewers will update on game close.", 0x47EB62, 4000, false);
+               //BingoBrewers.activeTitle = new TitleHud("Bingo Brewers will update on game close.", 0x47EB62, 4000, false);//TODO: look at this
             } else {
                Minecraft.getInstance().player.displayClientMessage(Component.literal("Bingo Brewers is up to date!").withColor(0x00FF00), false);
             }

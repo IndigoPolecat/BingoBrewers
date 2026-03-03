@@ -1,35 +1,15 @@
 package com.github.indigopolecat.bingobrewers;
 
-import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
-import com.github.indigopolecat.events.Packets;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.ContainerChest;
-import net.minecraftforge.client.event.GuiOpenEvent;
-import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraft.client.gui.inventory.GuiChest;
-import net.minecraft.client.Minecraft;
-import net.minecraft.item.ItemStack;
-
 import java.util.HashMap;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.concurrent.CompletableFuture;
-
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import org.lwjgl.input.Keyboard;
 
 import java.text.DecimalFormat;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ChestInventories {
     public static final int POINTS_PER_BINGO = 85;
     public static boolean bingoShopOpen = false;
     boolean calculationsReady = false;
-    ContainerChest containerChest;
+    //ContainerChest containerChest; //TODO (matita): search equivalent
     String itemName = null;
     String coinsPerPoint = null;
     int finalCostLineIndex;
@@ -44,7 +24,8 @@ public class ChestInventories {
     public static HashMap<Integer, Integer> rankPriceMap = new HashMap<>();
     public static int bingoRank;
 
-    @SubscribeEvent
+    //TODO (matita): event system
+    /*
     public void onShopOpen(GuiOpenEvent event) {
         calculationsReady = false;
         bingoShopOpen = false;
@@ -81,7 +62,6 @@ public class ChestInventories {
     }
 
     // Event that occurs once a packet from your inventory instead of the chest is sent, meaning the chest is loaded
-    @SubscribeEvent
     public void onInitGuiPost(Packets.InventoryLoadingDoneEvent event) {
         if (bingoShopOpen) {
             // set variables in correct scope
@@ -276,6 +256,31 @@ public class ChestInventories {
         }
     }
 
+    public void onItemTooltip(ItemTooltipEvent event) {
+        if (calculationsReady) {
+            for (TooltipInfo item : tooltipInfoList) {
+                ItemStack eventItem = event.itemStack;
+                if (eventItem.getDisplayName().equals(item.getName())) {
+                    event.toolTip.add(item.getCostIndex() + 1, "§6" + item.getCost() + " Coins/Point");
+                    appendPointsAndBingoLeft(event, item);
+                }
+                if (item.getExtraCostIndex() != -1 && item.getExtraCost() != null && eventItem.getDisplayName().equals(item.getName())) {
+                    String extraCostLine = event.toolTip.get(item.getExtraCostIndex());
+                    event.toolTip.set(item.getExtraCostIndex(), extraCostLine + " §6(" + item.getExtraCost() + " Coins)");
+                }
+            }
+        }
+    }
+    
+    public void onKeyPress(GuiScreenEvent.KeyboardInputEvent.Pre event) {
+        if((Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))  && ChestInventories.bingoShopOpen ) {
+            shiftPressed = !shiftPressed;
+        }
+
+    }*/
+    
+    //TODO (matita): helper functions
+    /*
     private int gatherBingoPoints(ItemStack item) {
         List<String> itemLore = item.getTooltip(Minecraft.getMinecraft().thePlayer, false);
         for (String s : itemLore) {
@@ -317,23 +322,6 @@ public class ChestInventories {
         return 0;
     }
 
-    @SubscribeEvent
-    public void onItemTooltip(ItemTooltipEvent event) {
-        if (calculationsReady) {
-            for (TooltipInfo item : tooltipInfoList) {
-                ItemStack eventItem = event.itemStack;
-                if (eventItem.getDisplayName().equals(item.getName())) {
-                    event.toolTip.add(item.getCostIndex() + 1, "§6" + item.getCost() + " Coins/Point");
-                    appendPointsAndBingoLeft(event, item);
-                }
-                if (item.getExtraCostIndex() != -1 && item.getExtraCost() != null && eventItem.getDisplayName().equals(item.getName())) {
-                    String extraCostLine = event.toolTip.get(item.getExtraCostIndex());
-                    event.toolTip.set(item.getExtraCostIndex(), extraCostLine + " §6(" + item.getExtraCost() + " Coins)");
-                }
-            }
-        }
-    }
-
     private void appendPointsAndBingoLeft(ItemTooltipEvent event, TooltipInfo item) {
         if(this.currentBingoPoints == -1 || !BingoBrewersConfig.displayMissingBingoPoints || !BingoBrewersConfig.displayMissingBingoes) {
             return;
@@ -372,7 +360,7 @@ public class ChestInventories {
             event.toolTip.add(toolTipIndex + 1,"§7Events Remaining" + withOrWithout + ": §c" + bingoesRequired);
             event.toolTip.add(toolTipIndex, "§8[SHIFT FOR " + withOrWithout2 + " POINTS/BINGO]");
         }
-    }
+    }*/
 
     private static String removeFormatting(String s) {
         String news = s.replaceAll("§.", "");
@@ -400,13 +388,6 @@ public class ChestInventories {
             DecimalFormat decimalFormat = new DecimalFormat(pattern);
             return decimalFormat.format(value);
         }
-    }
-    @SubscribeEvent
-    public void onKeyPress(GuiScreenEvent.KeyboardInputEvent.Pre event) {
-        if((Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT))  && ChestInventories.bingoShopOpen ) {
-            shiftPressed = !shiftPressed;
-        }
-
     }
 }
 

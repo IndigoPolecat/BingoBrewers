@@ -3,35 +3,14 @@ package com.github.indigopolecat.bingobrewers;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.CHChestItem;
-import com.sun.jna.platform.win32.Guid;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.Matrix4f;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.vector.Vector4f;
 
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class CHWaypoints {
-    public BlockPos pos;
+    //public BlockPos pos; //TODO(matita): what class is the mapping equivalent
     public String shortName = "Crystal Hollows";
     public int shortNameColor = 0xAA00AA;
     public String id;
@@ -39,8 +18,9 @@ public class CHWaypoints {
     public CopyOnWriteArrayList<CHChestItem> filteredExpandedItems = new CopyOnWriteArrayList<>();
     public static HashMap<String, CrystalHollowsItemTotal> itemCounts = new HashMap<>(); // # of each item
     public static CopyOnWriteArrayList<CHWaypoints> filteredWaypoints = new CopyOnWriteArrayList<>();
+    
     public CHWaypoints(int x, int y, int z, ArrayList<CHChestItem> chest) {
-        this.pos = new BlockPos(x, y, z);
+        //pos = new BlockPos(x, y, z);
         this.id = x + y + z + "";
         this.expandedName = chest;
 
@@ -73,6 +53,8 @@ public class CHWaypoints {
         }
     }
 
+    //TODO (matita): render part (maybe opt out since there are things like skyhanni?
+    /*
     public static void renderPointLabel(CHWaypoints label, BlockPos thisPoint, Float partialTicks) {
         if (!BingoBrewersConfig.crystalHollowsWaypointsToggle) return;
         ArrayList<String> lobbyVisitedChests = CHChests.visitedChests.get(PlayerInfo.currentServer);
@@ -254,6 +236,6 @@ public class CHWaypoints {
 
         return matrix;
     }
-
+*/
 }
 

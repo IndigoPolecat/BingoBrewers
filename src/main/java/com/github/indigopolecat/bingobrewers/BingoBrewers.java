@@ -1,87 +1,91 @@
 package com.github.indigopolecat.bingobrewers;
 
 import com.esotericsoftware.kryonet.Client;
-import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
-import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
-import com.github.indigopolecat.bingobrewers.commands.ConfigCommand;
-import com.github.indigopolecat.bingobrewers.commands.TempWarpCommand;
+import com.github.indigopolecat.bingobrewers.config.ConfigSerializer;
+import com.github.indigopolecat.bingobrewers.gui.ColorGuiProvider;
 import com.github.indigopolecat.bingobrewers.util.AutoUpdater;
-import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
+import com.github.indigopolecat.bingobrewers.util.Log;
 import com.github.indigopolecat.events.HypixelPackets;
-import com.github.indigopolecat.events.Packets;
+import com.mojang.brigadier.context.CommandContext;
 import me.shedaniel.autoconfig.AutoConfig;
-import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
-import net.fabricmc.api.ModInitializer;
+import me.shedaniel.autoconfig.gui.registry.GuiRegistry;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.hypixel.modapi.HypixelModAPI;
 import net.hypixel.modapi.packet.HypixelPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPartyInfoPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPingPacket;
 import net.hypixel.modapi.packet.impl.clientbound.event.ClientboundLocationPacket;
-import net.minecraftforge.client.ClientCommandHandler;
-import net.minecraftforge.common.MinecraftForge;
-import com.github.indigopolecat.events.PacketListener;
 
+import java.awt.Color;
 import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class BingoBrewers implements ModInitializer {
+public class BingoBrewers implements ClientModInitializer {
     public static BingoBrewersConfig config;
     public static BingoBrewers INSTANCE;
 
-    public static final String version = "v0.3.8-beta";
-
-    public static volatile TitleHud activeTitle;
+    //public static volatile TitleHud activeTitle; //TODO(matita): redo this
     public static volatile Client client;
     // controls which server is connected to
     public static final boolean TEST_INSTANCE = true;
-    public static boolean onHypixel = false; // TODO: this doesn't work if someone is using a proxy to connect to hypixel, need better detection
+    public static final String version = "v0.3.8-beta";
+    public static boolean onHypixel = false; // TODO(polecat): this doesn't work if someone is using a proxy to connect to hypixel, need better detection
 
     public static AutoUpdater autoUpdater = new AutoUpdater();
     public static HashMap<String, Integer> minecraftColors = new HashMap<>();
    
-   
-   @Override
-   public void onInitialize() {
-      INSTANCE = this;
-      MinecraftForge.EVENT_BUS.register(new Packets());
-      MinecraftForge.EVENT_BUS.register(new ChestInventories());
-      MinecraftForge.EVENT_BUS.register(new PacketListener());
-      MinecraftForge.EVENT_BUS.register(new CHChests());
-      MinecraftForge.EVENT_BUS.register(new PlayerInfo());
-      MinecraftForge.EVENT_BUS.register(new SplashHud());
-      MinecraftForge.EVENT_BUS.register(new ChatTextUtil());
-      MinecraftForge.EVENT_BUS.register(new HypixelPackets());
-      config = new BingoBrewersConfig();
-      createServerThread();
-      ClientCommandHandler.instance.registerCommand(new ConfigCommand());
-      ClientCommandHandler.instance.registerCommand(new TempWarpCommand());
-      
-      autoUpdater.registerUpdateCheck();
-      
-      minecraftColors.put("§0", 0x000000);  // Black
-      minecraftColors.put("§1", 0x0000AA);  // Dark Blue
-      minecraftColors.put("§2", 0x00AA00);  // Dark Green
-      minecraftColors.put("§3", 0x00AAAA);  // Dark Aqua
-      minecraftColors.put("§4", 0xAA0000);  // Dark Red
-      minecraftColors.put("§5", 0xAA00AA);  // Dark Purple
-      minecraftColors.put("§6", 0xFFAA00);  // Gold
-      minecraftColors.put("§7", 0xAAAAAA);  // Gray
-      minecraftColors.put("§8", 0x555555);  // Dark Gray
-      minecraftColors.put("§9", 0x5555FF);  // Blue
-      minecraftColors.put("§a", 0x55FF55);  // Green
-      minecraftColors.put("§b", 0x55FFFF);  // Aqua
-      minecraftColors.put("§c", 0xFF5555);  // Red
-      minecraftColors.put("§d", 0xFF55FF);  // Light Purple
-      minecraftColors.put("§e", 0xFFFF55);  // Yellow
-      minecraftColors.put("§f", 0xFFFFFF);  // White
-      
-      HypixelModAPI.getInstance().registerHandler(ClientboundPingPacket.class, HypixelPackets::onPingPacket);
-      HypixelModAPI.getInstance().registerHandler(ClientboundPartyInfoPacket.class, HypixelPackets::onPartyInfoPacket);
-      HypixelModAPI.getInstance().registerHandler(ClientboundLocationPacket.class, HypixelPackets::onLocationEvent);
-      HypixelModAPI.getInstance().subscribeToEventPacket(ClientboundLocationPacket.class);
-       
-       AutoConfig.register(BingoBrewersConfig.class, GsonConfigSerializer::new);
+   public static int configCommand(CommandContext<FabricClientCommandSource> context) {
+       Log.info("Executed config command"); //TODO (matita): open the config gui
+       return 1;
    }
+   
+    @Override
+    public void onInitializeClient() {
+        INSTANCE = this;
+        config = new BingoBrewersConfig();
+        createServerThread();
+        
+        //register the commands
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+            dispatcher.register(ClientCommandManager.literal("bb").executes(BingoBrewers::configCommand)
+                                                    .redirect(dispatcher.register(ClientCommandManager.literal("bb").executes(BingoBrewers::configCommand))));
+        });
+        
+        autoUpdater.registerUpdateCheck();
+        
+        minecraftColors.put("§0", 0x000000);  // Black
+        minecraftColors.put("§1", 0x0000AA);  // Dark Blue
+        minecraftColors.put("§2", 0x00AA00);  // Dark Green
+        minecraftColors.put("§3", 0x00AAAA);  // Dark Aqua
+        minecraftColors.put("§4", 0xAA0000);  // Dark Red
+        minecraftColors.put("§5", 0xAA00AA);  // Dark Purple
+        minecraftColors.put("§6", 0xFFAA00);  // Gold
+        minecraftColors.put("§7", 0xAAAAAA);  // Gray
+        minecraftColors.put("§8", 0x555555);  // Dark Gray
+        minecraftColors.put("§9", 0x5555FF);  // Blue
+        minecraftColors.put("§a", 0x55FF55);  // Green
+        minecraftColors.put("§b", 0x55FFFF);  // Aqua
+        minecraftColors.put("§c", 0xFF5555);  // Red
+        minecraftColors.put("§d", 0xFF55FF);  // Light Purple
+        minecraftColors.put("§e", 0xFFFF55);  // Yellow
+        minecraftColors.put("§f", 0xFFFFFF);  // White
+      
+        HypixelModAPI.getInstance().createHandler(ClientboundPingPacket.class, HypixelPackets::onPingPacket);
+        HypixelModAPI.getInstance().createHandler(ClientboundPartyInfoPacket.class, HypixelPackets::onPartyInfoPacket);
+        HypixelModAPI.getInstance().createHandler(ClientboundLocationPacket.class, HypixelPackets::onLocationEvent);
+        HypixelModAPI.getInstance().subscribeToEventPacket(ClientboundLocationPacket.class);
+        
+        try {
+            AutoConfig.register(BingoBrewersConfig.class, ConfigSerializer::new);
+            GuiRegistry registry = AutoConfig.getGuiRegistry(BingoBrewersConfig.class);
+            registry.registerTypeProvider(new ColorGuiProvider(), Color.class);
+        } catch (Exception e) {
+            Log.error("An error occurred while loading the configuration file", e);
+        }
+    }
 
     public static void createServerThread() {
         try {
@@ -89,15 +93,15 @@ public class BingoBrewers implements ModInitializer {
             Thread serverThread = new Thread(serverConnection);
             serverThread.start();
         } catch (Exception e) {
-            LoggerUtil.LOGGER.info("Server Connection Error: " + e.getMessage());
+            Log.info("Server Connection Error: " + e.getMessage(), e);
         }
     }
-
 
     public static CopyOnWriteArrayList<HypixelPacket> packetHold = new CopyOnWriteArrayList<>();
     public static HypixelPacket lastPacketSent;
     public static long lastPacketSentAt = 0;
     public static boolean waitingForPacketResponse;
+    
     public void sendPacket(HypixelPacket packet) {
         System.out.println("packet time: " + (System.currentTimeMillis() - lastPacketSentAt));
         if (System.currentTimeMillis() - lastPacketSentAt > 2500) {
