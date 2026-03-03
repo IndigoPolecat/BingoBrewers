@@ -1,8 +1,10 @@
 package com.github.indigopolecat.bingobrewers.Hud;
 
+import com.mojang.blaze3d.platform.Window;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
@@ -35,18 +37,18 @@ public class TitleHud {
         this.allowColorsFromText = hud.allowColorsFromText;
     }
 
+    /** TODO: fix this, it may require to pass a {@link GuiGraphics} obj */
     public void drawTitle() {
-        Minecraft mc = Minecraft.getMinecraft();
-        if (mc.theWorld == null || mc.thePlayer == null) return;
-        ScaledResolution scaledResolution = new ScaledResolution(mc);
-        int width = scaledResolution.getScaledWidth();
-        int height = scaledResolution.getScaledHeight();
-
-        FontRenderer fontRenderer = mc.fontRendererObj;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || mc.player == null) return;
+        Window window = mc.getWindow();
+       int width = window.getGuiScaledWidth();
+       int height = window.getGuiScaledHeight();
+        
+        Font fontRenderer = mc.font;
         float scaleFactor = 3.0f; // You can adjust this value to increase/decrease text size
 
         if (allowColorsFromText) {
-
             Pattern colorPattern = Pattern.compile("(&(\\S))");
             String[] textArray = title.split("(&(\\S))");
             ArrayList<String> textList = new ArrayList<>(Arrays.asList(textArray));
@@ -62,21 +64,21 @@ public class TitleHud {
                 first = false;
             }
             Matcher colorMatcher = colorPattern.matcher(title);
-            float x = (width - (scaleFactor * fontRenderer.getStringWidth(totaltext.toString()))) / (scaleFactor * 2);
+            float x = (width - (scaleFactor * fontRenderer.width(totaltext.toString()))) / (scaleFactor * 2);
 
             int colorText = this.color;
             for (String text : textList) {
                 try {
                     if (colorMatcher.find()) {
-                    colorText = fontRenderer.getColorCode(colorMatcher.group(2).charAt(0));
+                       colorText = ChatFormatting.getByCode(colorMatcher.group(2).charAt(0)).getColor();
                     }
-                } catch (ArrayIndexOutOfBoundsException ignored) {}
+                } catch (ArrayIndexOutOfBoundsException | NullPointerException ignored) {}
 
                 GL11.glPushMatrix(); //Start new matrix
                 GL11.glScalef(scaleFactor, scaleFactor, scaleFactor);
                 fontRenderer.drawStringWithShadow(text, x, (height / (scaleFactor * 2)) - 5, colorText);
                 GL11.glPopMatrix();
-                x += fontRenderer.getStringWidth(text);
+                x += fontRenderer.width(text);
             }
         } else {
             GL11.glPushMatrix(); //Start new matrix
@@ -84,7 +86,5 @@ public class TitleHud {
             fontRenderer.drawStringWithShadow(title, (width - (scaleFactor * fontRenderer.getStringWidth(title))) / (scaleFactor * 2), (height / (scaleFactor * 2)) - 5, color);
             GL11.glPopMatrix();
         }
-
     }
-
 }

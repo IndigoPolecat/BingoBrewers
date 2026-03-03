@@ -17,8 +17,9 @@ import com.github.indigopolecat.kryo.KryoNetwork.ConnectionIgn;
 import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import com.github.indigopolecat.kryo.ServerSummary;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import org.lwjgl.Sys;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 
 import java.net.InetAddress;
 import java.text.SimpleDateFormat;
@@ -29,7 +30,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.esotericsoftware.minlog.Log.*;
 import static com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud.filteredItems;
-import static com.github.indigopolecat.bingobrewers.Warping.*;
 import static java.lang.String.join;
 import static java.lang.String.valueOf;
 
@@ -102,9 +102,7 @@ public class ServerConnection extends Listener implements Runnable {
                                     hubList.remove("DH" + hubNumber);
                                 }
 
-                            } catch (Exception ignored) {
-
-                            }
+                            } catch (Exception ignored) { }
 
                             // keep track of the original time the splash was sent, instead of updating each time it's edited
                             originalTime = Long.parseLong(map.get("Time").get(0));
@@ -199,7 +197,6 @@ public class ServerConnection extends Listener implements Runnable {
                         CHChests.signalLootChatMessageEnd = (String) constants.get("signalLootChatMessageEnd");
                     }
 
-
                 } else if (object instanceof receiveCHItems) {
                     receiveCHItems CHItems = (receiveCHItems) object;
                     System.out.println("Received CH Chests for " + CHItems.server);
@@ -239,95 +236,20 @@ public class ServerConnection extends Listener implements Runnable {
                             serverSummaries.remove(server.server);
                         }
                     }
-                } else if (object instanceof QueuePosition) {
-                    // if you have to wait in the queue, this will give you your current position
-                    // gonna leave it for you to implement because I think the permanent value should be stored in the class for rendering the menu
-                    QueuePosition position = (QueuePosition) object;
-                    if (position.positionInWarpQueue == 0) {
-                        // server is telling the client there was an unknown error and there are no available warp clients
-                    }
-                } else if (object instanceof BackgroundWarpTask) {
-                    BackgroundWarpTask warpTask = (BackgroundWarpTask) object;
-
-                    if (warpTask.server.equals(PlayerInfo.currentServer) && !warpTask.accountsToWarp.isEmpty() && accountsToWarp.isEmpty() && !warpTask.accountsToWarp.containsKey(null) && !warpTask.accountsToWarp.containsValue(null)) {
-                        accountsToWarp = new ConcurrentHashMap<>(warpTask.accountsToWarp);
-                        Warping.server = warpTask.server;
-
-                        System.out.println("Received warp task for: " + accountsToWarp.values());
-
-                        if (accountsToWarp.isEmpty()) {
-                            Warping.abort(false);
-                            return;
-                        }
-
-                        Client client = getClient();
-                        if (client != null) {
-                            BackgroundWarpTask confirm = new BackgroundWarpTask();
-                            confirm.accountsToWarp = new HashMap<>();
-                            confirm.accountsToWarp.put(uuid, ign);
-                            confirm.server = PlayerInfo.currentServer;
-                            client.sendTCP(confirm);
-                            System.out.println("confirmed");
-                        }
-
-                        if (Warping.warpThread != null) {
-                            warpThread.stop = true;
-                            warpThread.notify();
-                        }
-                        Warping.warpThread = new BackgroundWarpThread();
-                        Thread warpThread = new Thread(Warping.warpThread);
-                        warpThread.start();
-                        System.out.println("warp begun");
-                    } else {
-                        System.out.println("something went wrong");
-                        System.out.println("warpTask Server: " + warpTask.server + " player info server: " + PlayerInfo.currentServer);
-                        System.out.println("current accounts: " + accountsToWarp.toString());
-                        System.out.println("accounts to warp: " + warpTask.accountsToWarp.toString());
-                    }
-                } else if (object instanceof WarningBannerInfo) {
-
-                } else if (object instanceof AbortWarpTask) {
-                    Warping.PARTY_EMPTY_KICK = false;
-                    Warping.kickParty = true;
-                    accountsToWarp.clear();
-                    Warping.waitingOnLocation = true;
-                    if (warpThread != null) {
-                        warpThread.stop = true;
-                        warpThread.notify();
-                    }
-                } else if (object instanceof CancelWarpRequest) {
-                    // sent by server if unable to fulfill a warp
-                } else if (object instanceof WarperInfo) {
-                    WarperInfo warperInfo = (WarperInfo) object;
-
-                    warperIGN = warperInfo.ign;
-                    timeOfInvite = System.currentTimeMillis();
-
-                    if (partyInvites.contains(warperIGN) && System.currentTimeMillis() - timeOfInvite < 5000 ) {
-                        // we have already received the packet telling us the ign and we can safely join
-                        sendChatMessage("/p accept " + warperIGN);
-                        partyInvites = new ArrayList<>();
-                        warperIGN = null;
-                        timeOfInvite = 0;
-                    } else if (System.currentTimeMillis() - timeOfInvite > 5000) {
-                        warperIGN = null;
-                        partyInvites = new ArrayList<>();
-                        timeOfInvite = 0;
-                    }
                 } else if (object instanceof TestPacket) {
                     TestPacket testPacket = (TestPacket) object;
                     SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm:ss z");
 
                     System.out.println("[" + testPacket.protocol + "]" + " [" + dateFormat.format(new Date()) + "] Time Sent (Unix): " + testPacket.timeSent + " Time Received: " + System.currentTimeMillis());
                 }
+                //WarperInfo, AbortWarpTask, BackgroundWarpTask ignored bc i don't want to mess around warping.java
+                //CancelWarpRequest, WarningBannerInfo, QueuePosition are empty or formely empty
             }
-
-
+            
             @Override
             public void disconnected(Connection connection) {
                 reconnect();
             }
-
         });
 
         BingoBrewers.client.start();
@@ -343,8 +265,8 @@ public class ServerConnection extends Listener implements Runnable {
         System.out.println("Connected to server.");
         // send server player ign and version
         ConnectionIgn response = new ConnectionIgn();
-        ign = Minecraft.getMinecraft().getSession().getUsername();
-        uuid = Minecraft.getMinecraft().getSession().getProfile().getId().toString();
+        ign = Minecraft.getInstance().getUser().getName();
+        uuid = Minecraft.getInstance().getUser().getProfileId().toString();
         response.hello = ign + "|v0.3.8|Beta|" + uuid;
         System.out.println("sending " + response.hello);
         BingoBrewers.client.sendTCP(response);
@@ -374,7 +296,6 @@ public class ServerConnection extends Listener implements Runnable {
                 getClient().sendUDP(KryoNetwork.testPacketCreator("UDP"));
                 getClient().updateReturnTripTime();
                 System.out.println("Current Ping with connection " + getClient().getID() + ": " + getClient().getReturnTripTime());
-
             }
         };
 
@@ -527,14 +448,14 @@ public class ServerConnection extends Listener implements Runnable {
         if(!SplashHud.onBingo) return; // non-profile bingo splashes setting was here
         if(!SplashHud.inSkyblockorPTLobby && !BingoBrewersConfig.splashNotificationsOutsideSkyblock) return;
         if(!BingoBrewers.onHypixel) return;
-        EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
+        LocalPlayer player = Minecraft.getInstance().player;
         if (!dungeonHub) {
             if (hub.equalsIgnoreCase("Unknown Hub")) {
                 hub = "Unknown Hub";
             } else {
                 hub = "Hub " + hub;
             }
-            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000, false);
+            TitleHud titleHud = new TitleHud("Splash in " + hub, 0xFF8BAFE0, 4000, false);
             setActiveHud(titleHud);
         } else {
             if (hub.equalsIgnoreCase("Unknown Hub")) {
@@ -542,11 +463,11 @@ public class ServerConnection extends Listener implements Runnable {
             } else {
                 hub = "Dungeon Hub " + hub;
             }
-            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000, false);
+            TitleHud titleHud = new TitleHud("Splash in " + hub, 0xFF8BAFE0, 4000, false);
             setActiveHud(titleHud);
         }
 
-        player.playSound("bingobrewers:splash_notification", BingoBrewersConfig.splashNotificationVolume/100f, 1.0f);
+        player.playSound(SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("bingobrewers", "splash_notification")), BingoBrewersConfig.splashNotificationVolume/100f, 1.0f);
     }
 
     public synchronized void sendPlayerCount(KryoNetwork.PlayerCount count) {
@@ -601,9 +522,6 @@ public class ServerConnection extends Listener implements Runnable {
         client.sendTCP(object);
     }
 
-
-
-
     public void reconnect() {
         BingoBrewers.client.close();
         BingoBrewers.client.removeListener(this);
@@ -639,5 +557,4 @@ public class ServerConnection extends Listener implements Runnable {
             }
         }
     }
-
 }

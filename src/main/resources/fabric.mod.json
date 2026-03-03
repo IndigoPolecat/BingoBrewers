@@ -18,6 +18,9 @@
   "entrypoints": {
     "main": [
       "com.github.indigopolecat.bingobrewers.BingoBrewers"
+    ],
+    "modmenu": [
+      "com.github.indigopolecat.bingobrewers.gui.ConfigScreen"
     ]
   },
   "mixins": [

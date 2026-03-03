@@ -9,6 +9,8 @@ import com.github.indigopolecat.bingobrewers.util.AutoUpdater;
 import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
 import com.github.indigopolecat.events.HypixelPackets;
 import com.github.indigopolecat.events.Packets;
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.hypixel.modapi.HypixelModAPI;
 import net.hypixel.modapi.packet.HypixelPacket;
@@ -77,6 +79,8 @@ public class BingoBrewers implements ModInitializer {
       HypixelModAPI.getInstance().registerHandler(ClientboundPartyInfoPacket.class, HypixelPackets::onPartyInfoPacket);
       HypixelModAPI.getInstance().registerHandler(ClientboundLocationPacket.class, HypixelPackets::onLocationEvent);
       HypixelModAPI.getInstance().subscribeToEventPacket(ClientboundLocationPacket.class);
+       
+       AutoConfig.register(BingoBrewersConfig.class, GsonConfigSerializer::new);
    }
 
     public static void createServerThread() {
