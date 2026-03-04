@@ -1,6 +1,6 @@
 package com.github.indigopolecat.kryo;
 
-import com.github.indigopolecat.bingobrewers.ServerConnection;
+import com.github.indigopolecat.bingobrewers.network.ServerConnection;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 import com.github.indigopolecat.kryo.KryoNetwork.*;
 import java.util.HashMap;

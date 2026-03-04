@@ -1,0 +1,130 @@
+package com.github.indigopolecat.bingobrewers.util;
+
+import com.github.indigopolecat.bingobrewers.BingoBrewers;
+import com.github.indigopolecat.bingobrewers.BingoBrewersConfig;
+import com.github.indigopolecat.bingobrewers.PlayerInfo;
+import com.github.indigopolecat.kryo.KryoNetwork;
+import net.minecraft.client.Minecraft;
+import com.github.indigopolecat.bingobrewers.network.ServerConnection;
+
+import java.util.ArrayList;
+
+//import static com.github.indigopolecat.bingobrewers.ServerConnection.setActiveHud;
+
+public class SplashNotificationInfo {
+    public String id;
+    public long timestamp;
+    public String hubNumber = "";
+    public String serverID = "";
+    public String lobbyPlayerCount = "";
+    public boolean isPrivate;
+    public boolean dungeonHub = false;
+    public String splasherIGN = "";
+    public boolean realIGN;
+    public String bingoPartyJoinCommand = "No Party";
+    public String location = "";
+    public ArrayList<String> splasherNotes = new ArrayList<>();
+    public boolean example = false;
+
+    public static final String DUNGEON_HUB = "Dungeon Hub";
+    public static final String HUB = "Hub";
+    public static final String PRIVATE_HUB = "Private Hub";
+    public static final String PLAYER_COUNT = "Players";
+    public static final String SPLASHER = "Splasher";
+    public static final String PARTY = "Party";
+    public static final String LOCATION = "Location";
+    public static final String NOTE = "Note";
+    public static boolean inSplashHub;
+
+
+    public SplashNotificationInfo(KryoNetwork.SplashNotification notificationInfo, boolean sendNotif, SplashNotificationInfo oldSplash) {
+        if (notificationInfo == null || notificationInfo.timestamp == 0 || notificationInfo.hub == null) return;
+
+        this.id = notificationInfo.splash;
+        this.timestamp = notificationInfo.timestamp;
+        if (notificationInfo.serverID != null && !notificationInfo.serverID.isEmpty()) {
+            serverID = notificationInfo.serverID;
+        }
+        this.isPrivate = notificationInfo.isPrivate;
+
+        if (this.isPrivate) {
+            this.hubNumber = "/p join " + notificationInfo.hub;
+        } else {
+            this.hubNumber = notificationInfo.hub;
+        }
+
+        this.dungeonHub = notificationInfo.dungeonHub;
+        this.splasherNotes = notificationInfo.note;
+        this.splasherIGN = notificationInfo.splasher;
+        this.realIGN = notificationInfo.splasherRealIGN;
+
+        this.location = notificationInfo.location;
+        if (notificationInfo.partyHost.isEmpty()) {
+            this.bingoPartyJoinCommand = "No Party";
+        } else {
+            this.bingoPartyJoinCommand = "/p join " + notificationInfo.partyHost;
+        }
+
+        if (oldSplash != null) {
+            if (!oldSplash.serverID.equals(notificationInfo.serverID) && !oldSplash.serverID.isEmpty()) {
+                // if the new server ID doesn't match the old, and the old did have a value (i.e. it isn't being set for the first time), then clear the player count
+                this.lobbyPlayerCount = "";
+            } else if ((!oldSplash.hubNumber.equals(notificationInfo.hub) || oldSplash.dungeonHub != notificationInfo.dungeonHub) && oldSplash.serverID.isEmpty()) {
+                // if the hub number changed, and the server ID is empty, then clear the player count
+                this.lobbyPlayerCount = "";
+            } else {
+                this.lobbyPlayerCount = oldSplash.lobbyPlayerCount;
+            }
+        }
+
+
+        if (sendNotif) {
+            SplashUtils.setReadyToNotify(this.hubNumber, this.dungeonHub);
+        }
+    }
+
+    public SplashNotificationInfo(boolean example) {
+        if (!example) return;
+
+        this.example = true;
+        this.hubNumber = "14";
+        this.splasherIGN = "indigo_polecat";
+        this.bingoPartyJoinCommand = "/p join BingoParty";
+        this.location = "Bea House";
+        this.splasherNotes.add("This is an example splash with a long example note, which is intended to wrap to a new line.");
+        this.timestamp = 0;
+    }
+
+    // This is called onTickEvent in PlayerInfo when the player is not null, only called once per notification
+    public static synchronized void notification(String hub, boolean dungeonHub) {
+        if (!BingoBrewersConfig.getConfig().splashNotificationsEnabled) return;
+        // TODO: Get these booleans back
+        //if(!PlayerInfo.onBingo) return; // non-profile bingo splashes setting was here
+        if(!PlayerInfo.inSkyblockOrPTL && !BingoBrewersConfig.getConfig().splashNotificationsOutsideSkyblock) return;
+        if(!BingoBrewers.onHypixel) return;
+
+        // TODO: Add title hud and play sound
+        // used to play notification sound
+        //EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
+        if (!dungeonHub) {
+            if (hub.equalsIgnoreCase("Unknown Hub")) {
+                hub = "Unknown Hub";
+            } else {
+                hub = "Hub " + hub;
+            }
+            //TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRgba(), 4000, false);
+            //setActiveHud(titleHud);
+        } else {
+            if (hub.equalsIgnoreCase("Unknown Hub")) {
+                hub = "Unknown Dungeon Hub";
+            } else {
+                hub = "Dungeon Hub " + hub;
+            }
+            //TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRgba(), 4000, false);
+            //setActiveHud(titleHud);
+        }
+
+        //player.playSound("bingobrewers:splash_notification", BingoBrewersConfig.splashNotificationVolume/100f, 1.0f);
+    }
+
+}

@@ -1,5 +1,6 @@
 package com.github.indigopolecat.bingobrewers;
 
+import com.github.indigopolecat.bingobrewers.network.ServerConnection;
 import com.github.indigopolecat.events.Packets;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.CHChestItem;
@@ -27,34 +28,36 @@ public class CHChests {
     public static String signalLootChatMessageEnd = "§r§d§l▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬§r";
     public static Pattern ITEM_PATTERN = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
     // potentially store this as a constant in the server that is downloaded on launch
-    
-    /*
-    public void onRightClickChest(PlayerInteractEvent event) {
-        if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) return;
-        if (!event.world.getBlockState(event.pos).getBlock().getUnlocalizedName().contains("chest")) return;
-        if (!BingoBrewersConfig.crystalHollowsWaypointsToggle) return;
-        // Add the chest to the list of chests to listen for
-        if (!Packets.hardstone.containsKey(event.pos.toString())) {
-            ArrayList<String> lobbyVisitedChests = visitedChests.get(PlayerInfo.currentServer);
-            if (lobbyVisitedChests == null) {
-                lobbyVisitedChests = new ArrayList<>();
-            }
-            if (!lobbyVisitedChests.contains(event.pos.getX() + event.pos.getY() + event.pos.getZ() + "")) {
-                listeningChests.put(event.pos.toString(), System.currentTimeMillis());
 
-                lobbyVisitedChests.add(event.pos.getX() + event.pos.getY() + event.pos.getZ() + "");
-                visitedChests.put(PlayerInfo.currentServer, lobbyVisitedChests);
-            }
-        } else {
-            lastHardstoneChest = System.currentTimeMillis();
-            expectingHardstoneLoot = true;
-        }
 
-    }
+//    @SubscribeEvent
+//    public void onRightClickChest(PlayerInteractEvent event) {
+//        if (event.action != PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) return;
+//        if (!event.world.getBlockState(event.pos).getBlock().getUnlocalizedName().contains("chest")) return;
+//        if (!BingoBrewersConfig.crystalHollowsWaypointsToggle) return;
+//        // Add the chest to the list of chests to listen for
+//        if (!Packets.hardstone.containsKey(event.pos.toString())) {
+//            ArrayList<String> lobbyVisitedChests = visitedChests.get(PlayerInfo.currentServer);
+//            if (lobbyVisitedChests == null) {
+//                lobbyVisitedChests = new ArrayList<>();
+//            }
+//            if (!lobbyVisitedChests.contains(event.pos.getX() + event.pos.getY() + event.pos.getZ() + "")) {
+//                listeningChests.put(event.pos.toString(), System.currentTimeMillis());
+//
+//                lobbyVisitedChests.add(event.pos.getX() + event.pos.getY() + event.pos.getZ() + "");
+//                visitedChests.put(PlayerInfo.currentServer, lobbyVisitedChests);
+//            }
+//        } else {
+//            lastHardstoneChest = System.currentTimeMillis();
+//            expectingHardstoneLoot = true;
+//        }
+//
+//    }
 
-    public void clientTick(TickEvent.ClientTickEvent event) {
-        if (System.currentTimeMillis() - lastHardstoneChest > 500) expectingHardstoneLoot = false;
-    }*/
+//    @SubscribeEvent
+//    public void clientTick(TickEvent.ClientTickEvent event) {
+//        if (System.currentTimeMillis() - lastHardstoneChest > 500) expectingHardstoneLoot = false;
+//    }
 
     public static void addChatMessage(String message) {
         if (!expectingHardstoneLoot) {
@@ -102,9 +105,9 @@ public class CHChests {
         // add the opened chest to blacklist
         Packets.hardstone.put(coords, Long.MAX_VALUE);
 
-        KryoNetwork.sendCHItems chestLoot = new KryoNetwork.sendCHItems();
+        KryoNetwork.ClientSendCHItems chestLoot = new KryoNetwork.ClientSendCHItems();
         chestLoot.server = PlayerInfo.currentServer;
-        chestLoot.day = 1; //TODO (matita): where is the world instance? //(int) Minecraft.getMinecraft().theWorld.getWorldTime() / 24000;
+        chestLoot.day = 1; // TODO (matita): where is wolrd instance
         // coords are in the format BlockPos{x=420, y=124, z=576}
         Pattern coordPattern = Pattern.compile("BlockPos\\{x=(\\d+), y=(\\d+), z=(\\d+)}");
         Matcher coordMatcher = coordPattern.matcher(coords);

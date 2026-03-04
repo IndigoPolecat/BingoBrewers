@@ -3,23 +3,29 @@ package com.github.indigopolecat.kryo;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.EndPoint;
 
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 
 public class KryoNetwork {
+
     public static void register(EndPoint endPoint) {
         Kryo kryo = endPoint.getKryo();
-        kryo.register(ConnectionIgn.class);
+        kryo.register(EncryptedString.class);
+        kryo.register(byte[].class);
+        kryo.register(ServerPublicKey.class);
+        kryo.register(Authentication.class);
+        kryo.register(ClientSymmetricKey.class);
+        kryo.register(ConnectionIGN.class);
         kryo.register(SplashNotification.class);
         kryo.register(ArrayList.class);
         kryo.register(PlayerCount.class);
         kryo.register(PlayerCountBroadcast.class);
         kryo.register(HashMap.class);
-        kryo.register(receiveConstantsOnStartup.class);
-        kryo.register(requestLbin.class);
-        kryo.register(sendLbin.class);
-        kryo.register(sendCHItems.class);
-        kryo.register(receiveCHItems.class);
+        kryo.register(ClientRequestLowestBINPrices.class);
+        kryo.register(ServerSendLowestBINPrices.class);
+        kryo.register(ClientSendCHItems.class);
+        kryo.register(ServerSendCHItems.class);
         kryo.register(SubscribeToCHServer.class);
         kryo.register(ChestInfo.class);
         kryo.register(CHChestItem.class);
@@ -31,65 +37,85 @@ public class KryoNetwork {
         kryo.register(CancelWarpRequest.class);
         kryo.register(AbortWarpTask.class);
         kryo.register(QueuePosition.class);
+        kryo.register(ServerSummary.class);
         kryo.register(ServersSummary.class);
         kryo.register(UpdateServers.class);
         kryo.register(RequestLiveUpdatesForServerInfo.class);
-        kryo.register(ServerSummary.class);
         kryo.register(WarningBannerInfo.class);
-        kryo.register(ReceiveConstantsOnStartupModern.class);
+        kryo.register(ClientReceiveServerConstantValues.class);
         kryo.register(JoinAlert.class);
         kryo.register(WarperInfo.class);
-        kryo.register(PollQueuePosition.class);
-        kryo.register(TestPacket.class);
+        kryo.register(RequestQueuePosition.class);
     }
 
-    public static class ConnectionIgn {
-        public String hello;
+    // TODO: add constructors to classes
+
+    public static class ServerPublicKey {
+        public String public_key;
+    }
+    public static class ClientSymmetricKey {
+        public String symmetric_key;
+    }
+    public static class Authentication {
+        public EncryptedString AuthID;
+    }
+    public static class ConnectionIGN {
+        public EncryptedString IGN;
+        public EncryptedString version;
+        public EncryptedString uuid;
+        public int connections;
+        public HashMap<Object, Object> accountInformation = new HashMap<>(); // for future Misc. purposes
+    }
+
+    public static class EncryptedString {
+        public String string;
+        public byte[] iv;
     }
 
     public static class SplashNotification {
-        public String message;
+        public long timestamp;
+
+        public String hub;
+        public String serverID;
+        public boolean isPrivate;
+        public boolean dungeonHub;
+
         public String splasher;
+        public boolean splasherRealIGN;
+
         public String partyHost;
-        public List<String> note;
+
+        public ArrayList<String> note;
+
         public String location;
         public String splash;
-        public boolean dungeonHub;
+        public boolean remove;
     }
 
     public static class PlayerCount {
+        public String splashID;
         public int playerCount;
-        public String IGN;
-        public String server;
+        public String hub;
+        public String serverID;
     }
 
     public static class PlayerCountBroadcast {
-        public HashMap<String, String> playerCounts;
+        public int playerCount;
+        public String serverID;
     }
 
-    public static class receiveConstantsOnStartup {
-        public HashMap<Integer, Integer> bingoRankCosts;
-        public int POINTS_PER_BINGO;
-        public int POINTS_PER_BINGO_COMMUNITIES;
-        public ArrayList<String> newCHChestItems = new ArrayList<>();
-        public String chItemRegex;
-        public String joinAlertTitle;
-        public String joinAlertChat;
-        public LinkedHashSet<String> CHItemOrder = new LinkedHashSet<>();
-
-    }
 
     // Request the lbin of any item on ah/bz by item id
     // If they don't exist, they won't be included in the response
-    public static class requestLbin {
+    public static class ClientRequestLowestBINPrices {
         public ArrayList<String> items;
     }
 
-    public static class sendLbin {
+    public static class ServerSendLowestBINPrices {
         public HashMap<String, Integer> lbinMap;
     }
 
-    public static class sendCHItems {
+    public static class ClientSendCHItems {
         public ArrayList<CHChestItem> items = new ArrayList<>();
         public int x;
         public int y;
@@ -105,14 +131,15 @@ public class KryoNetwork {
         public Integer itemColor;
     }
 
+    // TODO: combine with warp register into one packet sent every time you join a lobby
     public static class SubscribeToCHServer {
         public String server;
         public int day;
         public boolean unsubscribe;
     }
 
-    public static class receiveCHItems {
-        public ArrayList<ChestInfo> chestMap;
+    public static class ServerSendCHItems {
+        public ArrayList<ChestInfo> chestMap = new ArrayList<>();
         public String server; // used to confirm that the server is correct
         public int day; // server's last known day
         public Long lastReceivedDayInfo = Long.MAX_VALUE;
@@ -131,7 +158,7 @@ public class KryoNetwork {
 
     public static class BackgroundWarpTask {
         public String server; // confirm
-        public HashMap<String, String> accountsToWarp;
+        public HashMap<String, String> accountsToWarp = new HashMap<>();
     }
 
     public static class RegisterToWarpServer {
@@ -148,9 +175,12 @@ public class KryoNetwork {
         public String server;
     }
 
+    // tell a warper to abort a warp
+    // client can also send it to the server to indicate it cannot perform a warp to the server at all
     public static class AbortWarpTask {
-        public String ign;
+        public EncryptedString ign;
         public boolean ineligible;
+
     }
 
     public static class QueuePosition {
@@ -168,14 +198,13 @@ public class KryoNetwork {
     public static class RequestLiveUpdatesForServerInfo {
         public boolean unrequest;
     }
-    
     public static class WarningBannerInfo {
-        public String text;
+        public EncryptedString text;
         public Integer textColor = 0xFFFFFF;
         public Integer backgroundColor = 0x000000;
     }
-    
-    public static class ReceiveConstantsOnStartupModern {
+
+    public static class ClientReceiveServerConstantValues {
         public HashMap<String, Object> constants = new HashMap<>();
     }
 
@@ -183,29 +212,10 @@ public class KryoNetwork {
         public String joinAlertChat;
         public String joinAlertTitle;
     }
-    
     public static class WarperInfo {
-        public String ign;
+        public EncryptedString ign;
     }
-    
-    public static class PollQueuePosition {
+    public static class RequestQueuePosition {
         public String server;
-    }
-    
-    public static class TestPacket {
-        public Long timeSent;
-        public String protocol;
-        public String identification = "Unix Timestamp TestPacket.";
-
-    }
-    
-    public static TestPacket testPacketCreator(String protocol) {
-        TestPacket packet = new TestPacket();
-        packet.protocol = protocol;
-        packet.timeSent = System.currentTimeMillis();
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm:ss z");
-        System.out.println("[" + dateFormat.format(new Date()) + "] Sending " + protocol + " Test Packet: " + packet.timeSent);
-        return packet;
     }
 }

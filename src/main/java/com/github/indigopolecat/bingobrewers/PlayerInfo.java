@@ -1,9 +1,9 @@
 package com.github.indigopolecat.bingobrewers;
 
+import com.github.indigopolecat.bingobrewers.network.ServerConnection;
 import com.github.indigopolecat.kryo.KryoNetwork;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class PlayerInfo {
@@ -24,6 +24,7 @@ public class PlayerInfo {
     public static int day;
     public static boolean subscribedToCurrentCHServer;
     public static boolean inParty;
+    public static boolean inSkyblockOrPTL;
     public static boolean registeredToWarp;
     public volatile static boolean readyToNotify = false;
     public volatile static String splashHubNumberForNotification = null;
@@ -110,25 +111,6 @@ public class PlayerInfo {
             }
         }
     }*/
-
-    public void setPlayerCount(int playercount) {
-        int currentCount = playerCount;
-        PlayerInfo.playerCount = playercount;
-        // If the player count has changed
-        if (currentCount != playercount) {
-            KryoNetwork.PlayerCount count = new KryoNetwork.PlayerCount();
-            count.playerCount = playercount;
-            //count.IGN = Minecraft.getMinecraft().thePlayer.getName(); //TODO (matita)
-            count.IGN = "testing";
-            if (playerHubNumber == null) {
-                System.out.println("Player hub number is null");
-                return;
-            }
-            count.server = playerHubNumber;
-            ServerConnection serverConnection = new ServerConnection();
-            serverConnection.sendPlayerCount(count);
-        }
-    }
 
     public static void setReadyToNotify(String hub, boolean dungeonHub) {
         readyToNotify = true;

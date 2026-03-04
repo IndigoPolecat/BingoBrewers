@@ -362,7 +362,7 @@ public class ChestInventories {
         }
     }*/
 
-    private static String removeFormatting(String s) {
+    public static String removeFormatting(String s) {
         String news = s.replaceAll("§.", "");
         if (news.endsWith(" Bingo Points")) {
             news = news.substring(0, news.length() - 13);

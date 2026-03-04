@@ -1,6 +1,7 @@
 package com.github.indigopolecat.bingobrewers;
 
 import com.esotericsoftware.kryonet.Client;
+import com.github.indigopolecat.bingobrewers.network.ServerConnection;
 import com.github.indigopolecat.bingobrewers.config.ConfigSerializer;
 import com.github.indigopolecat.bingobrewers.gui.ColorGuiProvider;
 import com.github.indigopolecat.bingobrewers.util.AutoUpdater;
