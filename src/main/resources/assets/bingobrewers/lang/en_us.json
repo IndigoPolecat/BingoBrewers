@@ -19,14 +19,16 @@
   "text.autoconfig.bingobrewers.option.showNote.@Tooltip": "Show any extra information the splasher included in the splash notification",
 
   "text.autoconfig.bingobrewers.option.splashConfig": "Splash HUD Settings",
-  "text.autoconfig.bingobrewers.option.splashConfig.x": "HUD X Position",
-  "text.autoconfig.bingobrewers.option.splashConfig.y": "HUD Y Position",
-  "text.autoconfig.bingobrewers.option.splashConfig.scale": "HUD Scale",
+  "text.autoconfig.bingobrewers.option.splashConfig.x": "splash HUD X offset from top-left",
+  "text.autoconfig.bingobrewers.option.splashConfig.y": "splash HUD Y Position",
+  "text.autoconfig.bingobrewers.option.splashConfig.scale": "splash HUD Scale",
 
   "text.autoconfig.bingobrewers.option.splashNotificationVolume": "Notification Volume",
   "text.autoconfig.bingobrewers.option.splashNotificationVolume.@Tooltip": "Set the volume of the splash notification (0-200)",
-  "text.autoconfig.bingobrewers.option.alertTextColor": "Alert Text Color",
-  "text.autoconfig.bingobrewers.option.alertTextColor.@Tooltip": "Set the color of the alert text (e.g. \"Splash in Hub 14\")",
+  "text.autoconfig.bingobrewers.option.alertTextColorHex": "Set the color of the alert text (e.g. \"Splash in Hub 14\")",
+
+  "text.autoconfig.bingobrewers.option.splashConfig.displayTime": "How long the information of the current splash will stay on the top-left",
+  "text.autoconfig.bingobrewers.option.splashConfig.alertDisplayTime": "How long the alert of the latest splash will appear in the center",
 
   "text.autoconfig.bingobrewers.option.crystalHollowsWaypointsToggle": "Enable CH Waypoints",
   "text.autoconfig.bingobrewers.option.crystalHollowsWaypointsToggle.@Tooltip": "Toggle Crystal Hollows Waypoints",
@@ -55,7 +57,7 @@
   "text.autoconfig.bingobrewers.option.autoUpdaterType.@Tooltip": "Choose which updates the auto-updater should look for",
   "text.autoconfig.bingobrewers.option.autoDownload": "Auto-Download Updates",
   "text.autoconfig.bingobrewers.option.autoDownload.@Tooltip": "Auto download updates when available. Requires restart.",
-  "text.autoconfig.bingobrewers.option.versionN": "Version Info",
+  "text.autoconfig.bingobrewers.option.versionN": "Hover to get version number",
   "text.autoconfig.bingobrewers.option.displayMissingBingoPoints": "Show Missing Bingo Points",
   "text.autoconfig.bingobrewers.option.displayMissingBingoPoints.@Tooltip": "Display the amount of missing Bingo Points to buy the item.",
   "text.autoconfig.bingobrewers.option.displayMissingBingoes": "Show Missing Bingoes",

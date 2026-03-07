@@ -23,7 +23,6 @@ import java.security.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
-//TODO: there seems to be some duplicated code
 public class AutoUpdater {
     public static boolean updateScreen = false;
 
@@ -77,12 +76,6 @@ public class AutoUpdater {
           if (updateChecked) return;
           updateChecked = true;
           
-          UpdateUtils.patchConnection(connection -> {
-             if (connection instanceof HttpsURLConnection https) {
-                //https.setSSLSocketFactory(ctx.getSocketFactory()); //TODO (matita): removed keystore for now
-             }
-          });
-          
           System.out.println("Checking for updates...");
           checkUpdate().thenAccept(updateAvailable -> {
              if (!updateAvailable) return;
@@ -101,28 +94,20 @@ public class AutoUpdater {
        });
        
        ServerWorldEvents.LOAD.register((server, level) ->{
-          if(!updateChecked) {
-             updateChecked = true;
-             
-             UpdateUtils.patchConnection(connection->{
-                if(connection instanceof HttpsURLConnection) {
-                   //((HttpsURLConnection)connection).setSSLSocketFactory(ctx.getSocketFactory()); //TODO (matita): removed keystore for now
-                }
-             });
-             
-             System.out.println("Checking for updates...");
-             checkUpdate().thenAccept(updateAvailable->{
-                if(updateAvailable) {
-                   if(BingoBrewersConfig.getConfig().autoDownload) {
-                      BingoBrewers.autoUpdater.update();
-                      //BingoBrewers.activeTitle = new TitleHud("Bingo Brewers will update on game close.", 0x47EB62, 4000, false); //TODO(matita): redo this
-                   } else {
-                      isThereUpdate = true;
-                      updateScreen = true;
-                   }
-                }
-             });
-          }
+           if(updateChecked) return;
+           updateChecked = true;
+           
+           System.out.println("Checking for updates...");
+           checkUpdate().thenAccept(updateAvailable->{
+               if(!updateAvailable) return;
+               if(BingoBrewersConfig.getConfig().autoDownload) {
+                  BingoBrewers.autoUpdater.update();
+                  //BingoBrewers.activeTitle = new TitleHud("Bingo Brewers will update on game close.", 0x47EB62, 4000, false); //TODO(matita): redo this
+               } else {
+                  isThereUpdate = true;
+                  updateScreen = true;
+               }
+           });
        });
     }
 

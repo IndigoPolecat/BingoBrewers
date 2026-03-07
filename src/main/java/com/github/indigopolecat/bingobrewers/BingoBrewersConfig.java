@@ -16,17 +16,12 @@ public class BingoBrewersConfig implements ConfigData {
     public static BingoBrewersConfig getConfig() {
         return AutoConfig.getConfigHolder(BingoBrewersConfig.class).getConfig();
     }
-    
-    //HUDs start //TODO: GUIs settings
-    //public SplashHud hud = new SplashHud();
-    //public CrystalHollowsHud CHHud = new CrystalHollowsHud();
-    //HUDs end
 
     @Comment(value = "Enable or disable splash notifications")
     public boolean splashNotificationsEnabled = true;
 
-    @Comment(value = "Whether to show splash notifications outside of Skyblock AND the Prototype Lobby.")
-    public boolean splashNotificationsOutsideSkyblock = true;
+    @Comment(value = "Whether to show splash notifications outside of Skyblock")
+    public boolean splashNotificationsOutsideSkyblock = false;
 
     @Comment(value = "Include the splasher's IGN in splash notifications")
     public boolean showSplasher = true;
@@ -40,24 +35,30 @@ public class BingoBrewersConfig implements ConfigData {
     @Comment(value = "Show any extra information the splasher included in the splash notification")
     public boolean showNote = true;
     
-    //public SplashHud hud = new SplashHud();
     @ConfigEntry.Gui.TransitiveObject()
     public SplashHudSettings splashConfig = new SplashHudSettings();
     public static class SplashHudSettings {
         public int x = 10;
         public int y = 10;
         
-        @ConfigEntry.BoundedDiscrete(min = 0, max = 3)
-        public float scale = 1.0f;
+        @ConfigEntry.BoundedDiscrete(min = 30, max = 300)
+        public int scale = 100; //This is scale*100, since autoconfig does not support floats/doubles
+        
+        @Comment(value = "In seconds")
+        public int displayTime = 60 * 2;
+        
+        @Comment(value = "In seconds")
+        public int alertDisplayTime = 30;
     }
 
     @Comment(value = "Set the volume of the splash notification") @ConfigEntry.BoundedDiscrete(max = 200)
-    public float splashNotificationVolume = 100f;
+    public int splashNotificationVolume = 100;
 
-    @Comment(value = "Set the color of the alert text (e.g. \"Splash in Hub 14\")")
-    @ConfigEntry.ColorPicker(allowAlpha = true)
-    public Color alertTextColor = new Color(0xFF8BAFE0);
-
+    //@ConfigEntry.ColorPicker(allowAlpha = true) //It does not seem to work :(
+    //public Color alertTextColor = new Color(0xFF8BAFE0);
+    @Comment(value = "use ARGB")
+    public int alertTextColorHex = 0xFF8BAFE0;
+    
     @Comment(value = "Toggle Crystal Hollows Waypoints")
     @ConfigEntry.Category(value = "Crystal Hollows Waypoints")
     public boolean crystalHollowsWaypointsToggle = true;
@@ -156,14 +157,13 @@ public class BingoBrewersConfig implements ConfigData {
                 CHRequest.day = PlayerInfo.day;
                 CHRequest.unsubscribe = true;
                 ServerConnection.SubscribeToCHServer(CHRequest);
+                
+                KryoNetwork.RegisterToWarpServer unregister = new KryoNetwork.RegisterToWarpServer();
+                unregister.unregister = true;
+                PlayerInfo.registeredToWarp = false;
+                unregister.server = PlayerInfo.currentServer;
+                ServerConnection.sendTCP(unregister);
             }
-            
-            // always unregister, server will remove you from all if it doesn't find you in specified
-            KryoNetwork.RegisterToWarpServer unregister = new KryoNetwork.RegisterToWarpServer();
-            unregister.unregister = true;
-            PlayerInfo.registeredToWarp = false;
-            unregister.server = PlayerInfo.currentServer;
-            ServerConnection.sendTCP(unregister);
         }
         
         if (PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {

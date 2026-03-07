@@ -3,10 +3,12 @@ package com.github.indigopolecat.bingobrewers;
 import com.esotericsoftware.kryonet.Client;
 import com.github.indigopolecat.bingobrewers.config.ConfigSerializer;
 import com.github.indigopolecat.bingobrewers.gui.ColorGuiProvider;
+import com.github.indigopolecat.bingobrewers.hud.*;
 import com.github.indigopolecat.bingobrewers.util.AutoUpdater;
 import com.github.indigopolecat.bingobrewers.util.Log;
 import com.github.indigopolecat.events.HypixelPackets;
 import com.mojang.brigadier.context.CommandContext;
+import lombok.*;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.gui.registry.GuiRegistry;
 import net.fabricmc.api.ClientModInitializer;
@@ -18,40 +20,61 @@ import net.hypixel.modapi.packet.HypixelPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPartyInfoPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPingPacket;
 import net.hypixel.modapi.packet.impl.clientbound.event.ClientboundLocationPacket;
+import net.minecraft.Util;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.util.ARGB;
+import net.minecraft.util.Mth;
 
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class BingoBrewers implements ClientModInitializer {
-    public static BingoBrewersConfig config;
     public static BingoBrewers INSTANCE;
 
     //public static volatile TitleHud activeTitle; //TODO(matita): redo this
-    public static volatile Client client;
+    @Getter(onMethod_ = @Synchronized) @Setter(onMethod_ = @Synchronized)
+    private static volatile Client client;
     // controls which server is connected to
     public static final boolean TEST_INSTANCE = true;
-    public static final String version = "v0.3.8-beta";
-    public static boolean onHypixel = false; // TODO(polecat): this doesn't work if someone is using a proxy to connect to hypixel, need better detection
+    public static final String version = "v0.4.0-beta+1.21";
+    //TODO(matita): overridden detection for now, also it may better to be moved as ServerUtils.isHypixel()
+    public static boolean onHypixel = true; // TODO(polecat): this doesn't work if someone is using a proxy to connect to hypixel, need better detection
 
     public static AutoUpdater autoUpdater = new AutoUpdater();
     public static HashMap<String, Integer> minecraftColors = new HashMap<>();
+    
+    public static CopyOnWriteArrayList<HypixelPacket> packetHold = new CopyOnWriteArrayList<>();
+    public static HypixelPacket lastPacketSent;
+    public static long lastPacketSentAt = 0;
+    public static boolean waitingForPacketResponse;
    
    public static int configCommand(CommandContext<FabricClientCommandSource> context) {
-       Log.info("Executed config command"); //TODO (matita): open the config gui
-       return 1;
+       Log.info("Opening config menu");
+       Screen configScreen = AutoConfig.getConfigScreen(BingoBrewersConfig.class, Minecraft.getInstance().screen).get();
+       Minecraft.getInstance().setScreen(configScreen);
+       Log.info("configScreen present=" + (configScreen == null));
+       return 1; //1 is success
    }
    
     @Override
     public void onInitializeClient() {
         INSTANCE = this;
-        config = new BingoBrewersConfig();
         createServerThread();
         
         //register the commands
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             dispatcher.register(ClientCommandManager.literal("bb").executes(BingoBrewers::configCommand)
-                                                    .redirect(dispatcher.register(ClientCommandManager.literal("bb").executes(BingoBrewers::configCommand))));
+                                                    .redirect(dispatcher.register(ClientCommandManager.literal("bingobrewers").executes(BingoBrewers::configCommand))));
+            dispatcher.register(ClientCommandManager.literal("bingobrewerstestgui").executes(ctx -> {
+                HudManager.addNewHud(new TitleHud(1000*15, "Test string", 0x47EB62));
+                HudManager.addNewHud(new TimedTextHud(1000*30, 0xFFFFFFFF,1.5f,
+                    "This is a §1 example §rtext", "that spans multiple lines", "§k abcdefg", "Is it scaled?"));
+                return 1; //1 is success
+            }));
         });
         
         autoUpdater.registerUpdateCheck();
@@ -85,6 +108,8 @@ public class BingoBrewers implements ClientModInitializer {
         } catch (Exception e) {
             Log.error("An error occurred while loading the configuration file", e);
         }
+        
+        HudManager.initialize();
     }
 
     public static void createServerThread() {
@@ -96,11 +121,6 @@ public class BingoBrewers implements ClientModInitializer {
             Log.info("Server Connection Error: " + e.getMessage(), e);
         }
     }
-
-    public static CopyOnWriteArrayList<HypixelPacket> packetHold = new CopyOnWriteArrayList<>();
-    public static HypixelPacket lastPacketSent;
-    public static long lastPacketSentAt = 0;
-    public static boolean waitingForPacketResponse;
     
     public void sendPacket(HypixelPacket packet) {
         System.out.println("packet time: " + (System.currentTimeMillis() - lastPacketSentAt));

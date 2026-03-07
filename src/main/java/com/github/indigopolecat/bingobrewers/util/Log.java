@@ -1,32 +1,36 @@
 package com.github.indigopolecat.bingobrewers.util;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Log {
-    public static final Logger LOGGER = Logger.getLogger("bingobrewers");
+    public static final Logger LOG = LoggerFactory.getLogger("bingobrewers");
     
     public static void info(String message) {
-        LOGGER.info(message);
+        LOG.info(message);
     }
     
     public static void info(String message, Throwable throwable) {
-        LOGGER.log(Level.INFO, message, throwable);
+        LOG.info(message, throwable);
     }
     
     public static void warn(String message) {
-        LOGGER.warning(message);
+        LOG.warn(message);
+    }
+    
+    public static void warn(String message, Throwable throwable) {
+        LOG.warn(message, throwable);
     }
     
     public static void error(String message) {
-        LOGGER.severe(message);
+        LOG.error(message);
     }
     
     public static void error(String message, Throwable throwable) {
-        LOGGER.log(Level.SEVERE, message, throwable);
+        LOG.error(message, throwable);
     }
     
     public static void debug(String message) {
-        LOGGER.fine(message);
+        LOG.debug(message);
     }
 }

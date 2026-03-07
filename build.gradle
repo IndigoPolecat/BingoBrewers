@@ -46,6 +46,10 @@ dependencies {
 
     include(modImplementation("me.shedaniel.cloth:cloth-config-fabric:20.0.149"))
     include(modImplementation("com.terraformersmc:modmenu:16.0.0"))
+
+    //lombok (to generate code at compile time)
+    compileOnly("org.projectlombok:lombok:1.18.42")
+    annotationProcessor("org.projectlombok:lombok:1.18.42")
 }
 
 processResources {

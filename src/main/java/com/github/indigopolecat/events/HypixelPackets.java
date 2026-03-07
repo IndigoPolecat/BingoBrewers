@@ -64,39 +64,20 @@ public class HypixelPackets {
     public static void onLocationEvent(ClientboundLocationPacket packet) {
         System.out.println("Location Packet: " + packet.toString());
         checkScoreboardForBingoTime = System.currentTimeMillis() + 1500;
-        if (!packet.getServerType().isPresent()) return;
+        if (packet.getServerType().isEmpty()) return;
         PlayerInfo.playerGameType = packet.getServerType().get().getName();
         if (PlayerInfo.playerGameType.equalsIgnoreCase("skyblock")) {
-            if (!packet.getMode().isPresent()) return;
+            if (packet.getMode().isEmpty()) return;
             PlayerInfo.playerLocation = packet.getMode().get();
-            // Check if the scoreboard contains "bingo" and set the onBingo flag once we know if we're on skyblock
-            //SplashHud.inSkyblockorPTLobby = true; //TODO(matita): removed HUDs
-        } else if (PlayerInfo.playerGameType.equalsIgnoreCase("prototype")) {
-            //SplashHud.inSkyblockorPTLobby = true; //TODO(matita): removed HUDs
+            PlayerInfo.inSkyblockOrPTL = true;
+        } else if (PlayerInfo.playerGameType.equalsIgnoreCase("prototype") || PlayerInfo.playerGameType.equalsIgnoreCase("limbo")) {
+            PlayerInfo.inSkyblockOrPTL = true;
         } else {
-            //SplashHud.inSkyblockorPTLobby = false; //TODO(matita): removed HUDs
+            PlayerInfo.inSkyblockOrPTL = false;
         }
 
 
         PlayerInfo.currentServer = packet.getServerName();
-        if (PlayerInfo.currentServer != null) {
-            PlayerInfo.playerHubNumber = PlayerInfo.hubServerMap.get(PlayerInfo.currentServer);
-
-            // This is checking without "DH" tag that dungeon hubs have, unimportant but commenting for clarity
-            if (PlayerInfo.playerHubNumber != null && ServerConnection.hubList.contains(PlayerInfo.playerHubNumber)) {
-                PlayerInfo.inSplashHub = true;
-                PlayerInfo.lastSplashHubUpdate = System.currentTimeMillis();
-            } else { // basically if the server isn't a hub, then it might be a dungeon hub so we check that
-                PlayerInfo.playerHubNumber = PlayerInfo.dungeonHubServerMap.get(PlayerInfo.currentServer);
-
-                // DH is a tag added to the hub number so regular hubs and dungeon hubs can be differentiated
-                if (PlayerInfo.playerHubNumber != null && ServerConnection.hubList.contains("DH" + PlayerInfo.playerHubNumber)) {
-                    PlayerInfo.inSplashHub = true;
-                    PlayerInfo.lastSplashHubUpdate = System.currentTimeMillis();
-                }
-            }
-        }
-
         if (PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows") && !PlayerInfo.subscribedToCurrentCHServer) {
             subscribeToCHServerTime = System.currentTimeMillis() + 2000;
         }
