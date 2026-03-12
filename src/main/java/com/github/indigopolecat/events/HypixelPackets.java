@@ -1,6 +1,7 @@
 package com.github.indigopolecat.events;
 
 import com.github.indigopolecat.bingobrewers.*;
+import com.github.indigopolecat.bingobrewers.util.Log;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import net.hypixel.modapi.packet.HypixelPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundHelloPacket;
@@ -62,7 +63,7 @@ public class HypixelPackets {
     public static long subscribeToCHServerTime = Long.MAX_VALUE;
 
     public static void onLocationEvent(ClientboundLocationPacket packet) {
-        System.out.println("Location Packet: " + packet.toString());
+        Log.info("Location Packet: " + packet.toString());
         checkScoreboardForBingoTime = System.currentTimeMillis() + 1500;
         if (packet.getServerType().isEmpty()) return;
         PlayerInfo.playerGameType = packet.getServerType().get().getName();
@@ -70,10 +71,8 @@ public class HypixelPackets {
             if (packet.getMode().isEmpty()) return;
             PlayerInfo.playerLocation = packet.getMode().get();
             PlayerInfo.inSkyblockOrPTL = true;
-        } else if (PlayerInfo.playerGameType.equalsIgnoreCase("prototype") || PlayerInfo.playerGameType.equalsIgnoreCase("limbo")) {
-            PlayerInfo.inSkyblockOrPTL = true;
         } else {
-            PlayerInfo.inSkyblockOrPTL = false;
+            PlayerInfo.inSkyblockOrPTL = PlayerInfo.playerGameType.equalsIgnoreCase("prototype") || PlayerInfo.playerGameType.equalsIgnoreCase("limbo");
         }
 
 

@@ -1,5 +1,6 @@
 package com.github.indigopolecat.bingobrewers.hud;
 
+import com.github.indigopolecat.bingobrewers.BingoBrewersConfig;
 import com.github.indigopolecat.bingobrewers.util.Log;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -7,7 +8,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 
 public class TextHud implements Hud {
-    private final String[] text;
+    protected String[] text;
     private final int defaultColor;
     private float scale = 1;
     protected int offsetX = 5;
@@ -33,14 +34,19 @@ public class TextHud implements Hud {
         this.text = text;
     }
     
+    protected TextHud(int defaultColor) {
+        this.defaultColor = defaultColor;
+        this.text = new String[] {""};
+    }
+    
     public void setScale(float scale) {
-        if(scale < 1 || scale > 15) throw new IllegalArgumentException("scale is <1 or too big");
+        if(scale < 0.1 || scale > 30) throw new IllegalArgumentException("scale is <0.1 or >30");
         this.scale = scale;
     }
     
     @Override
     public void render(GuiGraphics graphics, DeltaTracker tickCounter) {
-        if(expired()) {
+        if(isExpired()) {
             Log.warn("Tried to render expired TextHud", new Exception());
             return;
         }
@@ -54,19 +60,26 @@ public class TextHud implements Hud {
         
         Font font = mc.font;
         
+        graphics.pose().pushMatrix();
+        graphics.pose().scale(scale);
+        
+        final int maxLines = BingoBrewersConfig.getConfig().maxLines;
+        int currentLine = 0;
+        
         for (String line: text) {
-            graphics.pose().pushMatrix();
-            graphics.pose().scale(scale);
-            
             graphics.drawString(font, line, (int)(x / scale), (int)(y / scale), defaultColor, false);
             y += (int)(font.lineHeight + 2.1 * scale);
-            
-            graphics.pose().popMatrix();
+            if(currentLine < maxLines) currentLine++;
+            else {
+                graphics.drawString(font, "...", (int)(x / scale), (int)(y / scale), defaultColor, false);
+                break;
+            }
         }
+        graphics.pose().popMatrix();
     }
     
     @Override
-    public boolean expired() {
+    public boolean isExpired() {
         return false;
     }
 }

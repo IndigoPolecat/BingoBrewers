@@ -19,7 +19,7 @@ public interface Hud {
     /**
      * Called every frame to determine if this HUD is valid and should be rendered via {@link #render(GuiGraphics, DeltaTracker)}
      *
-     * @return {@code true} if this Hud instance should be rendered, {@code false} if this Hud should be destroyed
+     * @return {@code false} if this Hud instance should be rendered, {@code true} if this Hud should be destroyed
      */
-    boolean expired();
+    boolean isExpired();
 }

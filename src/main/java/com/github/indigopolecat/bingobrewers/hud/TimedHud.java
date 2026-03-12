@@ -10,7 +10,7 @@ public interface TimedHud extends Hud {
     long getDisplayTime();
     
     @Override
-    default boolean expired() {
+    default boolean isExpired() {
         return getStartTime() + getDisplayTime() < System.currentTimeMillis();
     }
 }

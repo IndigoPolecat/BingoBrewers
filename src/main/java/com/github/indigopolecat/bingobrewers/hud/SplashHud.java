@@ -3,39 +3,52 @@ package com.github.indigopolecat.bingobrewers.hud;
 import com.github.indigopolecat.bingobrewers.BingoBrewersConfig;
 import com.github.indigopolecat.bingobrewers.util.Log;
 import com.github.indigopolecat.kryo.KryoNetwork;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.gui.GuiGraphics;
+
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
-public class SplashHud extends TimedTextHud{
+public class SplashHud extends TextHud {
     @Getter private final long startTime = System.currentTimeMillis();
-    private static final List<SplashHud> splashes = Collections.synchronizedList(new ArrayList<>());
-    public final KryoNetwork.SplashNotification notif;
+    private static final Map<String, SplashTimed> splashes = Collections.synchronizedMap(new HashMap<>());
+    private static SplashHud INSTANCE;
+    private static boolean notifiedScale = false;
     
-    public SplashHud(KryoNetwork.SplashNotification notification) {
-        super(1000L * BingoBrewersConfig.getConfig().splashConfig.displayTime, 0xFFFFFFFF, createText(notification));
-        notif = notification;
+    public SplashHud() {
+        super(0xFFFFFFFF);
+    }
+    
+    public static void addSplash(KryoNetwork.SplashNotification notification) {
+        splashes.put(notification.splash, new SplashTimed(notification, System.currentTimeMillis()));
+        
+        if(INSTANCE == null) {
+            INSTANCE = new SplashHud();
+            HudManager.addNewHud(INSTANCE);
+        }
         
         //Setup values from config
         final BingoBrewersConfig.SplashHudSettings config = BingoBrewersConfig.getConfig().splashConfig;
-        offsetX = config.x;
-        offsetY = config.y;
+        INSTANCE.offsetX = config.x;
+        INSTANCE.offsetY = config.y;
         try {
-            setScale(config.scale/100f);
+            INSTANCE.setScale(config.scale/100f);
         } catch (IllegalArgumentException e) {
-            Log.warn("Config.hud.scale is set to an invalid value: " + config.scale);
+            if(notifiedScale) return;
+            notifiedScale = true;
+            Log.warn("Config.hud.scale is set to an invalid value: " + config.scale + "(scaled: " + config.scale/100f + ")");
             Log.info("Invalid scale", e);
         }
-        
-        if(getHud(notif.splash) != null) getHud(notif.splash).invalidate(); //If the splash got an update remove it manually
-        
-        splashes.add(this);
     }
     
-    public static SplashHud getHud(String id) {
-        return splashes.parallelStream().filter(h -> h.notif.splash.equals(id)).findFirst().orElse(null);
+    public static void removeSplash(String id) {
+        splashes.remove(id);
+        
+        if(splashes.isEmpty()) {
+            HudManager.removeHud(INSTANCE);
+            INSTANCE = null;
+        }
     }
     
     private static String createText(KryoNetwork.SplashNotification notification) {
@@ -56,17 +69,35 @@ public class SplashHud extends TimedTextHud{
     }
     
     @Override
-    public long getDisplayTime() {
-        return 1000L * BingoBrewersConfig.getConfig().splashConfig.displayTime;
+    public void render(GuiGraphics graphics, DeltaTracker tickCounter) {
+        List<String> textToRender = new ArrayList<>();
+        
+        final int maxTime = BingoBrewersConfig.getConfig().splashConfig.displayTime;
+        
+        splashes.entrySet().removeIf(e -> System.currentTimeMillis() - e.getValue().startTime > maxTime * 1000L);
+        splashes.forEach((id, splash) -> {
+            Log.LOG.debug("Adding {} to the rendering queue", id);
+            textToRender.addAll(Arrays.asList(createText(splash.notification).split("\n")));
+        });
+        
+        text = textToRender.toArray(String[]::new);
+        
+        Log.LOG.debug("Rendering {} lines", text.length);
+        try {
+            Log.LOG.debug("First line: {}", text[0]);
+            super.render(graphics, tickCounter);
+        } catch (ArrayIndexOutOfBoundsException aioobe) {
+            Log.warn("There is no text to display, but this instance is still valid");
+            Log.info("Removing " + this + " as there are no valid splashes");
+            HudManager.removeHud(INSTANCE);
+            INSTANCE = null;
+        }
     }
     
     @Override
-    public boolean expired() {
-        return splashes.contains(this) && super.expired();
+    public boolean isExpired() {
+        return splashes.isEmpty();
     }
     
-    public void invalidate() {
-        splashes.remove(this);
-        HudManager.removeHud(this);
-    }
+    private record SplashTimed(KryoNetwork.SplashNotification notification, long startTime) { }
 }

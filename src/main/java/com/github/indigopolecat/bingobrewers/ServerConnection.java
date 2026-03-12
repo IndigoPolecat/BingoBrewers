@@ -55,7 +55,7 @@ public class ServerConnection extends Listener implements Runnable {
         try {
             connection();
         } catch (Exception e) {
-            Log.debug("catch reconnect");
+            Log.info("catch reconnect");
             Log.error("Server Connection Error: " + e.getMessage(), e);
             if (!reconnect) {
                 reconnect();
@@ -141,13 +141,9 @@ public class ServerConnection extends Listener implements Runnable {
             Log.info("notif=" + notif);// Log all fields just in case
             
             if(notif.remove) {
-                SplashHud previous = SplashHud.getHud(notif.splash);
-                if(previous == null) Log.info("Received outdated invalidate request for splash " + notif.splash);
-                else previous.invalidate();
+                SplashHud.removeSplash(notif.splash);
                 return;
             }
-            
-            BingoBrewersConfig config = BingoBrewersConfig.getConfig();
             
             if(!BingoBrewersConfig.getConfig().splashNotificationsEnabled) return;
             if(!(BingoBrewersConfig.getConfig().splashNotificationsOutsideSkyblock || ServerUtils.isBingo())) return;
@@ -155,7 +151,7 @@ public class ServerConnection extends Listener implements Runnable {
             if (notif.timestamp + 120_000 < System.currentTimeMillis()) return; // Skip outdated splashes
             
             HudManager.addNewHud(new SplashTitleHud(notif.hub + "(" + notif.serverID + ")"));
-            HudManager.addNewHud(new SplashHud(notif));
+            SplashHud.addSplash(notif);
             
         } else if (packet instanceof PlayerCountBroadcast playerCountBroadcast) {/*
             for (SplashNotificationInfo info : SplashInfoHud.activeSplashes) {
@@ -175,26 +171,27 @@ public class ServerConnection extends Listener implements Runnable {
                     }
                 }
                 if (!nope) {
+                    //noinspection unchecked
                     ChestInventories.rankPriceMap = (HashMap<Integer, Integer>) constants.get("bingoRankCosts");
                 }
             }
             if (constants.get("chItemRegex") != null && constants.get("chItemRegex") instanceof String) {
                 CHChests.regex = (String) constants.get("chItemRegex");
             }
-            if (constants.get("newMiscCHItems") != null && constants.get("newMiscCHItems") instanceof ArrayList) {
+            if (constants.get("newMiscCHItems") != null && constants.get("newMiscCHItems") instanceof ArrayList list) {
                 boolean nope = false;
-                for (Object string : (ArrayList<Object>) constants.get("newMiscCHItems")) {
+                for (Object string : list) {
                     if (!(string instanceof String)) {
                         nope = true;
                         break;
                     }
                 }
                 if (!nope) {
+                    //noinspection unchecked
                     newMiscCHItems = (ArrayList<String>) constants.get("newMiscCHItems");
                 }
             }
-            if (constants.get("joinAlert"+ BingoBrewers.version) != null && constants.get("joinAlert"+ BingoBrewers.version) instanceof JoinAlert) {
-                JoinAlert joinAlert = (JoinAlert) constants.get("joinAlert"+ BingoBrewers.version);
+            if (constants.get("joinAlert"+ BingoBrewers.version) != null && constants.get("joinAlert" + BingoBrewers.version) instanceof JoinAlert joinAlert) {
                 if (joinAlert.joinAlertChat != null) {
                     joinChat = joinAlert.joinAlertChat;
                 }
@@ -203,15 +200,16 @@ public class ServerConnection extends Listener implements Runnable {
                 }
             }
             
-            if (constants.get("CHItemOrder") != null && constants.get("CHItemOrder") instanceof LinkedHashSet) {
+            if (constants.get("CHItemOrder") != null && constants.get("CHItemOrder") instanceof LinkedHashSet<?> lhs) {
                 boolean nope = false;
-                for (Object string : (LinkedHashSet<Object>) constants.get("CHItemOrder")) {
+                for (Object string : lhs) {
                     if (!(string instanceof String)) {
                         nope = true;
                         break;
                     }
                 }
                 if (!nope) {
+                    //noinspection unchecked
                     CHItemOrder = new ArrayList<>((LinkedHashSet<String>) constants.get("CHItemOrder"));
                 }
             }
@@ -388,8 +386,7 @@ public class ServerConnection extends Listener implements Runnable {
                 connection(); // there's a built in reconnect method idk that's not used but this works
                 reconnect = false;
             } catch (Exception e) {
-                e.printStackTrace();
-                Log.info("[Bingo Brewers] Server Connection Error: " + e.getMessage());
+                Log.info("[Bingo Brewers] Server Connection Error: " + e.getMessage(), e);
                 BingoBrewers.getClient().close();
                 BingoBrewers.getClient().removeListener(this);
                 

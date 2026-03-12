@@ -1,6 +1,5 @@
 package com.github.indigopolecat.bingobrewers.hud;
 
-import com.github.indigopolecat.bingobrewers.util.Log;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.resources.ResourceLocation;
 
@@ -13,9 +12,8 @@ public class HudManager {
     public static void initialize() {
         HudElementRegistry.addLast(ResourceLocation.fromNamespaceAndPath("bingobrewers","huds_all"), (graphics, delta) -> {
             for(Hud hud : activeHuds) {
-                if(hud.expired()) {
+                if(hud.isExpired()) {
                     activeHuds.remove(hud);
-                    Log.debug("Hud " + hud.getClass().getSimpleName() + " has expired");
                 } else hud.render(graphics, delta);
             }
         });

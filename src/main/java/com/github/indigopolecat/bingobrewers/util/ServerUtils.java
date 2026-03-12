@@ -15,16 +15,17 @@ public final class ServerUtils {
     public static boolean isBingo() {
         if(Minecraft.getInstance().level == null) return false;
         var scoreboard = Minecraft.getInstance().level.getScoreboard();
-        var objective = scoreboard.getDisplayObjective(DisplaySlot.SIDEBAR);
-        if(objective == null) return false;
-        for(var line : scoreboard.listPlayerScores(objective)) {
-            String playerName = line.owner();
-            
-            if (playerName.startsWith("#")) continue;
-            PlayerTeam team = scoreboard.getPlayersTeam(playerName);
-            
-            String text = PlayerTeam.formatNameForTeam(team, Component.nullToEmpty(playerName)).getString();
-            if(text.contains("ⓑ")) return true; //'ⓑ' is the bingo tag
+        for(var slot : DisplaySlot.values()) {
+            var objective = scoreboard.getDisplayObjective(slot);
+            if(objective == null) continue;
+            for(var line : scoreboard.listPlayerScores(objective)) {
+                String playerName = line.owner();
+                
+                PlayerTeam team = scoreboard.getPlayersTeam(playerName);
+                
+                String text = PlayerTeam.formatNameForTeam(team, Component.nullToEmpty(playerName)).getString();
+                if(text.contains("ⓑ") || text.contains("bingo") || text.contains("Ⓑ")) return true; //'ⓑ' is the bingo tag //matita: 'Ⓑ' seems the correct one
+            }
         }
         return false;
     }

@@ -29,8 +29,4 @@ public class Log {
     public static void error(String message, Throwable throwable) {
         LOG.error(message, throwable);
     }
-    
-    public static void debug(String message) {
-        LOG.debug(message);
-    }
 }

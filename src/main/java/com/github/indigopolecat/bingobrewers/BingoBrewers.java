@@ -7,26 +7,24 @@ import com.github.indigopolecat.bingobrewers.hud.*;
 import com.github.indigopolecat.bingobrewers.util.AutoUpdater;
 import com.github.indigopolecat.bingobrewers.util.Log;
 import com.github.indigopolecat.events.HypixelPackets;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.brigadier.context.CommandContext;
-import lombok.*;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.gui.registry.GuiRegistry;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.hypixel.modapi.HypixelModAPI;
 import net.hypixel.modapi.packet.HypixelPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPartyInfoPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPingPacket;
 import net.hypixel.modapi.packet.impl.clientbound.event.ClientboundLocationPacket;
-import net.minecraft.Util;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.util.ARGB;
-import net.minecraft.util.Mth;
+
+import lombok.*;
 
 import java.awt.Color;
 import java.util.HashMap;
@@ -40,7 +38,7 @@ public class BingoBrewers implements ClientModInitializer {
     private static volatile Client client;
     // controls which server is connected to
     public static final boolean TEST_INSTANCE = true;
-    public static final String version = "v0.4.0-beta+1.21";
+    public static final String version = "v0.3.8-beta";
     //TODO(matita): overridden detection for now, also it may better to be moved as ServerUtils.isHypixel()
     public static boolean onHypixel = true; // TODO(polecat): this doesn't work if someone is using a proxy to connect to hypixel, need better detection
 
@@ -51,12 +49,34 @@ public class BingoBrewers implements ClientModInitializer {
     public static HypixelPacket lastPacketSent;
     public static long lastPacketSentAt = 0;
     public static boolean waitingForPacketResponse;
+    
+    //1 = open at next tick, 2 = open now, 0 = do not open
+    @Getter(value = AccessLevel.PRIVATE, onMethod_ = @Synchronized) @Setter(value = AccessLevel.PRIVATE, onMethod_ = @Synchronized)
+    private static int openConfig = 0;
+    
+    private static void registerConfigCommandDelayed() {
+        ClientTickEvents.END_CLIENT_TICK.register(c -> {
+            if(getOpenConfig() == 0) return;
+            if(getOpenConfig() == 1) {
+                setOpenConfig(2);
+                return;
+            }
+            setOpenConfig(0);
+            
+            Minecraft.getInstance().execute(()-> {
+                boolean render = RenderSystem.isOnRenderThread();
+                Log.LOG.debug("renderThread = {}", render);
+                Log.LOG.debug("parent screen={}", Minecraft.getInstance().screen);
+                Screen configScreen = AutoConfig.getConfigScreen(BingoBrewersConfig.class, null).get();
+                Minecraft.getInstance().setScreen(configScreen);
+                Log.LOG.debug("configScreen present={}, current screen={}", configScreen != null, Minecraft.getInstance().screen);
+            });
+        });
+    }
    
    public static int configCommand(CommandContext<FabricClientCommandSource> context) {
        Log.info("Opening config menu");
-       Screen configScreen = AutoConfig.getConfigScreen(BingoBrewersConfig.class, Minecraft.getInstance().screen).get();
-       Minecraft.getInstance().setScreen(configScreen);
-       Log.info("configScreen present=" + (configScreen == null));
+       if(getOpenConfig() == 0) setOpenConfig(1);
        return 1; //1 is success
    }
    
@@ -65,16 +85,21 @@ public class BingoBrewers implements ClientModInitializer {
         INSTANCE = this;
         createServerThread();
         
+        registerConfigCommandDelayed();
+        
         //register the commands
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-            dispatcher.register(ClientCommandManager.literal("bb").executes(BingoBrewers::configCommand)
-                                                    .redirect(dispatcher.register(ClientCommandManager.literal("bingobrewers").executes(BingoBrewers::configCommand))));
-            dispatcher.register(ClientCommandManager.literal("bingobrewerstestgui").executes(ctx -> {
-                HudManager.addNewHud(new TitleHud(1000*15, "Test string", 0x47EB62));
-                HudManager.addNewHud(new TimedTextHud(1000*30, 0xFFFFFFFF,1.5f,
-                    "This is a §1 example §rtext", "that spans multiple lines", "§k abcdefg", "Is it scaled?"));
-                return 1; //1 is success
-            }));
+            dispatcher.register(ClientCommandManager.literal("bb").executes(BingoBrewers::configCommand));
+            dispatcher.register(ClientCommandManager.literal("bingobrewers").executes(BingoBrewers::configCommand));
+            // Debug command used to dump the list of currently active huds
+            /*dispatcher.register(ClientCommandManager.literal("bbdebughud").executes(c -> {
+                Log.info("Active huds: ");
+                for(Hud hud : HudManager.activeHuds) {
+                    Log.info(hud.getClass() + ": " + hud.isExpired() + (hud instanceof TimedHud th? " current: " + System.currentTimeMillis() + " end: " +
+                        (th.getStartTime() + th.getDisplayTime()): "Not timed"));
+                }
+                return 1;
+            }));*/
         });
         
         autoUpdater.registerUpdateCheck();

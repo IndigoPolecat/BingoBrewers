@@ -31,9 +31,12 @@ public class BingoBrewersConfig implements ConfigData {
 
     @Comment(value = "Include the location in splash notifications")
     public boolean showLocation = true;
-
+    
     @Comment(value = "Show any extra information the splasher included in the splash notification")
     public boolean showNote = true;
+    
+    @Comment(value = "Maximum number of lines displayed in the splash hud and the CH hud")
+    public int maxLines = 15;
     
     @ConfigEntry.Gui.TransitiveObject()
     public SplashHudSettings splashConfig = new SplashHudSettings();
@@ -45,7 +48,7 @@ public class BingoBrewersConfig implements ConfigData {
         public int scale = 100; //This is scale*100, since autoconfig does not support floats/doubles
         
         @Comment(value = "In seconds")
-        public int displayTime = 60 * 2;
+        public int displayTime = 60;
         
         @Comment(value = "In seconds")
         public int alertDisplayTime = 30;
@@ -54,9 +57,8 @@ public class BingoBrewersConfig implements ConfigData {
     @Comment(value = "Set the volume of the splash notification") @ConfigEntry.BoundedDiscrete(max = 200)
     public int splashNotificationVolume = 100;
 
-    //@ConfigEntry.ColorPicker(allowAlpha = true) //It does not seem to work :(
-    //public Color alertTextColor = new Color(0xFF8BAFE0);
-    @Comment(value = "use ARGB")
+    @ConfigEntry.ColorPicker(allowAlpha = true) //apparently it does work with ints
+    @Comment(value = "ARGB, the firs 2 characters are the transparency")
     public int alertTextColorHex = 0xFF8BAFE0;
     
     @Comment(value = "Toggle Crystal Hollows Waypoints")

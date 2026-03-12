@@ -25,4 +25,9 @@ public class TimedTextHud extends TextHud implements TimedHud {
         super(defaultColor, scale, text);
         this.displayTime = displayTime;
     }
+    
+    @Override
+    public boolean isExpired() {
+        return TimedHud.super.isExpired();
+    }
 }
