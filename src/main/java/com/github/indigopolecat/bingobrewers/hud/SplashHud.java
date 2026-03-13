@@ -2,7 +2,8 @@ package com.github.indigopolecat.bingobrewers.hud;
 
 import com.github.indigopolecat.bingobrewers.BingoBrewersConfig;
 import com.github.indigopolecat.bingobrewers.util.Log;
-import com.github.indigopolecat.kryo.KryoNetwork;
+import com.github.indigopolecat.bingobrewers.util.ServerUtils;
+import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
 
@@ -12,34 +13,26 @@ import java.util.*;
 
 public class SplashHud extends TextHud {
     @Getter private final long startTime = System.currentTimeMillis();
-    private static final Map<String, SplashTimed> splashes = Collections.synchronizedMap(new HashMap<>());
+    @Getter private static final Map<String, SplashNotificationInfo> splashes = Collections.synchronizedMap(new HashMap<>());
     private static SplashHud INSTANCE;
-    private static boolean notifiedScale = false;
+    private static final String KEY_COLOR = "§e§l";
     
     public SplashHud() {
         super(0xFFFFFFFF);
     }
     
-    public static void addSplash(KryoNetwork.SplashNotification notification) {
-        splashes.put(notification.splash, new SplashTimed(notification, System.currentTimeMillis()));
-        
-        if(INSTANCE == null) {
+    public static void addSplash(SplashNotificationInfo info) {
+        splashes.put(info.id, info);
+
+        if (INSTANCE == null) {
             INSTANCE = new SplashHud();
             HudManager.addNewHud(INSTANCE);
         }
-        
+
         //Setup values from config
         final BingoBrewersConfig.SplashHudSettings config = BingoBrewersConfig.getConfig().splashConfig;
         INSTANCE.offsetX = config.x;
         INSTANCE.offsetY = config.y;
-        try {
-            INSTANCE.setScale(config.scale/100f);
-        } catch (IllegalArgumentException e) {
-            if(notifiedScale) return;
-            notifiedScale = true;
-            Log.warn("Config.hud.scale is set to an invalid value: " + config.scale + "(scaled: " + config.scale/100f + ")");
-            Log.info("Invalid scale", e);
-        }
     }
     
     public static void removeSplash(String id) {
@@ -51,33 +44,50 @@ public class SplashHud extends TextHud {
         }
     }
     
-    private static String createText(KryoNetwork.SplashNotification notification) {
-        StringBuilder builder = new StringBuilder();
+    private static ArrayList<String> createText(SplashNotificationInfo info) {
+        ArrayList<String> builder = new ArrayList<>();
         final BingoBrewersConfig config = BingoBrewersConfig.getConfig();
-        
-        if(notification.dungeonHub) builder.append("§l§6Dungeon ");
-        
-        builder.append("§l§6Hub:§r ").append(notification.hub).append(" (").append(notification.serverID).append(")");
-        if(config.showSplasher) builder.append("\n§l§6Splasher:§r ").append(notification.splasher);
-        if(config.showParty) builder.append("\n§l§6Party:§r ").append(notification.partyHost);
-        if(config.showLocation) builder.append("\n§l§6Location:§r ").append(notification.location);
-        if(config.showNote) {
-            builder.append("\n§l§6Notes:§r ");
-            for (String note : notification.note) builder.append(note).append("\n ");
+
+        String hubPrefix = SplashNotificationInfo.HUB;
+
+        if (info.dungeonHub) {
+            hubPrefix = SplashNotificationInfo.DUNGEON_HUB;
+        } else if (info.isPrivate) {
+            hubPrefix = SplashNotificationInfo.PRIVATE_HUB;
         }
-        return builder.toString();
+
+
+        String hubInfo = info.serverID.isEmpty() ? info.hub : info.hub + " (" + info.serverID + ")";
+        builder.add(KEY_COLOR + hubPrefix + hubInfo);
+
+        if(config.showPlayerCount && !info.lobbyPlayerCount.isEmpty()) builder.add(KEY_COLOR + SplashNotificationInfo.PLAYER_COUNT + info.lobbyPlayerCount);
+        if(config.showSplasher) builder.add(KEY_COLOR + SplashNotificationInfo.SPLASHER + info.splasherIGN);
+        if(config.showParty) builder.add(KEY_COLOR + SplashNotificationInfo.PARTY + info.bingoPartyJoinCommand);
+        if(config.showLocation) builder.add(KEY_COLOR + SplashNotificationInfo.LOCATION + info.location);
+        if(config.showNote) {
+            // Add first element on the same line as the key ("Note: ")
+            builder.add(KEY_COLOR + SplashNotificationInfo.NOTE + info.splasherNotes.getFirst());
+            for (int i = 1; i < info.splasherNotes.size(); i++) builder.add(info.splasherNotes.get(i));
+        }
+        return builder;
     }
     
     @Override
     public void render(GuiGraphics graphics, DeltaTracker tickCounter) {
+        // Check this during render so that someone can toggle the setting on or join skyblock, and if there is an active splash it will show up immediately.
+        if(!BingoBrewersConfig.getConfig().splashNotificationsEnabled) return;
+        if(!(BingoBrewersConfig.getConfig().splashNotificationsOutsideSkyblock || ServerUtils.isBingo())) return;
+
         List<String> textToRender = new ArrayList<>();
         
         final int maxTime = BingoBrewersConfig.getConfig().splashConfig.displayTime;
         
-        splashes.entrySet().removeIf(e -> System.currentTimeMillis() - e.getValue().startTime > maxTime * 1000L);
+        splashes.entrySet().removeIf(e -> System.currentTimeMillis() - e.getValue().timestamp > maxTime * 1000L);
+        // may want to worry about sorting this by age, map isn't sorted
         splashes.forEach((id, splash) -> {
             Log.LOG.debug("Adding {} to the rendering queue", id);
-            textToRender.addAll(Arrays.asList(createText(splash.notification).split("\n")));
+            textToRender.addAll(createText(splash));
+            textToRender.add(" "); // empty buffer line between splashes
         });
         
         text = textToRender.toArray(String[]::new);
@@ -98,6 +108,4 @@ public class SplashHud extends TextHud {
     public boolean isExpired() {
         return splashes.isEmpty();
     }
-    
-    private record SplashTimed(KryoNetwork.SplashNotification notification, long startTime) { }
 }

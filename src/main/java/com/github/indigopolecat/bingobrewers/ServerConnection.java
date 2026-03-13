@@ -9,6 +9,7 @@ import com.github.indigopolecat.bingobrewers.hud.SplashTitleHud;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
 import com.github.indigopolecat.bingobrewers.util.Log;
 import com.github.indigopolecat.bingobrewers.util.ServerUtils;
+import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.*;
 import com.github.indigopolecat.kryo.ServerSummary;
@@ -140,25 +141,24 @@ public class ServerConnection extends Listener implements Runnable {
             Log.info("Received Splash Notification: " + notif.hub + ", splasher: " + notif.splasher);
             Log.info("notif=" + notif);// Log all fields just in case
             
-            if(notif.remove) {
+            if (notif.remove) {
                 SplashHud.removeSplash(notif.splash);
                 return;
             }
+
+            if (notif.timestamp + BingoBrewersConfig.getConfig().splashConfig.displayTime < System.currentTimeMillis()) return; // Skip outdated splashes
+
+            SplashNotificationInfo info = SplashHud.getSplashes().get(notif.splash);
+
+            SplashHud.addSplash(new SplashNotificationInfo(notif, info));
             
-            if(!BingoBrewersConfig.getConfig().splashNotificationsEnabled) return;
-            if(!(BingoBrewersConfig.getConfig().splashNotificationsOutsideSkyblock || ServerUtils.isBingo())) return;
-            
-            if (notif.timestamp + 120_000 < System.currentTimeMillis()) return; // Skip outdated splashes
-            
-            HudManager.addNewHud(new SplashTitleHud(notif.hub + "(" + notif.serverID + ")"));
-            SplashHud.addSplash(notif);
-            
-        } else if (packet instanceof PlayerCountBroadcast playerCountBroadcast) {/*
-            for (SplashNotificationInfo info : SplashInfoHud.activeSplashes) {
+
+        } else if (packet instanceof PlayerCountBroadcast playerCountBroadcast) {
+            for (SplashNotificationInfo info : SplashHud.getSplashes().values()) {
                 if (playerCountBroadcast.serverID.equals(info.serverID)) {
                     info.lobbyPlayerCount = String.valueOf(playerCountBroadcast.playerCount);
                 }
-            }*/
+            }
             
         } else if (packet instanceof ClientReceiveServerConstantValues request) {
             HashMap<String, Object> constants = request.constants;

@@ -23,6 +23,9 @@ public class BingoBrewersConfig implements ConfigData {
     @Comment(value = "Whether to show splash notifications outside of Skyblock")
     public boolean splashNotificationsOutsideSkyblock = false;
 
+    @Comment(value = "Include the splash hub's current player count in splash notifications")
+    public boolean showPlayerCount = true;
+
     @Comment(value = "Include the splasher's IGN in splash notifications")
     public boolean showSplasher = true;
 
@@ -37,6 +40,9 @@ public class BingoBrewersConfig implements ConfigData {
     
     @Comment(value = "Maximum number of lines displayed in the splash hud and the CH hud")
     public int maxLines = 15;
+
+    @Comment(value = "Maximum number of pixels (scaled) for a single line before it is wrapped to another")
+    public int maxPixels = 200;
     
     @ConfigEntry.Gui.TransitiveObject()
     public SplashHudSettings splashConfig = new SplashHudSettings();
@@ -48,10 +54,10 @@ public class BingoBrewersConfig implements ConfigData {
         public int scale = 100; //This is scale*100, since autoconfig does not support floats/doubles
         
         @Comment(value = "In seconds")
-        public int displayTime = 60;
+        public int displayTime = 120;
         
         @Comment(value = "In seconds")
-        public int alertDisplayTime = 30;
+        public int alertDisplayTime = 4;
     }
 
     @Comment(value = "Set the volume of the splash notification") @ConfigEntry.BoundedDiscrete(max = 200)

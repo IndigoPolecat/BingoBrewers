@@ -22,6 +22,7 @@ public class TitleHud implements Hud, TimedHud {
     }
     
     public void render(GuiGraphics graphics, DeltaTracker tickCounter) {
+        // set alpha to 255 if not provided in color
         if((color & 0xFF000000) == 0) color |= 0xFF000000;
         
         Minecraft mc = Minecraft.getInstance();
