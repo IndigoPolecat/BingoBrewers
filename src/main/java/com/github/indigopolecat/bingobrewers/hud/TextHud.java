@@ -98,7 +98,7 @@ public class TextHud implements Hud {
 
         int linesToRender = Math.min(wrappedLines.size(), maxLines);
 
-// 2. Execute Rendering
+        // 2. Execute Rendering
         for (int i = 0; i < linesToRender; i++) {
             FormattedText currentLineText = wrappedLines.get(i);
             FormattedCharSequence textToRender;

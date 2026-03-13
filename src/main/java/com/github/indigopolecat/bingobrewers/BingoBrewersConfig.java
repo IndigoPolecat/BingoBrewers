@@ -7,8 +7,6 @@ import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 
-import java.awt.Color;
-
 @Config(name = "bingobrewers")
 public class BingoBrewersConfig implements ConfigData {
     public BingoBrewersConfig() { }

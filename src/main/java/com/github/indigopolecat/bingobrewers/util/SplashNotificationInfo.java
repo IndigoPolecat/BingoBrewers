@@ -19,7 +19,6 @@ public class SplashNotificationInfo {
     public String bingoPartyJoinCommand = "No Party";
     public String location = "";
     public ArrayList<String> splasherNotes = new ArrayList<>();
-    public boolean example = false;
 
     public static final String DUNGEON_HUB = "Dungeon Hub:§r ";
     public static final String HUB = "Hub:§r ";
@@ -29,7 +28,7 @@ public class SplashNotificationInfo {
     public static final String PARTY = "Party:§r ";
     public static final String LOCATION = "Location:§r ";
     public static final String NOTE = "Note:§r ";
-    public static boolean inSplashHub;
+
 
 
     public SplashNotificationInfo(SplashNotification notificationInfo, SplashNotificationInfo oldSplash) {
