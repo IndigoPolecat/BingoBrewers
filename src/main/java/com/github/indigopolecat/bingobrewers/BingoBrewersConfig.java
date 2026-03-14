@@ -49,13 +49,13 @@ public class BingoBrewersConfig implements ConfigData {
         public int y = 10;
         
         @ConfigEntry.BoundedDiscrete(min = 30, max = 300)
-        public int scale = 100; //This is scale*100, since autoconfig does not support floats/doubles
+        public int scale = 100; //This is scale*100, since autoconfig does not support sliders with floats/doubles
         
         @Comment(value = "In seconds")
         public int displayTime = 120;
         
         @Comment(value = "In seconds")
-        public int alertDisplayTime = 4;
+        public int alertDisplayTime = 15;
     }
 
     @Comment(value = "Set the volume of the splash notification") @ConfigEntry.BoundedDiscrete(max = 200)

@@ -62,6 +62,7 @@ public class ServerConnection extends Listener implements Runnable {
     }
     
     public void processPacket(Connection connection, Object packet) {
+        if(packet == null) return; //Never process null packets
         if (packet instanceof ServerPublicKey serverPublicKey) {
             String public_key = serverPublicKey.public_key;
             SecretKey symmetricKey;
@@ -116,13 +117,12 @@ public class ServerConnection extends Listener implements Runnable {
             ConnectionIGN accountInfo = new ConnectionIGN();
             accountInfo.IGN = encryptString(ign);
             accountInfo.uuid = encryptString(uuid);
-            accountInfo.version = encryptString("v0.4");
+            accountInfo.version = encryptString(BingoBrewers.version);
             accountInfo.connections = connectionsThisSession;
             
             System.out.println("Sending " + ign + "|" + BingoBrewers.version + "|" + uuid);
             sendTCP(accountInfo);
             System.out.println("sent");
-            
             
             try {
                 Thread.sleep(300);
@@ -131,7 +131,6 @@ public class ServerConnection extends Listener implements Runnable {
             }
             PlayerInfo.subscribedToCurrentCHServer = false;
             BingoBrewersConfig.getConfig().subscribeToServer();
-            
             
         } else if (packet instanceof SplashNotification notif) {
             if (notif.hub.isEmpty()) return; // completely ignore splashes without a hub number
@@ -144,14 +143,14 @@ public class ServerConnection extends Listener implements Runnable {
             }
 
             if (notif.timestamp + BingoBrewersConfig.getConfig().splashConfig.displayTime < System.currentTimeMillis()) return; // Skip outdated splashes
-
-            SplashNotificationInfo info = SplashHud.getSplashes().get(notif.splash);
-
-            SplashHud.addSplash(new SplashNotificationInfo(notif, info));
+            try {
+                SplashHud.addSplash(notif);
+            } catch (IllegalArgumentException ignored) {
+                Log.info("Tried to add to render queue invalid splash (id=" + notif.splash + ")");
+            }
             
-
         } else if (packet instanceof PlayerCountBroadcast playerCountBroadcast) {
-            for (SplashNotificationInfo info : SplashHud.getSplashes().values()) {
+            for (SplashNotificationInfo info : SplashHud.splashes.values()) {
                 if (playerCountBroadcast.serverID.equals(info.serverID)) {
                     info.lobbyPlayerCount = String.valueOf(playerCountBroadcast.playerCount);
                 }
@@ -369,17 +368,23 @@ public class ServerConnection extends Listener implements Runnable {
     
     public void reconnect() {
         BingoBrewers.getClient().close();
+        //Matita: this seems wrong, the listener is declared in an anonymos class inside the connect method
         BingoBrewers.getClient().removeListener(this);
         float waitTime = 0;
         
         waitTime = (int) (5000 * Math.random() + 2000);
         
-        System.out.println("Disconnected from server.");
+        Log.warn("Disconnected from server.");
         reconnect = true;
         while (reconnect) {
-            System.out.println("Reconnecting to Bingo Brewers server.");
+            Log.info("Reconnecting to Bingo Brewers server.");
             try {
                 BingoBrewers.setClient(new Client(16384, 16384));
+                //Matita: this seems to always throw an exception:
+                /*
+                Note: Client#update must be called in a separate thread during connect.
+                java.net.SocketTimeoutException: Connected, but timed out during TCP registration.
+                 */
                 connection(); // there's a built in reconnect method idk that's not used but this works
                 reconnect = false;
             } catch (Exception e) {
@@ -388,7 +393,7 @@ public class ServerConnection extends Listener implements Runnable {
                 BingoBrewers.getClient().removeListener(this);
                 
                 try {
-                    System.out.println("Reconnect failed. Trying again in " + waitTime + " milliseconds.");
+                    Log.error("Reconnect failed. Trying again in " + waitTime + " milliseconds.");
                     Thread.sleep((int) waitTime);
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);

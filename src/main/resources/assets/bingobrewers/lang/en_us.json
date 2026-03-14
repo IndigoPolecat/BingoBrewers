@@ -8,6 +8,8 @@
   "text.autoconfig.bingobrewers.option.splashNotificationsEnabled": "Enable Splash Notifications",
   "text.autoconfig.bingobrewers.option.splashNotificationsEnabled.@Tooltip": "Enable or disable splash notifications",
   "text.autoconfig.bingobrewers.option.splashNotificationsOutsideSkyblock": "Show Outside Skyblock",
+  "text.autoconfig.bingobrewers.option.showPlayerCount": "Show number of players in the splash lobby",
+  "text.autoconfig.bingobrewers.option.showPlayerCount.@Tooltip": "Only when available",
   "text.autoconfig.bingobrewers.option.splashNotificationsOutsideSkyblock.@Tooltip": "Whether to show splash notifications outside of Skyblock AND the Prototype Lobby.",
   "text.autoconfig.bingobrewers.option.showSplasher": "Show Splasher IGN",
   "text.autoconfig.bingobrewers.option.showSplasher.@Tooltip": "Include the splasher's IGN in splash notifications",
@@ -17,6 +19,9 @@
   "text.autoconfig.bingobrewers.option.showLocation.@Tooltip": "Include the location in splash notifications",
   "text.autoconfig.bingobrewers.option.showNote": "Show Extra Info",
   "text.autoconfig.bingobrewers.option.showNote.@Tooltip": "Show any extra information the splasher included in the splash notification",
+
+  "text.autoconfig.bingobrewers.option.maxLines": "Maximum number of lines",
+  "text.autoconfig.bingobrewers.option.maxPixels": "Maximum number of scaled pixels for a single line before it is wrapped to another",
 
   "text.autoconfig.bingobrewers.option.splashConfig": "Splash HUD Settings",
   "text.autoconfig.bingobrewers.option.splashConfig.x": "splash HUD X offset from top-left",

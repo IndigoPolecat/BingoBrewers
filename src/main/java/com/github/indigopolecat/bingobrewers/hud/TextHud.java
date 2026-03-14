@@ -21,7 +21,6 @@ public class TextHud implements Hud {
     private float scale = 1;
     protected int offsetX = 5;
     protected int offsetY = 8;
-    private static boolean notifiedScale = false;
     
     public TextHud(int defaultColor, float scale, String text) {
         this(defaultColor, text);
@@ -72,24 +71,12 @@ public class TextHud implements Hud {
         graphics.pose().pushMatrix();
         graphics.pose().scale(scale);
 
-        BingoBrewersConfig config = BingoBrewersConfig.getConfig();
+        final BingoBrewersConfig config = BingoBrewersConfig.getConfig();
         final int maxLines = config.maxLines;
         final int maxLineWidth = (int) (config.maxPixels * scale);
 
-
-        try {
-            // this needs to be updated when the setting is updated
-            this.setScale(config.splashConfig.scale / 100f);
-        } catch (IllegalArgumentException e) {
-            if(notifiedScale) return;
-            notifiedScale = true;
-            Log.warn("Config.hud.scale is set to an invalid value: " + config.splashConfig.scale + "(scaled: " + config.splashConfig.scale / 100f + ")");
-            Log.info("Invalid scale", e);
-        }
-
-
         // Prepare data, store as FormattedText so it remains mathematically editable
-        List<FormattedText> wrappedLines = new ArrayList<>();
+        List<FormattedText> wrappedLines = new ArrayList<>(); //Matita: is it better (performance-wise) to store this instead of the text?
         for (String line : text) {
             Component componentLine = Component.literal(line);
             // Use the underlying StringSplitter directly instead of font.split() to get a FormattedText output
