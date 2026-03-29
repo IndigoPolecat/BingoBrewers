@@ -6,6 +6,9 @@ import com.github.indigopolecat.bingobrewers.hud.SplashTitleHud;
 import com.github.indigopolecat.kryo.KryoNetwork;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SplashNotificationInfo {
     public static final String KEY_COLOR = "§e§l";
@@ -18,6 +21,7 @@ public class SplashNotificationInfo {
     public static final String PARTY_LABEL = KEY_COLOR + "Party:" + KEY_RESET;
     public static final String LOCATION_LABEL = KEY_COLOR + "Location:" + KEY_RESET;
     public static final String NOTE_LABEL = KEY_COLOR + "Note:" + KEY_RESET;
+    public static final Map<String, SplashNotificationInfo> splashes = Collections.synchronizedMap(new HashMap<>());
     
     public KryoNetwork.SplashNotification lastNotif;
     public String hub = "";

@@ -2,8 +2,6 @@ package com.github.indigopolecat.events;
 
 import com.github.indigopolecat.bingobrewers.*;
 import com.github.indigopolecat.bingobrewers.util.Log;
-import com.github.indigopolecat.kryo.KryoNetwork;
-import net.hypixel.modapi.packet.HypixelPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundHelloPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPartyInfoPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPingPacket;
@@ -12,8 +10,6 @@ import net.hypixel.modapi.packet.impl.clientbound.event.ClientboundLocationPacke
 import net.hypixel.modapi.packet.impl.serverbound.ServerboundPartyInfoPacket;
 import net.hypixel.modapi.packet.impl.serverbound.ServerboundPingPacket;
 import net.hypixel.modapi.packet.impl.serverbound.ServerboundPlayerInfoPacket;
-
-import net.minecraft.client.Minecraft;
 
 import java.util.ArrayList;
 import java.util.Map;

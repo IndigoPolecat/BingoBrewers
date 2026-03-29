@@ -14,7 +14,6 @@ import java.util.*;
 
 public class SplashHud extends TextHud {
     @Getter private final long startTime = System.currentTimeMillis();
-    public static final Map<String, SplashNotificationInfo> splashes = Collections.synchronizedMap(new HashMap<>());
     private static SplashHud INSTANCE;
     private static boolean notifiedScale = false;
     
@@ -23,8 +22,8 @@ public class SplashHud extends TextHud {
     }
     
     public static void addSplash(KryoNetwork.SplashNotification notif) {
-        if(splashes.get(notif.splash) == null) splashes.put(notif.splash, new SplashNotificationInfo(notif));
-        else splashes.get(notif.splash).update(notif);
+        if(SplashNotificationInfo.splashes.get(notif.splash) == null) SplashNotificationInfo.splashes.put(notif.splash, new SplashNotificationInfo(notif));
+        else SplashNotificationInfo.splashes.get(notif.splash).update(notif);
 
         if (INSTANCE == null) {
             INSTANCE = new SplashHud();
@@ -33,9 +32,9 @@ public class SplashHud extends TextHud {
     }
     
     public static void removeSplash(String id) {
-        splashes.remove(id);
+        SplashNotificationInfo.splashes.remove(id);
         
-        if(splashes.isEmpty()) {
+        if(SplashNotificationInfo.splashes.isEmpty()) {
             HudManager.removeHud(INSTANCE);
             INSTANCE = null;
         }
@@ -65,9 +64,9 @@ public class SplashHud extends TextHud {
         
         final int maxTime = config.displayTime;
         
-        splashes.entrySet().removeIf(e -> System.currentTimeMillis() - e.getValue().lastNotif.timestamp > maxTime * 1000L);
+        SplashNotificationInfo.splashes.entrySet().removeIf(e -> System.currentTimeMillis() - e.getValue().lastNotif.timestamp > maxTime * 1000L);
         // may want to worry about sorting this by age, map isn't sorted
-        splashes.forEach((id, splash) -> {
+        SplashNotificationInfo.splashes.forEach((id, splash) -> {
             Log.LOG.debug("Adding {} to the rendering queue", id);
             textToRender.addAll(splash.getText());
             textToRender.add(" "); // empty buffer line between splashes
@@ -89,6 +88,6 @@ public class SplashHud extends TextHud {
     
     @Override
     public boolean isExpired() {
-        return splashes.isEmpty();
+        return SplashNotificationInfo.splashes.isEmpty();
     }
 }

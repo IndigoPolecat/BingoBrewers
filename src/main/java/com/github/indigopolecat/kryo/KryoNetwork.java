@@ -103,7 +103,6 @@ public class KryoNetwork {
     public static class PlayerCount {
         public String splashID;
         public int playerCount;
-        public String hub;
         public String serverID;
     }
     

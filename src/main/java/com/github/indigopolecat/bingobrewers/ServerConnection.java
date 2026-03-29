@@ -154,7 +154,7 @@ public class ServerConnection extends Listener implements Runnable {
             }
             
         } else if (packet instanceof PlayerCountBroadcast playerCountBroadcast) {
-            for (SplashNotificationInfo info : SplashHud.splashes.values()) {
+            for (SplashNotificationInfo info : SplashNotificationInfo.splashes.values()) {
                 if (playerCountBroadcast.serverID.equals(info.serverID)) {
                     info.lobbyPlayerCount = String.valueOf(playerCountBroadcast.playerCount);
                 }

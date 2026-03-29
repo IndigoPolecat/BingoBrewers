@@ -1,9 +1,14 @@
 package com.github.indigopolecat.bingobrewers;
 
+import com.github.indigopolecat.bingobrewers.util.Log;
+import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
 import com.github.indigopolecat.kryo.KryoNetwork;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.hypixel.data.type.GameType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class PlayerInfo {
@@ -31,7 +36,36 @@ public class PlayerInfo {
     public volatile static boolean readyToNotifyDungeon = false;
     public volatile static long lastNotification = 0;
     public volatile static ArrayList<String> partyMembers = new ArrayList<>(); // uuids, leader not included
-
+    private volatile static int tickCount = 0; // used to run the players detection, will be updated only in the render thread
+    
+    public static void registerEvents() {
+        ClientTickEvents.END_CLIENT_TICK.register((client) -> {
+            tickCount++;
+            if(tickCount != 10) return;
+            tickCount = 0;
+            if(!playerGameType.equalsIgnoreCase(GameType.SKYBLOCK.getName())) return;
+            
+            SplashNotificationInfo currentSplash = null;
+            for (var splash : SplashNotificationInfo.splashes.values()) {
+                if(splash.serverID.equalsIgnoreCase(currentServer)) currentSplash = splash;
+            }
+            
+            if(currentSplash == null) return;
+            
+            playerCount = 0;
+            inSplashHub = false;
+            
+            ClientPacketListener connection = Minecraft.getInstance().getConnection();
+            for (var info : connection.getOnlinePlayers()) {
+                if(info.getProfile().name().matches("![A-Za-z]-[A-Za-z]")) continue;
+                if(currentSplash.lastNotif.splasher.equals(info.getProfile().name())) inSplashHub = true;
+                playerCount++;
+            }
+            
+            if(inSplashHub) ServerConnection.sendTCP(new KryoNetwork.PlayerCount(currentSplash.lastNotif.splash, playerCount, currentSplash.serverID));
+        });
+    }
+    
     //TODO(matita): do event system
     /*
     public void onWorldJoin(WorldEvent event) {

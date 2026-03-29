@@ -120,8 +120,8 @@ public class BingoBrewers implements ClientModInitializer {
       
         HypixelModAPI.getInstance().createHandler(ClientboundPingPacket.class, HypixelPackets::onPingPacket);
         HypixelModAPI.getInstance().createHandler(ClientboundPartyInfoPacket.class, HypixelPackets::onPartyInfoPacket);
-        HypixelModAPI.getInstance().createHandler(ClientboundLocationPacket.class, HypixelPackets::onLocationEvent);
         HypixelModAPI.getInstance().subscribeToEventPacket(ClientboundLocationPacket.class);
+        HypixelModAPI.getInstance().createHandler(ClientboundLocationPacket.class, HypixelPackets::onLocationEvent);
         
         try {
             AutoConfig.register(BingoBrewersConfig.class, ConfigSerializer::new);
@@ -132,6 +132,7 @@ public class BingoBrewers implements ClientModInitializer {
         }
         
         HudManager.initialize();
+        PlayerInfo.registerEvents();
     }
 
     public static void createServerThread() {
