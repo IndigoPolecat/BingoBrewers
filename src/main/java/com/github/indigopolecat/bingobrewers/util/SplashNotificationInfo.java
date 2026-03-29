@@ -61,19 +61,21 @@ public class SplashNotificationInfo {
     private void update(KryoNetwork.SplashNotification notif, boolean initialize) {
         if(notif == null || notif.timestamp == 0 || notif.hub == null) throw new IllegalArgumentException();
         
-        if(initialize) {
-            HudManager.addNewHud(new SplashTitleHud(notif.hub));
-        } else {
-            if(!serverID.equals(notif.serverID) && !serverID.isEmpty()) {
-                // if the new server ID doesn't match the old, and the old did have a value (i.e. it isn't being set for the first time), then clear the player count and notify
-                lobbyPlayerCount = "";
+        if(BingoBrewersConfig.getConfig().splashNotificationsEnabled && (BingoBrewersConfig.getConfig().splashNotificationsOutsideSkyblock || ServerUtils.isBingo())) {
+            if(initialize) {
                 HudManager.addNewHud(new SplashTitleHud(notif.hub));
-            } else if((!hub.equals(notif.hub) || lastNotif.dungeonHub != notif.dungeonHub) && serverID.isEmpty()) {
-                // if the hub number changed, and the server ID is empty (if there was a server id and it didn't change when the server ID did, then they're probably already in the right lobby), then clear the player count and notify
-                lobbyPlayerCount = "";
-                HudManager.addNewHud(new SplashTitleHud(notif.hub));
+            } else {
+                if(!serverID.equals(notif.serverID) && !serverID.isEmpty()) {
+                    // if the new server ID doesn't match the old, and the old did have a value (i.e. it isn't being set for the first time), then clear the player count and notify
+                    lobbyPlayerCount = "";
+                    HudManager.addNewHud(new SplashTitleHud(notif.hub));
+                } else if((!hub.equals(notif.hub) || lastNotif.dungeonHub != notif.dungeonHub) && serverID.isEmpty()) {
+                    // if the hub number changed, and the server ID is empty (if there was a server id and it didn't change when the server ID did, then they're probably already in the right lobby), then clear the player count and notify
+                    lobbyPlayerCount = "";
+                    HudManager.addNewHud(new SplashTitleHud(notif.hub));
+                }
             }
-        }
+        } else Log.info("Skipped alert for splash " + notif.splash);
         
         serverID = notif.serverID != null && !notif.serverID.isEmpty()? notif.serverID : "";
         hub = notif.isPrivate? "/p join " + notif.hub : notif.hub;

@@ -140,8 +140,13 @@ public class ServerConnection extends Listener implements Runnable {
                 SplashHud.removeSplash(notif.splash);
                 return;
             }
-
-            if (notif.timestamp + BingoBrewersConfig.getConfig().splashConfig.displayTime < System.currentTimeMillis()) return; // Skip outdated splashes
+            
+            // Skip outdated splashes
+            if (notif.timestamp + (BingoBrewersConfig.getConfig().splashConfig.displayTime * 1000L) < System.currentTimeMillis()) {
+                Log.info("Skipping outdated splash with id " + notif.splash);
+                return;
+            }
+            
             try {
                 SplashHud.addSplash(notif);
             } catch (IllegalArgumentException ignored) {

@@ -146,6 +146,8 @@ public class BingoBrewersConfig implements ConfigData {
     @ConfigEntry.Category(value = "misc")
     public boolean playEggTimerResetSound = false;
     
+    /** This is controlling whenever to connect to the test instance. Keep as false unless you know the test instance is online */
+    @Comment(value = "Leave this as false unless you know what you are doing")
     @ConfigEntry.Category(value = "misc")
     public boolean testInstance = false;
     
