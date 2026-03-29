@@ -1,0 +1,24 @@
+name: Run Gradle Build
+on: [ push, pull_request ]
+
+jobs:
+  gradle:
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'IndigoPolecat/BingoBrewers' }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Execute Gradle build
+        run: ./gradlew build
+      - name: Upload built mod JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: mod-jar
+          path: build/libs/*.jar
