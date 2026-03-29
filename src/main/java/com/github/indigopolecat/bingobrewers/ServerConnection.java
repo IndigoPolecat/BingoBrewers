@@ -170,9 +170,9 @@ public class ServerConnection extends Listener implements Runnable {
                     ChestInventories.rankPriceMap = (HashMap<Integer, Integer>) constants.get("bingoRankCosts");
                 }
             }
-            if (constants.get("chItemRegex") != null && constants.get("chItemRegex") instanceof String) {
-                CHChests.regex = (String) constants.get("chItemRegex");
-            }
+//            if (constants.get("chItemRegex") != null && constants.get("chItemRegex") instanceof String) {
+//                CHChests.regex = (String) constants.get("chItemRegex");
+//            }
             //noinspection rawtypes
             if (constants.get("newMiscCHItems") != null && constants.get("newMiscCHItems") instanceof ArrayList list) {
                 boolean nope = false;
@@ -210,22 +210,22 @@ public class ServerConnection extends Listener implements Runnable {
                 }
             }
             
-            if (constants.get("itemNameRegexGroup") != null && constants.get("itemNameRegexGroup") instanceof Integer) {
-                if (constants.get("itemCountRegexGroup") != null && constants.get("itemCountRegexGroup") instanceof Integer)
-                    if (constants.get("itemNameColorRegexGroup") != null && constants.get("itemNameColorRegexGroup") instanceof Integer) {
-                        CHChests.itemCountRegexGroup = (Integer) constants.get("itemCountRegexGroup");
-                        CHChests.itemNameRegexGroup = (Integer) constants.get("itemNameRegexGroup");
-                        CHChests.itemNameColorRegexGroup = (Integer) constants.get("itemNameColorRegexGroup");
-                    }
-            }
-            
-            if (constants.get("signalLootChatMessage") != null && constants.get("signalLootChatMessage") instanceof String) {
-                CHChests.signalLootChatMessage = (String) constants.get("signalLootChatMessage");
-            }
-            
-            if (constants.get("signalLootChatMessageEnd") != null && constants.get("signalLootChatMessageEnd") instanceof String) {
-                CHChests.signalLootChatMessageEnd = (String) constants.get("signalLootChatMessageEnd");
-            }
+//            if (constants.get("itemNameRegexGroup") != null && constants.get("itemNameRegexGroup") instanceof Integer) {
+//                if (constants.get("itemCountRegexGroup") != null && constants.get("itemCountRegexGroup") instanceof Integer)
+//                    if (constants.get("itemNameColorRegexGroup") != null && constants.get("itemNameColorRegexGroup") instanceof Integer) {
+//                        CHChests.itemCountRegexGroup = (Integer) constants.get("itemCountRegexGroup");
+//                        CHChests.itemNameRegexGroup = (Integer) constants.get("itemNameRegexGroup");
+//                        CHChests.itemNameColorRegexGroup = (Integer) constants.get("itemNameColorRegexGroup");
+//                    }
+//            }
+//
+//            if (constants.get("signalLootChatMessage") != null && constants.get("signalLootChatMessage") instanceof String) {
+//                CHChests.signalLootChatMessage = (String) constants.get("signalLootChatMessage");
+//            }
+//
+//            if (constants.get("signalLootChatMessageEnd") != null && constants.get("signalLootChatMessageEnd") instanceof String) {
+//                CHChests.signalLootChatMessageEnd = (String) constants.get("signalLootChatMessageEnd");
+//            }
         } else if (packet instanceof ServerSendCHItems CHItems) {
             System.out.println("Received CH Chests for " + CHItems.server);
             ArrayList<ChestInfo> chests = CHItems.chestMap;

@@ -130,7 +130,9 @@ public class BingoBrewers implements ClientModInitializer {
         } catch (Exception e) {
             Log.error("An error occurred while loading the configuration file", e);
         }
-        
+
+        CHChests.registerEvents();
+
         HudManager.initialize();
     }
 
