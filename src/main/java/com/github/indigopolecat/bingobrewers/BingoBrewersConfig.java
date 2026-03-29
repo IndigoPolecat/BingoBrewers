@@ -146,6 +146,9 @@ public class BingoBrewersConfig implements ConfigData {
     @ConfigEntry.Category(value = "misc")
     public boolean playEggTimerResetSound = false;
     
+    @ConfigEntry.Category(value = "misc")
+    public boolean testInstance = false;
+    
     public void subscribeToServer() {
         if (crystalHollowsWaypointsToggle && PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
             KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();

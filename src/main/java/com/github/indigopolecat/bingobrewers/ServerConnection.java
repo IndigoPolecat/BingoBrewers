@@ -274,11 +274,11 @@ public class ServerConnection extends Listener implements Runnable {
         });
         
         BingoBrewers.getClient().start();
-        System.out.println("Client started, Test Instance: " + BingoBrewers.TEST_INSTANCE);
+        System.out.println("Client started, Test Instance: " + BingoBrewersConfig.getConfig().testInstance);
         
         connectionsThisSession++;
         
-        if (BingoBrewers.TEST_INSTANCE) {
+        if (BingoBrewersConfig.getConfig().testInstance) {
             // Note: for those compiling their own version, the test server will rarely be active so keep the boolean as false
             System.out.println("Connecting to test server");
             BingoBrewers.getClient().connect(8000, "bingobrewers.com", 9090, 9191);
