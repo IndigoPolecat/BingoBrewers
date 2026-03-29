@@ -12,6 +12,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
 
 public class CHChests {
@@ -31,14 +33,16 @@ public class CHChests {
             if (interactionHand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
             BlockPos pos = blockHitResult.getBlockPos();
             if (!(level.getBlockState(pos).getBlock() instanceof ChestBlock)) return InteractionResult.PASS;
+            Block blockBelow = level.getBlockState(pos.below()).getBlock();
+            if (blockBelow == Blocks.STONE || blockBelow == Blocks.AIR) return InteractionResult.PASS;
 
             listeningChests.add(pos);
-
             return InteractionResult.PASS;
         });
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
             onChatMessage(message.getString());
         });
+
     }
 
     public static void onChatMessage(String message) {
