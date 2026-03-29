@@ -72,5 +72,9 @@
   "text.autoconfig.bingobrewers.option.eggTimerMessage": "Egg Timer Message Text",
   "text.autoconfig.bingobrewers.option.eggTimerMessage.@Tooltip": "What to display when the Chicken cooldown is reset. (Use & for § in COLOR only codes)",
   "text.autoconfig.bingobrewers.option.playEggTimerResetSound": "Egg Timer Reset Sound",
-  "text.autoconfig.bingobrewers.option.playEggTimerResetSound.@Tooltip": "Play a sound if the Chicken Head cooldown is reset."
+  "text.autoconfig.bingobrewers.option.playEggTimerResetSound.@Tooltip": "Play a sound if the Chicken Head cooldown is reset.",
+
+
+  "text.autoconfig.bingobrewers.option.testInstance": "Controls whenever to connect to the bingobrewers testing server",
+  "text.autoconfig.bingobrewers.option.testInstance.@Tooltip": "Leave this as false unless you know what you are doing"
 }

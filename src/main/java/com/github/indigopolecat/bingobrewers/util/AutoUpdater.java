@@ -128,7 +128,7 @@ public class AutoUpdater {
             if(parts[i].matches(" *[0-9]+ *")) { // no type present
                 ret[i] = Integer.parseInt(parts[i].strip());
             } else {
-                ret[i] = Integer.parseInt(tag.substring(0, tag.indexOf('-')).strip()); //remove "-BETA" or similar
+                ret[i] = Integer.parseInt(parts[i].substring(0, parts[i].indexOf('-')).strip()); //remove "-BETA" or similar
             }
             
             return ret;
