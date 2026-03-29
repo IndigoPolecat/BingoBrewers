@@ -85,7 +85,6 @@ public class ServerConnection extends Listener implements Runnable {
                 BingoBrewers.getClient().close();
                 BingoBrewers.getClient().removeListener(this);
                 reconnect = true; // by setting this to true, the client will assume it is already reconnecting and won't try to
-                return;
             }
             
         } else if (packet instanceof Authentication authentication) {
@@ -174,6 +173,7 @@ public class ServerConnection extends Listener implements Runnable {
             if (constants.get("chItemRegex") != null && constants.get("chItemRegex") instanceof String) {
                 CHChests.regex = (String) constants.get("chItemRegex");
             }
+            //noinspection rawtypes
             if (constants.get("newMiscCHItems") != null && constants.get("newMiscCHItems") instanceof ArrayList list) {
                 boolean nope = false;
                 for (Object string : list) {

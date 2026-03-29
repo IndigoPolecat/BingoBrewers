@@ -33,12 +33,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class BingoBrewers implements ClientModInitializer {
     public static BingoBrewers INSTANCE;
 
-    //public static volatile TitleHud activeTitle; //TODO(matita): redo this
     @Getter(onMethod_ = @Synchronized) @Setter(onMethod_ = @Synchronized)
     private static volatile Client client;
-    // controls which server is connected to
-    public static final boolean TEST_INSTANCE = true;
-    public static final String version = "v0.3.8-beta";
+    public static final String version = "v0.3.9-beta";
     //TODO(matita): overridden detection for now, also it may better to be moved as ServerUtils.isHypixel()
     public static boolean onHypixel = true; // TODO(polecat): this doesn't work if someone is using a proxy to connect to hypixel, need better detection
 
