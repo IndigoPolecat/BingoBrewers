@@ -1,10 +1,10 @@
 name: Run Gradle Build
-on: [ push, pull_request ]
+on: [ push, pull_request, workflow_dispatch ]
 
 jobs:
   gradle:
     runs-on: ubuntu-latest
-    if: ${{ github.repository == 'IndigoPolecat/BingoBrewers' }}
+    if: ${{ (github.repository == 'IndigoPolecat/BingoBrewers') || (github.repository == 'Matita008/BingoBrewers') || (github.event == 'workflow_dispatch') }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
