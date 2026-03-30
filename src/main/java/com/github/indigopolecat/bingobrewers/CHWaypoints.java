@@ -35,7 +35,6 @@ public class CHWaypoints {
 
     public ArrayList<CHChestItem> expandedName;
     public CopyOnWriteArrayList<CHChestItem> filteredExpandedItems = new CopyOnWriteArrayList<>();
-
     public static HashMap<String, CrystalHollowsItemTotal> itemCounts = new HashMap<>();
     public static CopyOnWriteArrayList<CHWaypoints> filteredWaypoints = new CopyOnWriteArrayList<>();
 
@@ -51,26 +50,18 @@ public class CHWaypoints {
 
         Vec3 camPos = camera.getPosition();
 
-        int screenWidth = mc.getWindow().getGuiScaledWidth();
-        int screenHeight = mc.getWindow().getGuiScaledHeight();
-
-        float centerX = screenWidth / 2f;
-        float centerY = screenHeight / 2f;
-
         PoseStack poseStack = new PoseStack();
-        float tickDelta = net.minecraft.client.Minecraft.getInstance().getFrameTimeNs();
-        Matrix4f proj = mc.gameRenderer.getProjectionMatrix(tickDelta);
         MultiBufferSource.BufferSource buffer = mc.renderBuffers().bufferSource();
         Font font = mc.font;
 
         for (CHWaypoints wp : filteredWaypoints) {
-            wp.render(poseStack, buffer, font, camera, camPos, proj, screenWidth, screenHeight, centerX, centerY);
+            wp.render(poseStack, buffer, font, camera, camPos);
         }
 
         buffer.endBatch();
     }
 
-    private void render(PoseStack poseStack, MultiBufferSource buffer, Font font, Camera camera, Vec3 camPos, Matrix4f proj, int screenWidth, int screenHeight, float centerX, float centerY) {
+    private void render(PoseStack poseStack, MultiBufferSource buffer, Font font, Camera camera, Vec3 camPos) {
         double waypointX = x + 0.5;
         double waypointY = y;
         double waypointZ = z + 0.5;
@@ -157,7 +148,7 @@ public class CHWaypoints {
         this.pos = new BlockPos(x, y, z);
         this.id = "" + x + y + z;
         this.expandedName = chest;
-        this.filteredExpandedItems.addAll(chest);
+        filteredExpandedItems.addAll(chest);
 
         for (CHChestItem item : chest) {
             System.out.println(item);

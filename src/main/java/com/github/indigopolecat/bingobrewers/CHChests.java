@@ -43,7 +43,8 @@ public class CHChests {
             BlockPos pos = blockHitResult.getBlockPos();
             if (!(level.getBlockState(pos).getBlock() instanceof ChestBlock)) return InteractionResult.PASS;
             Block blockBelow = level.getBlockState(pos.below()).getBlock();
-            if (blockBelow == Blocks.STONE || blockBelow == Blocks.AIR) return InteractionResult.PASS;
+            if (blockBelow == Blocks.STONE || blockBelow == Blocks.AIR || blockBelow == Blocks.GOLD_BLOCK)
+                return InteractionResult.PASS;
 
             listeningChests.add(pos);
             return InteractionResult.PASS;
@@ -88,6 +89,7 @@ public class CHChests {
 
 
     public static void parseChat() {
+        if (recentChatMessages.isEmpty()) return;
         BlockPos coords = listeningChests.remove();
         hardstone.add(coords);
 

@@ -133,6 +133,7 @@ public class BingoBrewers implements ClientModInitializer {
             Log.error("An error occurred while loading the configuration file", e);
         }
 
+        PlayerInfo.registerEvents();
         CHChests.registerEvents();
         CHWaypoints.initRendering();
 
