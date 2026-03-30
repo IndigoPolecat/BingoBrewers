@@ -63,6 +63,12 @@ public class PlayerInfo {
             }
             
             for (var splash : SplashNotificationInfo.splashes.values()) {
+                if(splash.serverID != null && splash.serverID.equalsIgnoreCase(currentServer)) {
+                    inSplashHub = true;
+                    currentSplash = splash;
+                    break;
+                }
+                
                 for (var info : connection.getOnlinePlayers()) {
                     if(splash.lastNotif.splasher.equals(info.getProfile().name())) {
                         inSplashHub = true;
