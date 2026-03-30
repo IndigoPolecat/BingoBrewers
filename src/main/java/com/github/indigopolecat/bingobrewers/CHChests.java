@@ -101,8 +101,9 @@ public class CHChests {
         chestLoot.server = PlayerInfo.currentServer;
         chestLoot.day = 1;
         if (Minecraft.getInstance().level != null) {
-            chestLoot.day = (int) (Minecraft.getInstance().level.getGameTime() / 24000);
+            chestLoot.day = (int) (Minecraft.getInstance().level.getGameTime() / 24000000);
         }
+        System.out.println("[BB] Sending chest loot for " + coords + " on day " + chestLoot.day);
 
         chestLoot.x = coords.getX();
         chestLoot.y = coords.getY();
