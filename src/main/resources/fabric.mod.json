@@ -23,6 +23,9 @@
       "com.github.indigopolecat.bingobrewers.gui.ConfigScreen"
     ]
   },
+  "mixins": [
+    "bingobrewers.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=0.18.4",
     "minecraft": "~1.21.10",

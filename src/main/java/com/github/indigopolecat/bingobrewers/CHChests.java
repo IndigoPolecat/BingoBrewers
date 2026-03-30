@@ -5,9 +5,13 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.InteractionHand;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,14 +20,19 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
 
+// TODO: reset on lobby swap
 public class CHChests {
 
+    record ColoredMessage(String message, int color) {
+    }
+
+    static List<ColoredMessage> recentChatMessages = new ArrayList<>();
     static final Pattern ITEM_PATTERN = Pattern.compile("^\\W*([\\w][\\w\\s]+?)(?:\\sx([\\d,]+))?$", Pattern.CASE_INSENSITIVE);
     static final int ITEM_NAME_GROUP = 1;
     static final int ITEM_COUNT_GROUP = 2;
     static final String LOOT_CHAT_MESSAGE_START = "  LOOT CHEST COLLECTED ";
+    static final String LOOT_CHAT_MESSAGE_REWARDS = "  REWARDS";
     static final String LOOT_CHAT_MESSAGE_END = "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬";
-    static List<String> recentChatMessages = new ArrayList<>();
     static Queue<BlockPos> listeningChests = new LinkedList<>();
     static HashSet<BlockPos> hardstone = new HashSet<>();
     static boolean addMessages = false;
@@ -40,27 +49,43 @@ public class CHChests {
             return InteractionResult.PASS;
         });
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
-            onChatMessage(message.getString());
+            onChatMessage(message);
         });
 
     }
 
-    public static void onChatMessage(String message) {
+    public static void onChatMessage(Component message) {
         if (!PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) return;
         if (!BingoBrewersConfig.getConfig().crystalHollowsWaypointsToggle) return;
+        String content = message.getString();
+        if (content.equals(LOOT_CHAT_MESSAGE_REWARDS)) return;
 
-        if (message.equals(LOOT_CHAT_MESSAGE_START)) {
+        if (content.equals(LOOT_CHAT_MESSAGE_START)) {
             addMessages = true;
             recentChatMessages.clear();
-        } else if (message.equals(LOOT_CHAT_MESSAGE_END)) {
+        } else if (content.equals(LOOT_CHAT_MESSAGE_END)) {
             if (addMessages) {
                 addMessages = false;
                 parseChat();
             }
         } else if (addMessages) {
-            recentChatMessages.add(message);
+            recentChatMessages.add(new ColoredMessage(content, getFirstColor(message).orElse(0xffffff)));
         }
     }
+
+    private static Optional<Integer> getFirstColor(Component message) {
+        AtomicReference<Integer> color = new AtomicReference<>(null);
+        message.visit((style, str) -> {
+            TextColor tc = style.getColor();
+            if (tc != null) {
+                color.set(tc.getValue());
+                return Optional.of("");
+            }
+            return Optional.empty();
+        }, Style.EMPTY);
+        return Optional.ofNullable(color.get());
+    }
+
 
     public static void parseChat() {
         BlockPos coords = listeningChests.remove();
@@ -77,7 +102,9 @@ public class CHChests {
         chestLoot.y = coords.getY();
         chestLoot.z = coords.getZ();
 
-        for (String message : recentChatMessages) {
+        for (ColoredMessage coloredMessage : recentChatMessages) {
+            String message = coloredMessage.message;
+            int color = coloredMessage.color;
             KryoNetwork.CHChestItem chestItem = new KryoNetwork.CHChestItem();
 
             Matcher matcher = ITEM_PATTERN.matcher(message);
@@ -93,6 +120,9 @@ public class CHChests {
                 } else {
                     chestItem.count = chestItem.count.replaceAll(",", "");
                 }
+
+                chestItem.itemColor = color;
+                chestItem.numberColor = 0x555555;
 
                 chestLoot.items.add(chestItem);
             } catch (Exception e) {

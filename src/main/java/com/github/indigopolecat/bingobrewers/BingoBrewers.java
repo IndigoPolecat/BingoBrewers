@@ -33,7 +33,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class BingoBrewers implements ClientModInitializer {
     public static BingoBrewers INSTANCE;
 
-    @Getter(onMethod_ = @Synchronized) @Setter(onMethod_ = @Synchronized)
+    @Getter(onMethod_ = @Synchronized)
+    @Setter(onMethod_ = @Synchronized)
     private static volatile Client client;
     public static final String version = "v0.3.9-beta";
     //TODO(matita): overridden detection for now, also it may better to be moved as ServerUtils.isHypixel()
@@ -41,26 +42,27 @@ public class BingoBrewers implements ClientModInitializer {
 
     public static AutoUpdater autoUpdater = new AutoUpdater();
     public static HashMap<String, Integer> minecraftColors = new HashMap<>();
-    
+
     public static CopyOnWriteArrayList<HypixelPacket> packetHold = new CopyOnWriteArrayList<>();
     public static HypixelPacket lastPacketSent;
     public static long lastPacketSentAt = 0;
     public static boolean waitingForPacketResponse;
-    
+
     //1 = open at next tick, 2 = open now, 0 = do not open
-    @Getter(value = AccessLevel.PRIVATE, onMethod_ = @Synchronized) @Setter(value = AccessLevel.PRIVATE, onMethod_ = @Synchronized)
+    @Getter(value = AccessLevel.PRIVATE, onMethod_ = @Synchronized)
+    @Setter(value = AccessLevel.PRIVATE, onMethod_ = @Synchronized)
     private static int openConfig = 0;
-    
+
     private static void registerConfigCommandDelayed() {
         ClientTickEvents.END_CLIENT_TICK.register(c -> {
-            if(getOpenConfig() == 0) return;
-            if(getOpenConfig() == 1) {
+            if (getOpenConfig() == 0) return;
+            if (getOpenConfig() == 1) {
                 setOpenConfig(2);
                 return;
             }
             setOpenConfig(0);
-            
-            Minecraft.getInstance().execute(()-> {
+
+            Minecraft.getInstance().execute(() -> {
                 boolean render = RenderSystem.isOnRenderThread();
                 Log.LOG.debug("renderThread = {}", render);
                 Log.LOG.debug("parent screen={}", Minecraft.getInstance().screen);
@@ -70,20 +72,20 @@ public class BingoBrewers implements ClientModInitializer {
             });
         });
     }
-   
-   public static int configCommand(CommandContext<FabricClientCommandSource> context) {
-       Log.info("Opening config menu");
-       if(getOpenConfig() == 0) setOpenConfig(1);
-       return 1; //1 is success
-   }
-   
+
+    public static int configCommand(CommandContext<FabricClientCommandSource> context) {
+        Log.info("Opening config menu");
+        if (getOpenConfig() == 0) setOpenConfig(1);
+        return 1; //1 is success
+    }
+
     @Override
     public void onInitializeClient() {
         INSTANCE = this;
         createServerThread();
-        
+
         registerConfigCommandDelayed();
-        
+
         //register the commands
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             dispatcher.register(ClientCommandManager.literal("bb").executes(BingoBrewers::configCommand));
@@ -98,9 +100,9 @@ public class BingoBrewers implements ClientModInitializer {
                 return 1;
             }));*/
         });
-        
+
         autoUpdater.registerUpdateCheck();
-        
+
         minecraftColors.put("§0", 0x000000);  // Black
         minecraftColors.put("§1", 0x0000AA);  // Dark Blue
         minecraftColors.put("§2", 0x00AA00);  // Dark Green
@@ -117,12 +119,12 @@ public class BingoBrewers implements ClientModInitializer {
         minecraftColors.put("§d", 0xFF55FF);  // Light Purple
         minecraftColors.put("§e", 0xFFFF55);  // Yellow
         minecraftColors.put("§f", 0xFFFFFF);  // White
-      
+
         HypixelModAPI.getInstance().createHandler(ClientboundPingPacket.class, HypixelPackets::onPingPacket);
         HypixelModAPI.getInstance().createHandler(ClientboundPartyInfoPacket.class, HypixelPackets::onPartyInfoPacket);
         HypixelModAPI.getInstance().createHandler(ClientboundLocationPacket.class, HypixelPackets::onLocationEvent);
         HypixelModAPI.getInstance().subscribeToEventPacket(ClientboundLocationPacket.class);
-        
+
         try {
             AutoConfig.register(BingoBrewersConfig.class, ConfigSerializer::new);
             GuiRegistry registry = AutoConfig.getGuiRegistry(BingoBrewersConfig.class);
@@ -132,6 +134,7 @@ public class BingoBrewers implements ClientModInitializer {
         }
 
         CHChests.registerEvents();
+        CHWaypoints.initRendering();
 
         HudManager.initialize();
     }
@@ -145,7 +148,7 @@ public class BingoBrewers implements ClientModInitializer {
             Log.info("Server Connection Error: " + e.getMessage(), e);
         }
     }
-    
+
     public void sendPacket(HypixelPacket packet) {
         System.out.println("packet time: " + (System.currentTimeMillis() - lastPacketSentAt));
         if (System.currentTimeMillis() - lastPacketSentAt > 2500) {

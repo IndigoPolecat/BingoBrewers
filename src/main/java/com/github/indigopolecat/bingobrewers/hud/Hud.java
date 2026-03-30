@@ -15,7 +15,7 @@ public interface Hud {
      * @param tickCounter the {@link DeltaTracker} providing timing information
      */
     void render(GuiGraphics graphics, DeltaTracker tickCounter);
-    
+
     /**
      * Called every frame to determine if this HUD is valid and should be rendered via {@link #render(GuiGraphics, DeltaTracker)}
      *
