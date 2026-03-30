@@ -58,12 +58,12 @@ public class PlayerInfo {
             
             for (var splash : SplashNotificationInfo.splashes.values()) {
                 for (var info : connection.getOnlinePlayers()) {
-                if(splash.lastNotif.splasher.equals(info.getProfile().name())) {
-                    inSplashHub = true;
-                    splash.serverID = currentServer;
-                    currentSplash = splash;
-                }
-                playerCount++;
+                    if(splash.lastNotif.splasher.equals(info.getProfile().name())) {
+                        inSplashHub = true;
+                        splash.serverID = currentServer;
+                        currentSplash = splash;
+                        break;
+                    }
                 }
             }
             

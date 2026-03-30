@@ -43,7 +43,7 @@ public class ServerConnection extends Listener implements Runnable {
     public static String uuid = "";
     @Getter(onMethod_ = @Synchronized) @Setter(onMethod_ = @Synchronized)
     private static SecretKey symmetricKey;
-    public static Map<String, Pair<Long, Integer>> playerCounts = new HashMap<>();
+    public static Map<String, Pair<Long, Integer>> playerCounts = new ConcurrentHashMap<>();
     
     public record Pair<T, U>(T first, U second) {}
     
@@ -264,9 +264,8 @@ public class ServerConnection extends Listener implements Runnable {
                 }
             }
         } else if (packet instanceof PlayerCountBroadcast pcb) {
-            playerCounts.put(pcb.serverID, new Pair<>(System.currentTimeMillis(), pcb.playerCount));
-            
             playerCounts.entrySet().removeIf(e -> System.currentTimeMillis() - e.getValue().first() > BingoBrewersConfig.getConfig().splashConfig.displayTime * 1000L);
+            playerCounts.put(pcb.serverID, new Pair<>(System.currentTimeMillis(), pcb.playerCount));
         }
     }
     

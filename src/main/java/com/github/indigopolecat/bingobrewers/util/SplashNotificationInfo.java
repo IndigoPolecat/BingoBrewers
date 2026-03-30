@@ -49,9 +49,10 @@ public class SplashNotificationInfo {
         
         String hubInfo = serverID.isEmpty()? hub : hub + " (" + serverID + ")";
         builder.add(hubPrefix + hubInfo);
-        if(ServerConnection.playerCounts.containsKey(serverID)) builder.add(PLAYER_COUNT_LABEL + ServerConnection.playerCounts.get(serverID).second());
-        
-        if(config.showPlayerCount && !lobbyPlayerCount.isEmpty()) builder.add(PLAYER_COUNT_LABEL + lobbyPlayerCount);
+        if(config.showPlayerCount) {
+            if(ServerConnection.playerCounts.containsKey(serverID)) builder.add(PLAYER_COUNT_LABEL + ServerConnection.playerCounts.get(serverID).second());
+            else if(!lobbyPlayerCount.isEmpty()) builder.add(PLAYER_COUNT_LABEL + lobbyPlayerCount);
+        }
         if(config.showSplasher) builder.add(SPLASHER_LABEL + lastNotif.splasher);
         if(config.showParty) builder.add(PARTY_LABEL + bingoPartyJoinCommand);
         if(config.showLocation) builder.add(LOCATION_LABEL + lastNotif.location);
