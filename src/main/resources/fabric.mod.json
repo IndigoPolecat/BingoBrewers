@@ -12,7 +12,7 @@
     "homepage": "https://github.com/IndigoPolecat/BingoBrewers",
     "sources": "https://github.com/Matita008/BingoBrewers"
   },
-  "license": "CC0-1.0",
+  "license": "MIT",
   "icon": "assets/icon.png",
   "environment": "*",
   "entrypoints": {
