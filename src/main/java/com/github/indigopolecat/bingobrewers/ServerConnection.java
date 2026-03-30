@@ -70,6 +70,9 @@ public class ServerConnection extends Listener implements Runnable {
     
     public void processPacket(Connection connection, Object packet) {
         if(packet == null) return; //Never process null packets
+        
+        if(BingoBrewersConfig.getConfig().logAllServerPackets) Log.info("Recived packet " + packet);
+        
         if (packet instanceof ServerPublicKey serverPublicKey) {
             String public_key = serverPublicKey.public_key;
             SecretKey symmetricKey;

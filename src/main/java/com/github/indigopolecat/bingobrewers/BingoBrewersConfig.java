@@ -151,6 +151,10 @@ public class BingoBrewersConfig implements ConfigData {
     @ConfigEntry.Category(value = "misc")
     public boolean testInstance = false;
     
+    @Comment(value = "Leave this as false unless you want your logs to be full")
+    @ConfigEntry.Category(value = "misc")
+    public boolean logAllServerPackets = false;
+    
     public void subscribeToServer() {
         if (crystalHollowsWaypointsToggle && PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
             KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
