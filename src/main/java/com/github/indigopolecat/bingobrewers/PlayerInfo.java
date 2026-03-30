@@ -51,6 +51,8 @@ public class PlayerInfo {
             inSplashHub = false;
             
             ClientPacketListener connection = Minecraft.getInstance().getConnection();
+            if(connection == null) return;
+            
             for (var info : connection.getOnlinePlayers()) {
                 if(info.getProfile().name().matches("![A-Za-z]-[A-Za-z]")) continue;
                 playerCount++;
