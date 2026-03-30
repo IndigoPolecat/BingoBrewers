@@ -2,6 +2,11 @@ package com.github.indigopolecat.events;
 
 import com.github.indigopolecat.bingobrewers.*;
 import com.github.indigopolecat.bingobrewers.util.Log;
+import com.github.indigopolecat.kryo.KryoNetwork;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.hypixel.modapi.packet.HypixelPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundHelloPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPartyInfoPacket;
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundPingPacket;
@@ -11,14 +16,47 @@ import net.hypixel.modapi.packet.impl.serverbound.ServerboundPartyInfoPacket;
 import net.hypixel.modapi.packet.impl.serverbound.ServerboundPingPacket;
 import net.hypixel.modapi.packet.impl.serverbound.ServerboundPlayerInfoPacket;
 
+import net.minecraft.client.Minecraft;
+
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
 public class HypixelPackets {
+    public static void registerEvents() {
+        ClientTickEvents.END_CLIENT_TICK.register((client) -> {
+            if (System.currentTimeMillis() - BingoBrewers.lastPacketSentAt > 2500 && BingoBrewers.waitingForPacketResponse) {
+                BingoBrewers.packetHold.addFirst(BingoBrewers.lastPacketSent);
+                BingoBrewers.waitingForPacketResponse = false;
+            }
 
-    public void onHelloEvent(ClientboundHelloPacket packet) {
+            if (BingoBrewers.packetHold.isEmpty()) return;
+
+            if (System.currentTimeMillis() - BingoBrewers.lastPacketSentAt > 2500) {
+                HypixelPacket packet = BingoBrewers.packetHold.getFirst();
+                BingoBrewers.INSTANCE.sendPacket(packet);
+                BingoBrewers.packetHold.removeIf(hypixelPacket -> packet.getClass() == hypixelPacket.getClass());
+            }
+        });
+        ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register(((minecraftServer, serverLevel) -> {
+            if (BingoBrewersConfig.getConfig().crystalHollowsWaypointsToggle) {
+                int day = (int) (serverLevel.getGameTime() / 24000);
+
+                KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
+                CHRequest.server = PlayerInfo.currentServer;
+                CHRequest.day = day;
+                ServerConnection.SubscribeToCHServer(CHRequest);
+
+                System.out.println("Registering to warp for " + PlayerInfo.currentServer);
+                KryoNetwork.RegisterToWarpServer register = new KryoNetwork.RegisterToWarpServer();
+                register.unregister = false;
+                PlayerInfo.registeredToWarp = true;
+                register.server = PlayerInfo.currentServer;
+                ServerConnection.sendTCP(register);
+            }
+        }));
     }
+
     public static void onPingPacket(ClientboundPingPacket packet) {
         if (BingoBrewers.lastPacketSent instanceof ServerboundPingPacket) {
             BingoBrewers.waitingForPacketResponse = false;
@@ -42,11 +80,6 @@ public class HypixelPackets {
             else uuids.add(uuid.toString());
         }
         PlayerInfo.partyMembers = uuids;
-
-        /*if (Warping.warpThread != null) {
-            Warping.warpThread.resume();
-        }*///TODO (matita): removed Warping system
-
     }
 
     public void onPlayerInfoPacket(ClientboundPlayerInfoPacket packet) {
@@ -71,58 +104,9 @@ public class HypixelPackets {
             PlayerInfo.inSkyblockOrPTL = PlayerInfo.playerGameType.equalsIgnoreCase("prototype") || PlayerInfo.playerGameType.equalsIgnoreCase("limbo");
         }
 
-
         PlayerInfo.currentServer = packet.getServerName();
         if (PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows") && !PlayerInfo.subscribedToCurrentCHServer) {
             subscribeToCHServerTime = System.currentTimeMillis() + 2000;
         }
     }
-    
-    //TODO (matita): event system
-    /*
-    public void onTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) {
-            if (System.currentTimeMillis() > checkScoreboardForBingoTime && BingoBrewers.onHypixel && PlayerInfo.playerGameType.equalsIgnoreCase("skyblock")) {
-                SplashHud.onBingo = ScoreBoard.isBingo();
-                checkScoreboardForBingoTime = Long.MAX_VALUE;
-            }
-
-            if (System.currentTimeMillis() > subscribeToCHServerTime) {
-                if (BingoBrewersConfig.crystalHollowsWaypointsToggle) {
-                    // update day
-                    World world = Minecraft.getMinecraft().theWorld;
-                    long worldTime = world.getWorldTime();
-                    PlayerInfo.day = (int) (worldTime / 24000);
-
-                    if (PlayerInfo.currentServer == null) return;
-                    KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
-                    CHRequest.server = PlayerInfo.currentServer;
-                    CHRequest.day = PlayerInfo.day;
-                    ServerConnection.SubscribeToCHServer(CHRequest);
-
-                    System.out.println("Registering to warp for " + PlayerInfo.currentServer);
-                    KryoNetwork.RegisterToWarpServer register = new KryoNetwork.RegisterToWarpServer();
-                    register.unregister = false;
-                    PlayerInfo.registeredToWarp = true;
-                    register.server = PlayerInfo.currentServer;
-                    ServerConnection.sendTCP(register);
-                }
-                subscribeToCHServerTime = Long.MAX_VALUE;
-            }
-
-            if (System.currentTimeMillis() - BingoBrewers.lastPacketSentAt > 2000 && BingoBrewers.waitingForPacketResponse) {
-                BingoBrewers.packetHold.add(0, BingoBrewers.lastPacketSent);
-                BingoBrewers.waitingForPacketResponse = false;
-            }
-
-            if (BingoBrewers.packetHold.isEmpty()) return;
-
-            if (System.currentTimeMillis() - BingoBrewers.lastPacketSentAt > 2500 && !BingoBrewers.packetHold.isEmpty()) {
-                HypixelPacket packet = BingoBrewers.packetHold.get(0);
-                BingoBrewers.INSTANCE.sendPacket(packet);
-                BingoBrewers.packetHold.removeIf(hypixelPacket -> packet.getClass() == hypixelPacket.getClass());
-                BingoBrewers.packetHold.remove(packet);
-            }
-        }
-    }*/
 }

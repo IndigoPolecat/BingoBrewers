@@ -7,6 +7,10 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.hypixel.data.type.GameType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,38 +79,39 @@ public class PlayerInfo {
             ServerConnection.playerCounts.put(currentServer, new ServerConnection.Pair<>(System.currentTimeMillis(), playerCount));
             if(inSplashHub) ServerConnection.sendTCP(new KryoNetwork.PlayerCount(currentSplash.lastNotif.splash, playerCount, currentServer));
         });
+        ClientPlayConnectionEvents.JOIN.register(PlayerInfo::onWorldJoin);
     }
-    
-    //TODO(matita): do event system
-    /*
-    public void onWorldJoin(WorldEvent event) {
-        if (event instanceof WorldEvent.Load) {
-            // for some reason this packet is sent before you load the server, so we have a timer on client tick below
-            lastWorldLoad = System.currentTimeMillis();
-            if (playerLocation.equalsIgnoreCase("crystal_hollows")) {
-                KryoNetwork.SubscribeToCHServer subscribeToCHServer = new KryoNetwork.SubscribeToCHServer();
-                subscribedToCurrentCHServer = false;
-                subscribeToCHServer.server = currentServer;
-                subscribeToCHServer.unsubscribe = true;
-                ServerConnection.SubscribeToCHServer(subscribeToCHServer);
 
-                KryoNetwork.RegisterToWarpServer unregister = new KryoNetwork.RegisterToWarpServer();
-                unregister.unregister = true;
-                PlayerInfo.registeredToWarp = false;
-                unregister.server = PlayerInfo.currentServer;
-                ServerConnection.sendTCP(unregister);
-            }
-            playerLocation = "";
-            ServerConnection.waypoints.clear();
-            CHWaypoints.filteredWaypoints.clear();
-            CrystalHollowsHud.filteredItems.clear();
-            CHWaypoints.itemCounts.clear();
-            if (System.currentTimeMillis() - lastSplashHubUpdate > 3000) {
-                inSplashHub = false;
-            }
+    private static void onWorldJoin(ClientPacketListener clientPacketListener, PacketSender packetSender, Minecraft minecraft) {
+        lastWorldLoad = System.currentTimeMillis();
+
+        if (playerLocation.equalsIgnoreCase("crystal_hollows")) {
+            KryoNetwork.SubscribeToCHServer subscribeToCHServer = new KryoNetwork.SubscribeToCHServer();
+            subscribedToCurrentCHServer = false;
+            subscribeToCHServer.server = currentServer;
+            subscribeToCHServer.unsubscribe = true;
+            System.out.println("subscribed");
+            ServerConnection.SubscribeToCHServer(subscribeToCHServer);
+
+            KryoNetwork.RegisterToWarpServer unregister = new KryoNetwork.RegisterToWarpServer();
+            unregister.unregister = true;
+            PlayerInfo.registeredToWarp = false;
+            unregister.server = PlayerInfo.currentServer;
+            ServerConnection.sendTCP(unregister);
+        }
+
+        playerLocation = "";
+        ServerConnection.waypoints.clear();
+        CHWaypoints.filteredWaypoints.clear();
+        CHWaypoints.itemCounts.clear();
+
+        if (System.currentTimeMillis() - lastSplashHubUpdate > 3000) {
+            inSplashHub = false;
         }
     }
 
+    //TODO(matita): do event system
+    /*
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             // /locraw 2s after you join the server and every 20s after

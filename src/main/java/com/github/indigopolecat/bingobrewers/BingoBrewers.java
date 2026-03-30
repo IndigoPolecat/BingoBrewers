@@ -130,7 +130,12 @@ public class BingoBrewers implements ClientModInitializer {
         } catch (Exception e) {
             Log.error("An error occurred while loading the configuration file", e);
         }
-        
+
+        PlayerInfo.registerEvents();
+        CHChests.registerEvents();
+        CHWaypoints.initRendering();
+        HypixelPackets.registerEvents();
+
         HudManager.initialize();
         PlayerInfo.registerEvents();
     }

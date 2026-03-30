@@ -14,6 +14,7 @@ import com.google.common.cache.Cache;
 import com.mojang.authlib.exceptions.AuthenticationException;
 import lombok.*;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
@@ -22,6 +23,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.esotericsoftware.minlog.Log.LEVEL_ERROR;
@@ -43,6 +45,7 @@ public class ServerConnection extends Listener implements Runnable {
     public static String uuid = "";
     @Getter(onMethod_ = @Synchronized) @Setter(onMethod_ = @Synchronized)
     private static SecretKey symmetricKey;
+    public static ConcurrentLinkedDeque<CrystalHollowsItemTotal> filteredItems = new ConcurrentLinkedDeque<>();
     public static Map<String, Pair<Long, Integer>> playerCounts = new ConcurrentHashMap<>();
     
     public record Pair<T, U>(T first, U second) {}
@@ -70,7 +73,6 @@ public class ServerConnection extends Listener implements Runnable {
         if (packet instanceof ServerPublicKey serverPublicKey) {
             String public_key = serverPublicKey.public_key;
             SecretKey symmetricKey;
-            
             if (public_key.equals(SERVER_PUBLIC_KEY)) {
                 try {
                     symmetricKey = generateAESKey(256);
@@ -179,9 +181,9 @@ public class ServerConnection extends Listener implements Runnable {
                     ChestInventories.rankPriceMap = (HashMap<Integer, Integer>) constants.get("bingoRankCosts");
                 }
             }
-            if (constants.get("chItemRegex") != null && constants.get("chItemRegex") instanceof String) {
+            /*if (constants.get("chItemRegex") != null && constants.get("chItemRegex") instanceof String) {
                 CHChests.regex = (String) constants.get("chItemRegex");
-            }
+            }*/
             //noinspection rawtypes
             if (constants.get("newMiscCHItems") != null && constants.get("newMiscCHItems") instanceof ArrayList list) {
                 boolean nope = false;
@@ -196,7 +198,7 @@ public class ServerConnection extends Listener implements Runnable {
                     newMiscCHItems = (ArrayList<String>) constants.get("newMiscCHItems");
                 }
             }
-            if (constants.get("joinAlert"+ BingoBrewers.version) != null && constants.get("joinAlert" + BingoBrewers.version) instanceof JoinAlert joinAlert) {
+            if (constants.get("joinAlert" + BingoBrewers.version) != null && constants.get("joinAlert" + BingoBrewers.version) instanceof JoinAlert joinAlert) {
                 if (joinAlert.joinAlertChat != null) {
                     joinChat = joinAlert.joinAlertChat;
                 }
@@ -218,7 +220,7 @@ public class ServerConnection extends Listener implements Runnable {
                     CHItemOrder = new ArrayList<>((LinkedHashSet<String>) constants.get("CHItemOrder"));
                 }
             }
-            
+            /*
             if (constants.get("itemNameRegexGroup") != null && constants.get("itemNameRegexGroup") instanceof Integer) {
                 if (constants.get("itemCountRegexGroup") != null && constants.get("itemCountRegexGroup") instanceof Integer)
                     if (constants.get("itemNameColorRegexGroup") != null && constants.get("itemNameColorRegexGroup") instanceof Integer) {
@@ -234,7 +236,7 @@ public class ServerConnection extends Listener implements Runnable {
             
             if (constants.get("signalLootChatMessageEnd") != null && constants.get("signalLootChatMessageEnd") instanceof String) {
                 CHChests.signalLootChatMessageEnd = (String) constants.get("signalLootChatMessageEnd");
-            }
+            }*/
         } else if (packet instanceof ServerSendCHItems CHItems) {
             System.out.println("Received CH Chests for " + CHItems.server);
             ArrayList<ChestInfo> chests = CHItems.chestMap;
@@ -255,12 +257,12 @@ public class ServerConnection extends Listener implements Runnable {
                     BingoBrewersConfig.filterPowder();
                     BingoBrewersConfig.filterGoblinEggs();
                     BingoBrewersConfig.filterRoughGemstones();
-                    //BingoBrewersConfig.filterJasperGemstones();
+                    BingoBrewersConfig.filterJasperGemstones();
                     BingoBrewersConfig.filterRobotParts();
                     BingoBrewersConfig.filterPrehistoricEggs();
                     BingoBrewersConfig.filterPickonimbus();
-                    BingoBrewersConfig.filterMisc();
-                    organizeWaypoints();*/
+                    BingoBrewersConfig.filterMisc();*/
+                    organizeWaypoints();
                 }
             }
         } else if (packet instanceof PlayerCountBroadcast pcb) {
@@ -299,8 +301,8 @@ public class ServerConnection extends Listener implements Runnable {
         }
         System.out.println("Connected to server.");
     }
-    
-    public static void organizeWaypoints() {/*
+
+    public static void organizeWaypoints() {
         // filter the items into the correct order
         ArrayList<Integer> orderedIndexes = new ArrayList<>();
         for (CrystalHollowsItemTotal total : filteredItems) {
@@ -340,7 +342,7 @@ public class ServerConnection extends Listener implements Runnable {
                     }
                 }
             }
-        }*/
+        }
     }
     
     public synchronized void sendPlayerCount(KryoNetwork.PlayerCount count) {
