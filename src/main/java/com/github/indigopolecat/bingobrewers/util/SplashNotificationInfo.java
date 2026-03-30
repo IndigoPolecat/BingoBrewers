@@ -1,6 +1,7 @@
 package com.github.indigopolecat.bingobrewers.util;
 
 import com.github.indigopolecat.bingobrewers.BingoBrewersConfig;
+import com.github.indigopolecat.bingobrewers.ServerConnection;
 import com.github.indigopolecat.bingobrewers.hud.HudManager;
 import com.github.indigopolecat.bingobrewers.hud.SplashTitleHud;
 import com.github.indigopolecat.kryo.KryoNetwork;
@@ -48,6 +49,7 @@ public class SplashNotificationInfo {
         
         String hubInfo = serverID.isEmpty()? hub : hub + " (" + serverID + ")";
         builder.add(hubPrefix + hubInfo);
+        if(ServerConnection.playerCounts.containsKey(serverID)) builder.add(PLAYER_COUNT_LABEL + ServerConnection.playerCounts.get(serverID).second());
         
         if(config.showPlayerCount && !lobbyPlayerCount.isEmpty()) builder.add(PLAYER_COUNT_LABEL + lobbyPlayerCount);
         if(config.showSplasher) builder.add(SPLASHER_LABEL + lastNotif.splasher);

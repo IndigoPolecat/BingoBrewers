@@ -10,6 +10,7 @@ import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.*;
 import com.github.indigopolecat.kryo.ServerSummary;
+import com.google.common.cache.Cache;
 import com.mojang.authlib.exceptions.AuthenticationException;
 import lombok.*;
 import net.minecraft.client.Minecraft;
@@ -42,6 +43,9 @@ public class ServerConnection extends Listener implements Runnable {
     public static String uuid = "";
     @Getter(onMethod_ = @Synchronized) @Setter(onMethod_ = @Synchronized)
     private static SecretKey symmetricKey;
+    public static Map<String, Pair<Long, Integer>> playerCounts = new HashMap<>();
+    
+    public record Pair<T, U>(T first, U second) {}
     
     @Override
     public void run() {
@@ -259,6 +263,10 @@ public class ServerConnection extends Listener implements Runnable {
                     organizeWaypoints();*/
                 }
             }
+        } else if (packet instanceof PlayerCountBroadcast pcb) {
+            playerCounts.put(pcb.serverID, new Pair<>(System.currentTimeMillis(), pcb.playerCount));
+            
+            playerCounts.entrySet().removeIf(e -> System.currentTimeMillis() - e.getValue().first() > BingoBrewersConfig.getConfig().splashConfig.displayTime * 1000L);
         }
     }
     

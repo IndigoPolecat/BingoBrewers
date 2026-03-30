@@ -46,11 +46,6 @@ public class PlayerInfo {
             if(!playerGameType.equalsIgnoreCase(GameType.SKYBLOCK.getName())) return;
             
             SplashNotificationInfo currentSplash = null;
-            for (var splash : SplashNotificationInfo.splashes.values()) {
-                if(splash.serverID.equalsIgnoreCase(currentServer)) currentSplash = splash;
-            }
-            
-            if(currentSplash == null) return;
             
             playerCount = 0;
             inSplashHub = false;
@@ -58,11 +53,25 @@ public class PlayerInfo {
             ClientPacketListener connection = Minecraft.getInstance().getConnection();
             for (var info : connection.getOnlinePlayers()) {
                 if(info.getProfile().name().matches("![A-Za-z]-[A-Za-z]")) continue;
-                if(currentSplash.lastNotif.splasher.equals(info.getProfile().name())) inSplashHub = true;
                 playerCount++;
             }
             
-            if(inSplashHub) ServerConnection.sendTCP(new KryoNetwork.PlayerCount(currentSplash.lastNotif.splash, playerCount, currentSplash.serverID));
+            for (var splash : SplashNotificationInfo.splashes.values()) {
+                for (var info : connection.getOnlinePlayers()) {
+                if(splash.lastNotif.splasher.equals(info.getProfile().name())) {
+                    inSplashHub = true;
+                    splash.serverID = currentServer;
+                    currentSplash = splash;
+                }
+                playerCount++;
+                }
+            }
+            
+            if(currentSplash == null) return;
+            
+            ServerConnection.playerCounts.entrySet().removeIf(e -> System.currentTimeMillis() - e.getValue().first() > BingoBrewersConfig.getConfig().splashConfig.displayTime * 1000L);
+            ServerConnection.playerCounts.put(currentServer, new ServerConnection.Pair<>(System.currentTimeMillis(), playerCount));
+            if(inSplashHub) ServerConnection.sendTCP(new KryoNetwork.PlayerCount(currentSplash.lastNotif.splash, playerCount, currentServer));
         });
     }
     
