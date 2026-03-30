@@ -136,6 +136,7 @@ public class BingoBrewers implements ClientModInitializer {
         PlayerInfo.registerEvents();
         CHChests.registerEvents();
         CHWaypoints.initRendering();
+        HypixelPackets.registerEvents();
 
         HudManager.initialize();
     }

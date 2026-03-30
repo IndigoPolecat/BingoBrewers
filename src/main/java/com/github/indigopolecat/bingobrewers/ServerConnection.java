@@ -13,6 +13,7 @@ import com.github.indigopolecat.kryo.ServerSummary;
 import com.mojang.authlib.exceptions.AuthenticationException;
 import lombok.*;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
@@ -65,12 +66,11 @@ public class ServerConnection extends Listener implements Runnable {
     }
 
     public void processPacket(Connection connection, Object packet) {
-        System.out.println("abcdefg" + packet);
+        System.out.println("[BB] Received packet: " + packet);
         if (packet == null) return; //Never process null packets
         if (packet instanceof ServerPublicKey serverPublicKey) {
             String public_key = serverPublicKey.public_key;
             SecretKey symmetricKey;
-
             if (public_key.equals(SERVER_PUBLIC_KEY)) {
                 try {
                     symmetricKey = generateAESKey(256);

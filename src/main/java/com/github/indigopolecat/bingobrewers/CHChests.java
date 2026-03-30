@@ -1,6 +1,7 @@
 package com.github.indigopolecat.bingobrewers;
 
 import com.github.indigopolecat.kryo.KryoNetwork;
+import com.mojang.authlib.minecraft.client.MinecraftClient;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.client.Minecraft;
@@ -32,6 +33,7 @@ public class CHChests {
     static final int ITEM_COUNT_GROUP = 2;
     static final String LOOT_CHAT_MESSAGE_START = "  LOOT CHEST COLLECTED ";
     static final String LOOT_CHAT_MESSAGE_REWARDS = "  REWARDS";
+    static final String DUPLICATE_CHEST_MESSAGE = "You have already opened this chest!";
     static final String LOOT_CHAT_MESSAGE_END = "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬";
     static Queue<BlockPos> listeningChests = new LinkedList<>();
     static HashSet<BlockPos> hardstone = new HashSet<>();
@@ -60,6 +62,7 @@ public class CHChests {
         if (!BingoBrewersConfig.getConfig().crystalHollowsWaypointsToggle) return;
         String content = message.getString();
         if (content.equals(LOOT_CHAT_MESSAGE_REWARDS)) return;
+        if (content.equals(DUPLICATE_CHEST_MESSAGE)) listeningChests.poll();
 
         if (content.equals(LOOT_CHAT_MESSAGE_START)) {
             addMessages = true;
@@ -90,6 +93,7 @@ public class CHChests {
 
     public static void parseChat() {
         if (recentChatMessages.isEmpty()) return;
+        if (listeningChests.isEmpty()) return;
         BlockPos coords = listeningChests.remove();
         hardstone.add(coords);
 
@@ -132,6 +136,7 @@ public class CHChests {
             }
         }
         if (!chestLoot.items.isEmpty()) {
+            System.out.println("[BB] Sent " + chestLoot);
             ServerConnection.sendTCP(chestLoot);
         }
         recentChatMessages.clear();

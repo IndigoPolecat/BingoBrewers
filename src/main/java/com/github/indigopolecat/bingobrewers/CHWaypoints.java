@@ -1,10 +1,12 @@
 package com.github.indigopolecat.bingobrewers;
 
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
+import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.CHChestItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -37,6 +39,7 @@ public class CHWaypoints {
     public CopyOnWriteArrayList<CHChestItem> filteredExpandedItems = new CopyOnWriteArrayList<>();
     public static HashMap<String, CrystalHollowsItemTotal> itemCounts = new HashMap<>();
     public static CopyOnWriteArrayList<CHWaypoints> filteredWaypoints = new CopyOnWriteArrayList<>();
+
 
     public static void initRendering() {
         WorldRenderEvents.AFTER_ENTITIES.register(CHWaypoints::renderAll);
