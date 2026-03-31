@@ -1,14 +1,11 @@
 package com.github.indigopolecat.bingobrewers;
 
-import com.github.indigopolecat.bingobrewers.util.Log;
 import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.hypixel.data.type.GameType;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.hypixel.data.type.GameType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 
@@ -21,7 +18,6 @@ public class PlayerInfo {
     public static String playerHubNumber = null;
     public static long lastWorldLoad = -1;
     public static long lastPositionUpdate = -1;
-    private static boolean newLoad = false;
     public static boolean inSplashHub;
     public static long lastSplashHubUpdate = -1;
     public static int playerCount;
@@ -40,10 +36,11 @@ public class PlayerInfo {
     public volatile static boolean readyToNotifyDungeon = false;
     public volatile static long lastNotification = 0;
     public volatile static ArrayList<String> partyMembers = new ArrayList<>(); // uuids, leader not included
+    private static boolean newLoad = false;
     private volatile static int tickCount = 0; // used to run the players detection, will be updated only in the render thread
     
     public static void registerEvents() {
-        ClientTickEvents.END_CLIENT_TICK.register((client) -> {
+        ClientTickEvents.END_CLIENT_TICK.register((client)->{
             tickCount++;
             if(tickCount != 10) return;
             tickCount = 0;
@@ -57,19 +54,20 @@ public class PlayerInfo {
             ClientPacketListener connection = Minecraft.getInstance().getConnection();
             if(connection == null) return;
             
-            for (var info : connection.getOnlinePlayers()) {
+            for (var info: connection.getOnlinePlayers()) {
                 if(info.getProfile().name().matches("![A-Za-z]-[A-Za-z]")) continue;
                 playerCount++;
             }
             
-            for (var splash : SplashNotificationInfo.splashes.values()) {
+            for (var splash: SplashNotificationInfo.splashes.values()) {
                 if(splash.serverID != null && splash.serverID.equalsIgnoreCase(currentServer)) {
                     inSplashHub = true;
                     currentSplash = splash;
                     break;
                 }
-                
-                for (var info : connection.getOnlinePlayers()) {
+                //Check for the splasher name only if it was provided
+                if(!splash.lastNotif.splasherRealIGN) break;
+                for (var info: connection.getOnlinePlayers()) {
                     if(splash.lastNotif.splasher.equals(info.getProfile().name())) {
                         inSplashHub = true;
                         splash.serverID = currentServer;
@@ -83,39 +81,39 @@ public class PlayerInfo {
             
             ServerConnection.playerCounts.entrySet().removeIf(e -> System.currentTimeMillis() - e.getValue().first() > BingoBrewersConfig.getConfig().splashConfig.displayTime * 1000L);
             ServerConnection.playerCounts.put(currentServer, new ServerConnection.Pair<>(System.currentTimeMillis(), playerCount));
-            if(inSplashHub) ServerConnection.sendTCP(new KryoNetwork.PlayerCount(currentSplash.lastNotif.splash, playerCount, currentServer));
+            ServerConnection.sendTCP(new KryoNetwork.PlayerCount(currentSplash.lastNotif.splash, playerCount, currentServer));
         });
         ClientPlayConnectionEvents.JOIN.register(PlayerInfo::onWorldJoin);
     }
-
+    
     private static void onWorldJoin(ClientPacketListener clientPacketListener, PacketSender packetSender, Minecraft minecraft) {
         lastWorldLoad = System.currentTimeMillis();
-
-        if (playerLocation.equalsIgnoreCase("crystal_hollows")) {
+        
+        if(playerLocation.equalsIgnoreCase("crystal_hollows")) {
             KryoNetwork.SubscribeToCHServer subscribeToCHServer = new KryoNetwork.SubscribeToCHServer();
             subscribedToCurrentCHServer = false;
             subscribeToCHServer.server = currentServer;
             subscribeToCHServer.unsubscribe = true;
             System.out.println("subscribed");
             ServerConnection.SubscribeToCHServer(subscribeToCHServer);
-
+            
             KryoNetwork.RegisterToWarpServer unregister = new KryoNetwork.RegisterToWarpServer();
             unregister.unregister = true;
             PlayerInfo.registeredToWarp = false;
             unregister.server = PlayerInfo.currentServer;
             ServerConnection.sendTCP(unregister);
         }
-
+        
         playerLocation = "";
         ServerConnection.waypoints.clear();
         CHWaypoints.filteredWaypoints.clear();
         CHWaypoints.itemCounts.clear();
-
-        if (System.currentTimeMillis() - lastSplashHubUpdate > 3000) {
+        
+        if(System.currentTimeMillis() - lastSplashHubUpdate > 3000) {
             inSplashHub = false;
         }
     }
-
+    
     //TODO(matita): do event system
     /*
     public void onClientTick(TickEvent.ClientTickEvent event) {
@@ -167,7 +165,7 @@ public class PlayerInfo {
             }
         }
     }*/
-
+    
     public static void setReadyToNotify(String hub, boolean dungeonHub) {
         readyToNotify = true;
         splashHubNumberForNotification = hub;
