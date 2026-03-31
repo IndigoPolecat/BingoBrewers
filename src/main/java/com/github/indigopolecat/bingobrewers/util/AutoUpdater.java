@@ -22,6 +22,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
@@ -29,12 +30,21 @@ public class AutoUpdater {
     public static boolean updateScreen = false;
     public static boolean isThereUpdate = false;
     static boolean updateChecked = false;
-    private final UpdateContext context = new UpdateContext(
-        UpdateSource.githubUpdateSource("IndigoPolecat", "BingoBrewers"),
-        UpdateTarget.deleteAndSaveInTheSameFolder(AutoUpdater.class),
-        new StringSemVerCurrentVersion(BingoBrewers.version),
-        "BingoBrewers"
-    );
+    
+    private static UpdateContext getUpdateContext() {
+        String source = BingoBrewersConfig.getConfig().updaterRepository;
+        String owner = Optional.ofNullable(source.split("/")[0]).filter(String::isBlank).orElse("IndigoPolecat");
+        
+        String repo = "BingoBrewers";
+        if(source.contains("/")) repo = Optional.ofNullable(source.split("/")[1]).filter(String::isBlank).orElse("BingoBrewers");
+        
+        return new UpdateContext(
+            UpdateSource.githubUpdateSource("IndigoPolecat", "BingoBrewers"),
+            UpdateTarget.deleteAndSaveInTheSameFolder(AutoUpdater.class),
+            new StringSemVerCurrentVersion(BingoBrewers.version),
+            "BingoBrewers"
+        );
+    }
     
     static class StringSemVerCurrentVersion implements CurrentVersion {
         static final String[] patchOrder = {"ALFA", "BETA", "", "PATCH"};
@@ -186,7 +196,7 @@ public class AutoUpdater {
                     case STABLE -> "full";
                     default -> "none";
                 };
-                PotentialUpdate potentialUpdate = context.checkUpdate(updaterType).join();
+                PotentialUpdate potentialUpdate = getUpdateContext().checkUpdate(updaterType).join();
                 Thread.sleep(1000);
                 return potentialUpdate.isUpdateAvailable();
             } catch (InterruptedException e) {
@@ -201,7 +211,7 @@ public class AutoUpdater {
             case STABLE -> "full";
             default -> "none";
         };
-        return context.checkUpdate(updaterType).thenComposeAsync(potentialUpdate->{
+        return getUpdateContext().checkUpdate(updaterType).thenComposeAsync(potentialUpdate->{
             if(potentialUpdate.isUpdateAvailable()) {
                 return potentialUpdate.launchUpdate().thenApply((ignored)->{
                     Minecraft.getInstance().player.displayClientMessage(Component.literal("Bingo Brewers has been updated to the latest version! Please restart your game to apply the update."), true);
@@ -213,8 +223,9 @@ public class AutoUpdater {
     }
     
     public String getChangelog() {
+        String repo = Optional.ofNullable(BingoBrewersConfig.getConfig().updaterRepository).filter(String::isBlank).filter(s -> s.contains("/")).orElse("IndigoPolecat/BingoBrewers");
         try {
-            URL url = (new URI("https://api.github.com/repos/IndigoPolecat/BingoBrewers/releases/latest")).toURL();
+            URL url = (new URI("https://api.github.com/repos/" + repo + "/releases/latest")).toURL();
             HttpURLConnection conn = (HttpURLConnection)url.openConnection();
             conn.setRequestMethod("GET");
             if(conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
@@ -230,8 +241,11 @@ public class AutoUpdater {
                 Gson gson = new Gson();
                 
                 return gson.fromJson(response.toString(), JsonObject.class).get("body").getAsString();
+            } else {
+                Log.warn("misc.updaterRepository is set to an invalid repository: " + BingoBrewersConfig.getConfig().updaterRepository + " (" + repo + ")");
             }
         } catch (IOException | URISyntaxException e) {
+            Log.error("An exception occurred while trying to fetch latest changelog of repo " + repo, e);
             throw new RuntimeException(e);
         }
         return "Could not fetch changelog";

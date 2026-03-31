@@ -77,5 +77,7 @@
   "text.autoconfig.bingobrewers.option.testInstance": "Controls whenever to connect to the bingobrewers testing server",
   "text.autoconfig.bingobrewers.option.testInstance.@Tooltip": "Leave this as false unless you know what you are doing",
 
-  "text.autoconfig.bingobrewers.option.logAllServerPackets": "Log all packets sent from the bingobrewers server"
+  "text.autoconfig.bingobrewers.option.logAllServerPackets": "Log all packets sent from the bingobrewers server",
+
+  "text.autoconfig.bingobrewers.option.updaterRepository": "Controls the repository used by the updater to detect new updates, leave as it is unless you know what you are doing"
 }

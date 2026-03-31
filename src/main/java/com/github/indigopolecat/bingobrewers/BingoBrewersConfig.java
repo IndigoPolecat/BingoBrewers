@@ -112,6 +112,10 @@ public class BingoBrewersConfig implements ConfigData {
     @Comment(value = "Show coins per Bingo Point in the Bingo Shop.")
     @ConfigEntry.Category(value = "misc")
     public boolean showCoinsPerBingoPoint = true;
+    
+    @Comment(value = "Defaults to IndigoPolecat/BingoBrewers")
+    @ConfigEntry.Category(value = "misc")
+    public String updaterRepository = "IndigoPolecat/BingoBrewers";
 
     @Comment(value = "Choose which updates should the auto-updater look for")
     @ConfigEntry.Category(value = "misc")
