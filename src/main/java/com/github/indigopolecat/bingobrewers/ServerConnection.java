@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.esotericsoftware.minlog.Log.LEVEL_ERROR;
+import static com.github.indigopolecat.bingobrewers.BingoBrewers.TEST_INSTANCE;
 
 public class ServerConnection extends Listener implements Runnable {
     // The server sends it's public key to the client, which checks it based on this. If they don't match the connection is refused.
@@ -70,9 +71,7 @@ public class ServerConnection extends Listener implements Runnable {
     
     public void processPacket(Connection connection, Object packet) {
         if(packet == null) return; //Never process null packets
-        
-        if(BingoBrewersConfig.getConfig().logAllServerPackets) Log.info("Recived packet " + packet);
-        
+
         if (packet instanceof ServerPublicKey serverPublicKey) {
             String public_key = serverPublicKey.public_key;
             SecretKey symmetricKey;
@@ -291,11 +290,11 @@ public class ServerConnection extends Listener implements Runnable {
         });
         
         BingoBrewers.getClient().start();
-        System.out.println("Client started, Test Instance: " + BingoBrewersConfig.getConfig().testInstance);
+        System.out.println("Client started, Test Instance: " + TEST_INSTANCE);
         
         connectionsThisSession++;
         
-        if (BingoBrewersConfig.getConfig().testInstance) {
+        if (TEST_INSTANCE) {
             // Note: for those compiling their own version, the test server will rarely be active so keep the boolean as false
             System.out.println("Connecting to test server");
             BingoBrewers.getClient().connect(8000, "bingobrewers.com", 9090, 9191);

@@ -34,8 +34,6 @@ public class HypixelPackets {
                     long worldTime = level.getGameTime();
                     PlayerInfo.day = (int) (worldTime / 24000000);
 
-                    Minecraft.getInstance().player.displayClientMessage(Component.literal("[BB] Day is " + PlayerInfo.day), false);
-
                     if (PlayerInfo.currentServer == null) return;
                     KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
                     CHRequest.server = PlayerInfo.currentServer;

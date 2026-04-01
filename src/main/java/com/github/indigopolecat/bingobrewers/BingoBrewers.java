@@ -38,6 +38,7 @@ public class BingoBrewers implements ClientModInitializer {
     public static final String version = "v0.3.9-beta";
     //TODO(matita): overridden detection for now, also it may better to be moved as ServerUtils.isHypixel()
     public static boolean onHypixel = true; // TODO(polecat): this doesn't work if someone is using a proxy to connect to hypixel, need better detection
+    public static boolean TEST_INSTANCE = false;
 
     public static AutoUpdater autoUpdater = new AutoUpdater();
     public static HashMap<String, Integer> minecraftColors = new HashMap<>();
