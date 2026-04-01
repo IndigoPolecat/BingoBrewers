@@ -101,7 +101,7 @@ public class CHChests {
         chestLoot.server = PlayerInfo.currentServer;
         chestLoot.day = 1;
         if (Minecraft.getInstance().level != null) {
-            chestLoot.day = (int) (Minecraft.getInstance().level.getGameTime() / 24000);
+            chestLoot.day = (int) (Minecraft.getInstance().level.getGameTime() / 24000000);
         }
 
         chestLoot.x = coords.getX();

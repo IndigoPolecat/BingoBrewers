@@ -17,6 +17,8 @@ import net.hypixel.modapi.packet.impl.serverbound.ServerboundPingPacket;
 import net.hypixel.modapi.packet.impl.serverbound.ServerboundPlayerInfoPacket;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -25,6 +27,25 @@ import java.util.UUID;
 public class HypixelPackets {
     public static void registerEvents() {
         ClientTickEvents.END_CLIENT_TICK.register((client) -> {
+            if (System.currentTimeMillis() > subscribeToCHServerTime) {
+                if (BingoBrewersConfig.getConfig().crystalHollowsWaypointsToggle) {
+                    Level level = Minecraft.getInstance().level;
+                    if (level == null) return;
+                    long worldTime = level.getGameTime();
+                    PlayerInfo.day = (int) (worldTime / 24000000);
+
+                    Minecraft.getInstance().player.displayClientMessage(Component.literal("[BB] Day is " + PlayerInfo.day), false);
+
+                    if (PlayerInfo.currentServer == null) return;
+                    KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
+                    CHRequest.server = PlayerInfo.currentServer;
+                    CHRequest.day = PlayerInfo.day;
+                    ServerConnection.SubscribeToCHServer(CHRequest);
+                }
+                subscribeToCHServerTime = Long.MAX_VALUE;
+            }
+
+
             if (System.currentTimeMillis() - BingoBrewers.lastPacketSentAt > 2500 && BingoBrewers.waitingForPacketResponse) {
                 BingoBrewers.packetHold.addFirst(BingoBrewers.lastPacketSent);
                 BingoBrewers.waitingForPacketResponse = false;
