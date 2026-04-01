@@ -96,12 +96,6 @@ public class PlayerInfo {
             subscribeToCHServer.unsubscribe = true;
             System.out.println("subscribed");
             ServerConnection.SubscribeToCHServer(subscribeToCHServer);
-            
-            KryoNetwork.RegisterToWarpServer unregister = new KryoNetwork.RegisterToWarpServer();
-            unregister.unregister = true;
-            PlayerInfo.registeredToWarp = false;
-            unregister.server = PlayerInfo.currentServer;
-            ServerConnection.sendTCP(unregister);
         }
         
         playerLocation = "";

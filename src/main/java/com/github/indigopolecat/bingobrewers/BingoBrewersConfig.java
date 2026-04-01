@@ -190,21 +190,7 @@ public class BingoBrewersConfig implements ConfigData {
                 CHRequest.day = PlayerInfo.day;
                 CHRequest.unsubscribe = true;
                 ServerConnection.SubscribeToCHServer(CHRequest);
-                
-                KryoNetwork.RegisterToWarpServer unregister = new KryoNetwork.RegisterToWarpServer();
-                unregister.unregister = true;
-                PlayerInfo.registeredToWarp = false;
-                unregister.server = PlayerInfo.currentServer;
-                ServerConnection.sendTCP(unregister);
             }
-        }
-        
-        if (PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
-            KryoNetwork.RegisterToWarpServer register = new KryoNetwork.RegisterToWarpServer();
-            register.unregister = false;
-            PlayerInfo.registeredToWarp = true;
-            register.server = PlayerInfo.currentServer;
-            ServerConnection.sendTCP(register);
         }
     }
 
