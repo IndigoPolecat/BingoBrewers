@@ -1,394 +1,308 @@
 package com.github.indigopolecat.bingobrewers;
 
-import java.io.IOException;
-
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
-import com.esotericsoftware.minlog.Log;
-import com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud;
-import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
-import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
+import com.github.indigopolecat.bingobrewers.hud.SplashHud;
 import com.github.indigopolecat.bingobrewers.util.CrystalHollowsItemTotal;
-import com.github.indigopolecat.bingobrewers.util.LoggerUtil;
+import com.github.indigopolecat.bingobrewers.util.Log;
+import com.github.indigopolecat.bingobrewers.util.SplashNotificationInfo;
 import com.github.indigopolecat.kryo.KryoNetwork;
 import com.github.indigopolecat.kryo.KryoNetwork.*;
-import com.github.indigopolecat.kryo.KryoNetwork.ConnectionIgn;
-import com.github.indigopolecat.kryo.KryoNetwork.SplashNotification;
 import com.github.indigopolecat.kryo.ServerSummary;
+import com.google.common.cache.Cache;
+import com.mojang.authlib.exceptions.AuthenticationException;
+import lombok.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import org.lwjgl.Sys;
+import net.minecraft.network.chat.Component;
 
-import java.net.InetAddress;
-import java.text.SimpleDateFormat;
+import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static com.esotericsoftware.minlog.Log.*;
-import static com.github.indigopolecat.bingobrewers.Hud.CrystalHollowsHud.filteredItems;
-import static com.github.indigopolecat.bingobrewers.Warping.*;
-import static java.lang.String.join;
-import static java.lang.String.valueOf;
+import static com.esotericsoftware.minlog.Log.LEVEL_ERROR;
 
 public class ServerConnection extends Listener implements Runnable {
-
-    public static final String DUNGEON_HUB = "Dungeon Hub";
-    public static final String HUB = "Hub";
-    public static final String SPLASHER = "Splasher";
-    public static final String PARTY = "Party";
-    public static final String LOCATION = "Location";
-    public static final String NOTE = "Note";
-
-    // The Hud renderer checks this every time it renders
-    public static ArrayList<HashMap<String, ArrayList<String>>> mapList = new ArrayList<>();
-    public static ArrayList<String> keyOrder = new ArrayList<>();
-    public static ArrayList<String> hubList = new ArrayList<>();
-    long originalTime = -1;
+    // The server sends it's public key to the client, which checks it based on this. If they don't match the connection is refused.
+    // This would require all users to update in the event of the key being changed but simpler than CA.
+    public static final String SERVER_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqgPvRC780jqwtXV4/39jjZvlXSnXRGEpD63y3Iptq8YO9sZic7Qno+vHKeoW50Ct5XWmNk13JjUwUdXmWBN4186FUo/b0Z+AtpLNVrkvk7dwkJQgAHa56fok52NK9QN8mTy+Saw1flmX4rdz7TflXpOwPzIYMYC33gqWe4/hMniuU7m+D/07fgzu5Ua5yFz27sNwrbqNuJOr1ReDScLykIazILHzfTa7RFAZn+4nWM3vdtdysKo1YSYQ++05uMR1S51ABtPkJdNLKzEf0sC6H2q1JPOcIAz/9EX2doWHROTfWoYifi0HDHEu+c0Cc20SfhfmY5NjofmLEc0XmuyqewIDAQAB";
+    public static int waitTime = 0;
+    public static boolean reconnect; // controls the loop for reconnecting the client
+    public static int connectionsThisSession = 0; // easy visual indicator server side if connections are struggling
     public static CopyOnWriteArrayList<CHWaypoints> waypoints = new CopyOnWriteArrayList<>();
     // if new ch items are added, they will be in this list
     public static ArrayList<String> newMiscCHItems = new ArrayList<>();
-    public static TitleHud joinTitle;
     public static String joinChat;
     public static ArrayList<String> CHItemOrder = new ArrayList<>();
     public static ConcurrentHashMap<String, ServerSummary> serverSummaries = new ConcurrentHashMap<>();
     public static String ign = "";
-    private String uuid = "";
-
+    public static String uuid = "";
+    @Getter(onMethod_ = @Synchronized) @Setter(onMethod_ = @Synchronized)
+    private static SecretKey symmetricKey;
+    public static ConcurrentLinkedDeque<CrystalHollowsItemTotal> filteredItems = new ConcurrentLinkedDeque<>();
+    public static Map<String, Pair<Long, Integer>> playerCounts = new ConcurrentHashMap<>();
+    
+    public record Pair<T, U>(T first, U second) {}
+    
     @Override
     public void run() {
-        Client client1 = new Client(16384, 16384);
-        setClient(client1);
-        if (BingoBrewers.client == null) {
-            LoggerUtil.LOGGER.info("Client is null");
+        Client client = new Client(16384, 16384);
+        BingoBrewers.setClient(client);
+        if (BingoBrewers.getClient() == null) {
+            Log.warn("Client is null");
         }
         try {
             connection();
         } catch (Exception e) {
-            LoggerUtil.LOGGER.info("Server Connection Error: " + e.getMessage());
-            reconnect();
-        }
-
-    }
-
-    private void connection() throws IOException {
-        Log.set(LEVEL_ERROR);
-        KryoNetwork.register(BingoBrewers.client);
-
-        BingoBrewers.client.addListener(new Listener() {
-            @Override
-            public void received(Connection connection, Object object) {
-
-                if (object instanceof ConnectionIgn) {
-                    ConnectionIgn request = (ConnectionIgn) object;
-                    LoggerUtil.LOGGER.info(request.hello);
-                } else if (object instanceof SplashNotification) {
-                    LoggerUtil.LOGGER.info("Received splash notification");
-                    boolean sendNotif = true;
-                    SplashNotification notif = (SplashNotification) object;
-                    // Remove the previous splash notification with the same ID (if message is edited)
-                    for (int i = 0; i < mapList.size(); i++) {
-                        HashMap<String, ArrayList<String>> map = mapList.get(i);
-                        if (map.get("Splash").get(0).equals(notif.splash)) {
-                            ArrayList<String> hubField = map.get(HUB);
-                            // Don't send notification if the hub # or hub type (dungeon/normal) hasn't changed
-                            try {
-                                String hubNumber = hubField.get(1).replaceAll(": (\\d+).*", "$1");
-                                if (hubNumber.equals(notif.message) && notif.dungeonHub == hubField.get(0).contains(DUNGEON_HUB)) {
-                                    sendNotif = false;
-                                    hubList.remove(hubNumber);
-                                    hubList.remove("DH" + hubNumber);
-                                }
-
-                            } catch (Exception ignored) {
-
-                            }
-
-                            // keep track of the original time the splash was sent, instead of updating each time it's edited
-                            originalTime = Long.parseLong(map.get("Time").get(0));
-
-                            mapList.remove(mapList.get(i));
-                        }
-                    }
-                    updateMapList(notif, sendNotif);
-                } else if (object instanceof PlayerCountBroadcast) {
-                    PlayerCountBroadcast request = (PlayerCountBroadcast) object;
-                    for (HashMap<String, ArrayList<String>> map : mapList) {
-                        if (map.containsKey(HUB)) {
-                            String hub = map.get(HUB).get(1).replaceAll(": (\\d+).*", "$1");
-                            if (request.playerCounts.containsKey(hub)) {
-                                // If the hub is a dungeon hub, it has a 24 player limit
-                                if (map.get(HUB).get(0).equals(DUNGEON_HUB)) {
-                                    map.get(HUB).set(1, ": " + hub + " (" + request.playerCounts.get(hub) + "/24)");
-                                } else {
-                                    map.get(HUB).set(1, ": " + hub + " (" + request.playerCounts.get(hub) + "/80)");
-                                }
-                            }
-                        }
-                    }
-                } else if (object instanceof ReceiveConstantsOnStartupModern) {
-                    ReceiveConstantsOnStartupModern request = (ReceiveConstantsOnStartupModern) object;
-                    HashMap<String, Object> constants = request.constants;
-
-                    if (constants.get("bingoRankCosts") != null && constants.get("bingoRankCosts") instanceof HashMap) {
-                        boolean nope = false;
-                        for (Map.Entry<?, ?> entry : ((HashMap<?, ?>) constants.get("bingoRankCosts")).entrySet()) {
-                            if (!(entry.getValue() instanceof Integer) || !(entry.getKey() instanceof Integer)) {
-                                nope = true;
-                                break;
-                            }
-                        }
-                        if (!nope) {
-                            ChestInventories.rankPriceMap = (HashMap<Integer, Integer>) constants.get("bingoRankCosts");
-                        }
-                    }
-                    if (constants.get("chItemRegex") != null && constants.get("chItemRegex") instanceof String) {
-                        CHChests.regex = (String) constants.get("chItemRegex");
-                    }
-                    if (constants.get("newMiscCHItems") != null && constants.get("newMiscCHItems") instanceof ArrayList) {
-                        boolean nope = false;
-                        for (Object string : (ArrayList<Object>) constants.get("newMiscCHItems")) {
-                            if (!(string instanceof String)) {
-                                nope = true;
-                                break;
-                            }
-                        }
-                        if (!nope) {
-                            newMiscCHItems = (ArrayList<String>) constants.get("newMiscCHItems");
-                        }
-                    }
-                    if (constants.get("joinAlert"+BingoBrewers.version) != null && constants.get("joinAlert"+BingoBrewers.version) instanceof JoinAlert) {
-                        JoinAlert joinAlert = (JoinAlert) constants.get("joinAlert"+BingoBrewers.version);
-                        if (joinAlert.joinAlertChat != null) {
-                            joinChat = joinAlert.joinAlertChat;
-                        }
-                        if (joinAlert.joinAlertTitle != null) {
-                            joinTitle = new TitleHud(joinAlert.joinAlertTitle, 0xFF5555, 10000, true);
-                        }
-                    }
-
-                    if (constants.get("CHItemOrder") != null && constants.get("CHItemOrder") instanceof LinkedHashSet) {
-                        boolean nope = false;
-                        for (Object string : (LinkedHashSet<Object>) constants.get("CHItemOrder")) {
-                            if (!(string instanceof String)) {
-                                nope = true;
-                                break;
-                            }
-                        }
-                        if (!nope) {
-                            CHItemOrder = new ArrayList<>((LinkedHashSet<String>) constants.get("CHItemOrder"));
-                        }
-                    }
-
-                    if (constants.get("itemNameRegexGroup") != null && constants.get("itemNameRegexGroup") instanceof Integer) {
-                        if (constants.get("itemCountRegexGroup") != null && constants.get("itemCountRegexGroup") instanceof Integer)
-                            if (constants.get("itemNameColorRegexGroup") != null && constants.get("itemNameColorRegexGroup") instanceof Integer) {
-                                CHChests.itemCountRegexGroup = (Integer) constants.get("itemCountRegexGroup");
-                                CHChests.itemNameRegexGroup = (Integer) constants.get("itemNameRegexGroup");
-                                CHChests.itemNameColorRegexGroup = (Integer) constants.get("itemNameColorRegexGroup");
-                            }
-                    }
-
-                    if (constants.get("signalLootChatMessage") != null && constants.get("signalLootChatMessage") instanceof String) {
-                        CHChests.signalLootChatMessage = (String) constants.get("signalLootChatMessage");
-                    }
-
-                    if (constants.get("signalLootChatMessageEnd") != null && constants.get("signalLootChatMessageEnd") instanceof String) {
-                        CHChests.signalLootChatMessageEnd = (String) constants.get("signalLootChatMessageEnd");
-                    }
-
-
-                } else if (object instanceof receiveCHItems) {
-                    receiveCHItems CHItems = (receiveCHItems) object;
-                    System.out.println("Received CH Chests for " + CHItems.server);
-                    ArrayList<ChestInfo> chests = CHItems.chestMap;
-                    if (CHItems.server.equals(PlayerInfo.currentServer)) {
-                        if (CHItems.day - 1 > PlayerInfo.day || System.currentTimeMillis() - (CHItems.lastReceivedDayInfo != null ? CHItems.lastReceivedDayInfo : Long.MAX_VALUE) > 25_200_000) return; // ignore if the server is younger than last known, or it's been more than 7 hours since info was received
-                        for (ChestInfo chest : chests) {
-                            CHWaypoints chWaypoints = new CHWaypoints(chest.x, chest.y, chest.z, chest.items);
-                            waypoints.add(chWaypoints);
-
-                            for (CHChestItem item : chest.items) {
-                                CrystalHollowsItemTotal.sumItems(item);
-                            }
-
-                            for (CHWaypoints waypoint : CHWaypoints.filteredWaypoints) {
-                                waypoint.filteredExpandedItems.clear();
-                            }
-
-                            BingoBrewersConfig.filterPowder();
-                            BingoBrewersConfig.filterGoblinEggs();
-                            BingoBrewersConfig.filterRoughGemstones();
-                            //BingoBrewersConfig.filterJasperGemstones();
-                            BingoBrewersConfig.filterRobotParts();
-                            BingoBrewersConfig.filterPrehistoricEggs();
-                            BingoBrewersConfig.filterPickonimbus();
-                            BingoBrewersConfig.filterMisc();
-                            organizeWaypoints();
-
-                        }
-                    }
-                } else if (object instanceof ServersSummary) {
-                    ServersSummary servers = (ServersSummary) object;
-                    serverSummaries.putAll(servers.serverInfo);
-                    // remove outdated entries
-                    for (ServerSummary server : serverSummaries.values()) {
-                        if (server.serverType == null) {
-                            serverSummaries.remove(server.server);
-                        }
-                    }
-                } else if (object instanceof QueuePosition) {
-                    // if you have to wait in the queue, this will give you your current position
-                    // gonna leave it for you to implement because I think the permanent value should be stored in the class for rendering the menu
-                    QueuePosition position = (QueuePosition) object;
-                    if (position.positionInWarpQueue == 0) {
-                        // server is telling the client there was an unknown error and there are no available warp clients
-                    }
-                } else if (object instanceof BackgroundWarpTask) {
-                    BackgroundWarpTask warpTask = (BackgroundWarpTask) object;
-
-                    if (warpTask.server.equals(PlayerInfo.currentServer) && !warpTask.accountsToWarp.isEmpty() && accountsToWarp.isEmpty() && !warpTask.accountsToWarp.containsKey(null) && !warpTask.accountsToWarp.containsValue(null)) {
-                        accountsToWarp = new ConcurrentHashMap<>(warpTask.accountsToWarp);
-                        Warping.server = warpTask.server;
-
-                        System.out.println("Received warp task for: " + accountsToWarp.values());
-
-                        if (accountsToWarp.isEmpty()) {
-                            Warping.abort(false);
-                            return;
-                        }
-
-                        Client client = getClient();
-                        if (client != null) {
-                            BackgroundWarpTask confirm = new BackgroundWarpTask();
-                            confirm.accountsToWarp = new HashMap<>();
-                            confirm.accountsToWarp.put(uuid, ign);
-                            confirm.server = PlayerInfo.currentServer;
-                            client.sendTCP(confirm);
-                            System.out.println("confirmed");
-                        }
-
-                        if (Warping.warpThread != null) {
-                            warpThread.stop = true;
-                            warpThread.notify();
-                        }
-                        Warping.warpThread = new BackgroundWarpThread();
-                        Thread warpThread = new Thread(Warping.warpThread);
-                        warpThread.start();
-                        System.out.println("warp begun");
-                    } else {
-                        System.out.println("something went wrong");
-                        System.out.println("warpTask Server: " + warpTask.server + " player info server: " + PlayerInfo.currentServer);
-                        System.out.println("current accounts: " + accountsToWarp.toString());
-                        System.out.println("accounts to warp: " + warpTask.accountsToWarp.toString());
-                    }
-                } else if (object instanceof WarningBannerInfo) {
-
-                } else if (object instanceof AbortWarpTask) {
-                    Warping.PARTY_EMPTY_KICK = false;
-                    Warping.kickParty = true;
-                    accountsToWarp.clear();
-                    Warping.waitingOnLocation = true;
-                    if (warpThread != null) {
-                        warpThread.stop = true;
-                        warpThread.notify();
-                    }
-                } else if (object instanceof CancelWarpRequest) {
-                    // sent by server if unable to fulfill a warp
-                } else if (object instanceof WarperInfo) {
-                    WarperInfo warperInfo = (WarperInfo) object;
-
-                    warperIGN = warperInfo.ign;
-                    timeOfInvite = System.currentTimeMillis();
-
-                    if (partyInvites.contains(warperIGN) && System.currentTimeMillis() - timeOfInvite < 5000 ) {
-                        // we have already received the packet telling us the ign and we can safely join
-                        sendChatMessage("/p accept " + warperIGN);
-                        partyInvites = new ArrayList<>();
-                        warperIGN = null;
-                        timeOfInvite = 0;
-                    } else if (System.currentTimeMillis() - timeOfInvite > 5000) {
-                        warperIGN = null;
-                        partyInvites = new ArrayList<>();
-                        timeOfInvite = 0;
-                    }
-                } else if (object instanceof TestPacket) {
-                    TestPacket testPacket = (TestPacket) object;
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm:ss z");
-
-                    System.out.println("[" + testPacket.protocol + "]" + " [" + dateFormat.format(new Date()) + "] Time Sent (Unix): " + testPacket.timeSent + " Time Received: " + System.currentTimeMillis());
-                }
-            }
-
-
-            @Override
-            public void disconnected(Connection connection) {
+            Log.info("catch reconnect");
+            Log.error("Server Connection Error: " + e.getMessage(), e);
+            if (!reconnect) {
                 reconnect();
             }
-
-        });
-
-        BingoBrewers.client.start();
-        System.out.println("Client started, Test Instance: " + BingoBrewers.TEST_INSTANCE);
-
-        if (BingoBrewers.TEST_INSTANCE) {
-            // Note: for those compiling their own version, the test server will rarely be active so keep the boolean as false
-            System.out.println("Connecting to test server");
-            BingoBrewers.client.connect(10000, "bingobrewers.com", 9090, 9191);
-        } else {
-            BingoBrewers.client.connect(10000, "bingobrewers.com", 8282, 7070);
         }
-        System.out.println("Connected to server.");
-        // send server player ign and version
-        ConnectionIgn response = new ConnectionIgn();
-        ign = Minecraft.getMinecraft().getSession().getUsername();
-        uuid = Minecraft.getMinecraft().getSession().getProfile().getId().toString();
-        response.hello = ign + "|v0.3.8|Beta|" + uuid;
-        System.out.println("sending " + response.hello);
-        BingoBrewers.client.sendTCP(response);
-        System.out.println("sent");
-        PlayerInfo.subscribedToCurrentCHServer = false;
-        // List of all keys that may be used in infopanel, in the order they'll be rendered in an element
-        setSplashHudItems();
-
-        // why sleep 300? idk need to look at commit history and see if I explained, seems completely unnecessary
-        try {
-            Thread.sleep(300);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        PlayerInfo.subscribedToCurrentCHServer = false;
-        BingoBrewersConfig.SubscribeToServer();
-
-        Runnable pingThread = () -> {
-            while (true) {
+    }
+    
+    public void processPacket(Connection connection, Object packet) {
+        if(packet == null) return; //Never process null packets
+        
+        if(BingoBrewersConfig.getConfig().logAllServerPackets) Log.info("Recived packet " + packet);
+        
+        if (packet instanceof ServerPublicKey serverPublicKey) {
+            String public_key = serverPublicKey.public_key;
+            SecretKey symmetricKey;
+            if (public_key.equals(SERVER_PUBLIC_KEY)) {
                 try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
+                    symmetricKey = generateAESKey(256);
+                } catch (NoSuchAlgorithmException e) {
                     throw new RuntimeException(e);
                 }
-                if (!getClient().isConnected()) return;
-                sendTCP(KryoNetwork.testPacketCreator("TCP"));
-                getClient().sendUDP(KryoNetwork.testPacketCreator("UDP"));
-                getClient().updateReturnTripTime();
-                System.out.println("Current Ping with connection " + getClient().getID() + ": " + getClient().getReturnTripTime());
-
+                
+                setSymmetricKey(symmetricKey);
+                
+                ClientSymmetricKey key = new ClientSymmetricKey();
+                key.symmetric_key = encryptObjectPublicKey(symmetricKey, loadPublicKeyFromBase64(public_key));
+                sendTCP(key);
+            } else {
+                //joinTitle = new TitleHud("Server Public Key Outdated", 0xFF5555, 10000, true);                    //TODO: mhhh, will need to check https://github.com/IndigoPolecat/BingoBrewers/blob/0.4dev/src/main/java/com/github/indigopolecat/bingobrewers/ServerConnection.java
+                joinChat = "\n§a§kmm §rA Bingo Brewers update is required due to outdated encryption keys. §kmm\n"; //TODO: add this to the chat/show a toast/do something
+                BingoBrewers.getClient().close();
+                BingoBrewers.getClient().removeListener(this);
+                reconnect = true; // by setting this to true, the client will assume it is already reconnecting and won't try to
             }
-        };
-
-        Thread thread = new Thread(pingThread);
-        //thread.start();
+            
+        } else if (packet instanceof Authentication authentication) {
+            String serverAuthID = decryptString(authentication.AuthID);
+            
+            String clientAuthID = UUID.randomUUID().toString().replaceAll("-", "");
+            authentication.AuthID = encryptString(clientAuthID);
+            
+            Minecraft mc = Minecraft.getInstance();
+            try {
+                String serverHash = serverAuthID.substring(0, serverAuthID.length() / 2 - 1) + clientAuthID.substring(clientAuthID.length() / 2);
+                // This is sending your session info to Mojang's servers as if you were joining a server,
+                // this is used on the Bingo Brewers server to authenticate your IGN like an MC server normally would when you join.
+                mc.services().sessionService().joinServer(
+                    mc.getUser().getProfileId(), // Gets the modern UUID
+                    mc.getUser().getAccessToken(), // Gets the session token
+                    serverHash
+                );
+            } catch (AuthenticationException e) {
+                Log.warn("An error occurred while authenticating with the bingobrewers server via mojang auth", e);
+                return;
+            }
+            
+            sendTCP(authentication);
+            
+            ign = mc.getUser().getName();
+            uuid = mc.getUser().getProfileId().toString();
+            
+            ConnectionIGN accountInfo = new ConnectionIGN();
+            accountInfo.IGN = encryptString(ign);
+            accountInfo.uuid = encryptString(uuid);
+            accountInfo.version = encryptString(BingoBrewers.version);
+            accountInfo.connections = connectionsThisSession;
+            
+            System.out.println("Sending " + ign + "|" + BingoBrewers.version + "|" + uuid);
+            sendTCP(accountInfo);
+            System.out.println("sent");
+            
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            PlayerInfo.subscribedToCurrentCHServer = false;
+            BingoBrewersConfig.getConfig().subscribeToServer();
+            
+        } else if (packet instanceof SplashNotification notif) {
+            if (notif.hub.isEmpty()) return; // completely ignore splashes without a hub number
+            Log.info("Received Splash Notification: " + notif.hub + ", splasher: " + notif.splasher);
+            Log.info("notif=" + notif);// Log all fields just in case
+            
+            if (notif.remove) {
+                SplashHud.removeSplash(notif.splash);
+                return;
+            }
+            
+            // Skip outdated splashes
+            if (notif.timestamp + (BingoBrewersConfig.getConfig().splashConfig.displayTime * 1000L) < System.currentTimeMillis()) {
+                Log.info("Skipping outdated splash with id " + notif.splash);
+                return;
+            }
+            
+            try {
+                SplashHud.addSplash(notif);
+            } catch (IllegalArgumentException ignored) {
+                Log.info("Tried to add to render queue invalid splash (id=" + notif.splash + ")");
+            }
+            
+        } else if (packet instanceof PlayerCountBroadcast playerCountBroadcast) {
+            for (SplashNotificationInfo info : SplashNotificationInfo.splashes.values()) {
+                if (playerCountBroadcast.serverID.equals(info.serverID)) {
+                    info.lobbyPlayerCount = String.valueOf(playerCountBroadcast.playerCount);
+                }
+            }
+            
+        } else if (packet instanceof ClientReceiveServerConstantValues request) {
+            HashMap<String, Object> constants = request.constants;
+            if (constants.get("bingoRankCosts") != null && constants.get("bingoRankCosts") instanceof HashMap) {
+                boolean nope = false;
+                for (Map.Entry<?, ?> entry : ((HashMap<?, ?>) constants.get("bingoRankCosts")).entrySet()) {
+                    if (!(entry.getValue() instanceof Integer) || !(entry.getKey() instanceof Integer)) {
+                        nope = true;
+                        break;
+                    }
+                }
+                if (!nope) {
+                    //noinspection unchecked
+                    ChestInventories.rankPriceMap = (HashMap<Integer, Integer>) constants.get("bingoRankCosts");
+                }
+            }
+            /*if (constants.get("chItemRegex") != null && constants.get("chItemRegex") instanceof String) {
+                CHChests.regex = (String) constants.get("chItemRegex");
+            }*/
+            //noinspection rawtypes
+            if (constants.get("newMiscCHItems") != null && constants.get("newMiscCHItems") instanceof ArrayList list) {
+                boolean nope = false;
+                for (Object string : list) {
+                    if (!(string instanceof String)) {
+                        nope = true;
+                        break;
+                    }
+                }
+                if (!nope) {
+                    //noinspection unchecked
+                    newMiscCHItems = (ArrayList<String>) constants.get("newMiscCHItems");
+                }
+            }
+            if (constants.get("joinAlert" + BingoBrewers.version) != null && constants.get("joinAlert" + BingoBrewers.version) instanceof JoinAlert joinAlert) {
+                if (joinAlert.joinAlertChat != null) {
+                    joinChat = joinAlert.joinAlertChat;
+                }
+                if (joinAlert.joinAlertTitle != null) {
+                    //joinTitle = new TitleHud(joinAlert.joinAlertTitle, 0xFF5555, 10000, true);
+                }
+            }
+            
+            if (constants.get("CHItemOrder") != null && constants.get("CHItemOrder") instanceof LinkedHashSet<?> lhs) {
+                boolean nope = false;
+                for (Object string : lhs) {
+                    if (!(string instanceof String)) {
+                        nope = true;
+                        break;
+                    }
+                }
+                if (!nope) {
+                    //noinspection unchecked
+                    CHItemOrder = new ArrayList<>((LinkedHashSet<String>) constants.get("CHItemOrder"));
+                }
+            }
+            /*
+            if (constants.get("itemNameRegexGroup") != null && constants.get("itemNameRegexGroup") instanceof Integer) {
+                if (constants.get("itemCountRegexGroup") != null && constants.get("itemCountRegexGroup") instanceof Integer)
+                    if (constants.get("itemNameColorRegexGroup") != null && constants.get("itemNameColorRegexGroup") instanceof Integer) {
+                        CHChests.itemCountRegexGroup = (Integer) constants.get("itemCountRegexGroup");
+                        CHChests.itemNameRegexGroup = (Integer) constants.get("itemNameRegexGroup");
+                        CHChests.itemNameColorRegexGroup = (Integer) constants.get("itemNameColorRegexGroup");
+                    }
+            }
+            
+            if (constants.get("signalLootChatMessage") != null && constants.get("signalLootChatMessage") instanceof String) {
+                CHChests.signalLootChatMessage = (String) constants.get("signalLootChatMessage");
+            }
+            
+            if (constants.get("signalLootChatMessageEnd") != null && constants.get("signalLootChatMessageEnd") instanceof String) {
+                CHChests.signalLootChatMessageEnd = (String) constants.get("signalLootChatMessageEnd");
+            }*/
+        } else if (packet instanceof ServerSendCHItems CHItems) {
+            System.out.println("Received CH Chests for " + CHItems.server);
+            ArrayList<ChestInfo> chests = CHItems.chestMap;
+            if (CHItems.server.equals(PlayerInfo.currentServer)) {
+                if (CHItems.day - 1 > PlayerInfo.day || System.currentTimeMillis() - (CHItems.lastReceivedDayInfo != null ? CHItems.lastReceivedDayInfo : Long.MAX_VALUE) > 25_200_000) return; // ignore if the server is younger than last known, or it's been more than 7 hours since info was received
+                for (ChestInfo chest : chests) {
+                    CHWaypoints chWaypoints = new CHWaypoints(chest.x, chest.y, chest.z, chest.items);
+                    waypoints.add(chWaypoints);
+                    
+                    for (CHChestItem item : chest.items) {
+                        CrystalHollowsItemTotal.sumItems(item);
+                    }
+                    
+                    for (CHWaypoints waypoint : CHWaypoints.filteredWaypoints) {
+                        waypoint.filteredExpandedItems.clear();
+                    }
+                    /*
+                    BingoBrewersConfig.filterPowder();
+                    BingoBrewersConfig.filterGoblinEggs();
+                    BingoBrewersConfig.filterRoughGemstones();
+                    BingoBrewersConfig.filterJasperGemstones();
+                    BingoBrewersConfig.filterRobotParts();
+                    BingoBrewersConfig.filterPrehistoricEggs();
+                    BingoBrewersConfig.filterPickonimbus();
+                    BingoBrewersConfig.filterMisc();*/
+                    organizeWaypoints();
+                }
+            }
+        } else if (packet instanceof PlayerCountBroadcast pcb) {
+            playerCounts.entrySet().removeIf(e -> System.currentTimeMillis() - e.getValue().first() > BingoBrewersConfig.getConfig().splashConfig.displayTime * 1000L);
+            playerCounts.put(pcb.serverID, new Pair<>(System.currentTimeMillis(), pcb.playerCount));
+        }
     }
-
-    public static void setSplashHudItems() {
-        keyOrder.clear(); // clear the list so it doesn't keep adding the same keys every time you reconnect
-        keyOrder.add(HUB);
-        if (BingoBrewersConfig.showSplasher) keyOrder.add(SPLASHER);
-        if (BingoBrewersConfig.showParty) keyOrder.add(PARTY);
-        if (BingoBrewersConfig.showLocation) keyOrder.add(LOCATION);
-        if (BingoBrewersConfig.showNote) keyOrder.add(NOTE);
+    
+    private void connection() throws Exception {
+        com.esotericsoftware.minlog.Log.set(LEVEL_ERROR);
+        KryoNetwork.register(BingoBrewers.getClient());
+        BingoBrewers.getClient().addListener(new Listener() {
+            @Override
+            public void received(Connection connection, Object object) {
+                processPacket(connection, object);
+            }
+            
+            @Override
+            public void disconnected(Connection connection) {
+                System.out.println("disconnected");
+                reconnect();
+            }
+        });
+        
+        BingoBrewers.getClient().start();
+        System.out.println("Client started, Test Instance: " + BingoBrewersConfig.getConfig().testInstance);
+        
+        connectionsThisSession++;
+        
+        if (BingoBrewersConfig.getConfig().testInstance) {
+            // Note: for those compiling their own version, the test server will rarely be active so keep the boolean as false
+            System.out.println("Connecting to test server");
+            BingoBrewers.getClient().connect(8000, "bingobrewers.com", 9090, 9191);
+        } else {
+            BingoBrewers.getClient().connect(8000, "bingobrewers.com", 8080, 7070);
+        }
+        System.out.println("Connected to server.");
     }
 
     public static void organizeWaypoints() {
@@ -401,7 +315,7 @@ public class ServerConnection extends Listener implements Runnable {
         }
         Collections.sort(orderedIndexes);
         orderedIndexes.removeIf(index -> index == -1);
-
+        
         ConcurrentLinkedDeque<CrystalHollowsItemTotal> sortedDeque = new ConcurrentLinkedDeque<>(filteredItems);
         filteredItems.clear();
         for (Integer index : orderedIndexes) {
@@ -412,7 +326,7 @@ public class ServerConnection extends Listener implements Runnable {
                 }
             }
         }
-
+        
         for (CHWaypoints waypoint : CHWaypoints.filteredWaypoints) {
             orderedIndexes.clear();
             for (CHChestItem item : waypoint.filteredExpandedItems) {
@@ -433,144 +347,18 @@ public class ServerConnection extends Listener implements Runnable {
             }
         }
     }
-
-    public synchronized void setClient(Client client) {
-        BingoBrewers.client = client;
-    }
-
-    public static synchronized Client getClient() {
-        return BingoBrewers.client;
-    }
-
-    public synchronized void setActiveHud(TitleHud activeTitle) {
-        BingoBrewers.activeTitle = activeTitle;
-    }
-
-    public synchronized TitleHud getActiveHud() {
-        return BingoBrewers.activeTitle;
-    }
-
-    public void updateMapList(SplashNotification notif, boolean sendNotif) {
-        String hub = notif.message;
-        if (hub == null) {
-            hub = "Unknown Hub";
-        }
-        String splasher = notif.splasher;
-        String partyHost = notif.partyHost;
-        if (!partyHost.equals("No Party")) {
-            partyHost = "/p join " + partyHost;
-        }
-        List<String> note = notif.note;
-        // This should always be "Bea House" but is hard coded server side incase it ever needs to change quickly
-        String location = notif.location;
-
-        HashMap<String, ArrayList<String>> splashInfo = new HashMap<>();
-
-        ArrayList<String> hubInfo = new ArrayList<>();
-        if (!notif.dungeonHub) {
-            hubInfo.add(HUB);
-            hubList.add(hub);
-        } else {
-            hubInfo.add(DUNGEON_HUB);
-            // Identify a hub as a dungeonhub to avoid mixing up regular hubs and dhubs
-            hubList.add("DH" + hub);
-        }
-        hubInfo.add(": " + hub);
-        splashInfo.put(HUB, hubInfo);
-
-        ArrayList<String> splasherInfo = new ArrayList<>();
-        splasherInfo.add(SPLASHER);
-        splasherInfo.add(": " + splasher);
-        splashInfo.put(SPLASHER, splasherInfo);
-
-        ArrayList<String> partyInfo = new ArrayList<>();
-        partyInfo.add("Bingo Party");
-        partyInfo.add(": " + partyHost);
-        splashInfo.put(PARTY, partyInfo);
-
-        ArrayList<String> locationInfo = new ArrayList<>();
-        locationInfo.add(LOCATION);
-        locationInfo.add(": " + location);
-        splashInfo.put(LOCATION, locationInfo);
-
-        ArrayList<String> noteInfo = new ArrayList<>();
-        noteInfo.add(NOTE);
-        if (note == null || note.isEmpty()) {
-            noteInfo.add(": No Note");
-        } else {
-            noteInfo.add(": ");
-            noteInfo.addAll(note);
-        }
-        splashInfo.put(NOTE, noteInfo);
-
-        ArrayList<String> timeInfo = new ArrayList<>();
-        if (originalTime != -1) {
-            timeInfo.add(valueOf(originalTime));
-            originalTime = -1;
-        } else {
-            timeInfo.add(valueOf(System.currentTimeMillis()));
-        }
-        splashInfo.put("Time", timeInfo);
-        ArrayList<String> splashId = new ArrayList<>();
-        splashId.add(notif.splash);
-        splashInfo.put("Splash", splashId);
-
-        mapList.add(splashInfo);
-        if (sendNotif) {
-            PlayerInfo.setReadyToNotify(hub, notif.dungeonHub);
-        }
-    }
-
-    // This is called onTickEvent in PlayerInfo when the player is not null
-    public synchronized void notification(String hub, boolean dungeonHub) {
-        if (!BingoBrewersConfig.splashNotificationsEnabled) return;
-        if(!SplashHud.onBingo) return; // non-profile bingo splashes setting was here
-        if(!SplashHud.inSkyblockorPTLobby && !BingoBrewersConfig.splashNotificationsOutsideSkyblock) return;
-        if(!BingoBrewers.onHypixel) return;
-        EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-        if (!dungeonHub) {
-            if (hub.equalsIgnoreCase("Unknown Hub")) {
-                hub = "Unknown Hub";
-            } else {
-                hub = "Hub " + hub;
-            }
-            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000, false);
-            setActiveHud(titleHud);
-        } else {
-            if (hub.equalsIgnoreCase("Unknown Hub")) {
-                hub = "Unknown Dungeon Hub";
-            } else {
-                hub = "Dungeon Hub " + hub;
-            }
-            TitleHud titleHud = new TitleHud("Splash in " + hub, BingoBrewersConfig.alertTextColor.getRGB(), 4000, false);
-            setActiveHud(titleHud);
-        }
-
-        player.playSound("bingobrewers:splash_notification", BingoBrewersConfig.splashNotificationVolume/100f, 1.0f);
-    }
-
+    
     public synchronized void sendPlayerCount(KryoNetwork.PlayerCount count) {
-        if (!BingoBrewersConfig.splashNotificationsEnabled) return;
-        Client currentClient = getClient();
-        if (currentClient == null) {
-            LoggerUtil.LOGGER.info("Client is null");
-            return;
-        }
-        currentClient.sendUDP(count);
+        if (!BingoBrewersConfig.getConfig().splashNotificationsEnabled) return;
+        sendTCP(count);
     }
-
+    
     public static synchronized void SubscribeToCHServer(SubscribeToCHServer server) {
-        Client currentClient = getClient();
-
-        if (currentClient == null) {
-            LoggerUtil.LOGGER.info("Client is null");
-            return;
-        }
-        currentClient.sendTCP(server);
+        sendTCP(server);
         if (!server.unsubscribe) {
             ServerConnection.waypoints.clear();
             CHWaypoints.filteredWaypoints.clear();
-            CrystalHollowsHud.filteredItems.clear();
+            //CrystalHollowsHud.filteredItems.clear();
             CHWaypoints.itemCounts.clear();
             System.out.println("Subscribing to " + PlayerInfo.currentServer);
             PlayerInfo.subscribedToCurrentCHServer = true;
@@ -578,66 +366,144 @@ public class ServerConnection extends Listener implements Runnable {
             System.out.println("Unsubscribing from " + PlayerInfo.currentServer);
         }
     }
-
+    
     public static synchronized void requestLiveUpdates(boolean unrequest) {
         RequestLiveUpdatesForServerInfo request = new RequestLiveUpdatesForServerInfo();
         request.unrequest = unrequest;
-        Client client = getClient();
-
+        sendTCP(request);
+    }
+    
+    public static synchronized void sendTCP(Object packet) {
+        Client client = BingoBrewers.getClient();
+        
         if (client == null) {
-            LoggerUtil.LOGGER.info("Client is null");
+            Log.info("Client is null");
             return;
         }
-        client.sendTCP(request);
+        client.sendTCP(packet);
     }
-
-    public static synchronized void sendTCP(Object object) {
-        Client client = getClient();
-
-        if (client == null) {
-            LoggerUtil.LOGGER.info("Client is null");
-            return;
-        }
-        client.sendTCP(object);
-    }
-
-
-
-
+    
     public void reconnect() {
-        BingoBrewers.client.close();
-        BingoBrewers.client.removeListener(this);
-        float waitTime;
-        boolean repeat;
-
-        waitTime = (int) (3000 * Math.random()) + 2000;
-
-        repeat = true;
-        while (repeat) {
+        BingoBrewers.getClient().close();
+        //Matita: this seems wrong, the listener is declared in an anonymos class inside the connect method
+        BingoBrewers.getClient().removeListener(this);
+        float waitTime = 0;
+        
+        waitTime = (int) (5000 * Math.random() + 2000);
+        
+        Log.warn("Disconnected from server.");
+        reconnect = true;
+        while (reconnect) {
+            Log.info("Reconnecting to Bingo Brewers server.");
             try {
-                System.out.println("Reconnecting to Bingo Brewers server...");
-                BingoBrewers.client = new Client(16384, 16384); // new client is probably unnecessary but I doubt this matters
-                connection();
-                repeat = false;
+                BingoBrewers.setClient(new Client(16384, 16384));
+                //Matita: this seems to always throw an exception:
+                /*
+                Note: Client#update must be called in a separate thread during connect.
+                java.net.SocketTimeoutException: Connected, but timed out during TCP registration.
+                 */
+                connection(); // there's a built in reconnect method idk that's not used but this works
+                reconnect = false;
             } catch (Exception e) {
-                LoggerUtil.LOGGER.info("Server Connection Error: " + e.getMessage());
-                BingoBrewers.client.close();
-                BingoBrewers.client.removeListener(this);
+                Log.info("[Bingo Brewers] Server Connection Error: " + e.getMessage(), e);
+                BingoBrewers.getClient().close();
+                BingoBrewers.getClient().removeListener(this);
+                
                 try {
-                    System.out.println("Reconnect failed. Trying again in " + waitTime + " milliseconds.");
-
+                    Log.error("Reconnect failed. Trying again in " + waitTime + " milliseconds.");
                     Thread.sleep((int) waitTime);
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
-                // keep reconnects under 45s between
-                if (waitTime * 1.5 < 45000) {
-                    waitTime *= 1.5F;
-                } else {
-                    waitTime = 45000 - (int) (5000 * Math.random() + 1000); // slightly vary time
+                waitTime = Math.min(waitTime * 1.5F, 60000);
+                if (waitTime == 60000) {
+                    waitTime = 60000 - (int) (5000 * Math.random() + 1000); // slightly vary time
                 }
             }
         }
     }
-
+    
+    public static PublicKey loadPublicKeyFromBase64(String base64Key) {
+        byte[] decodedKey = Base64.getDecoder().decode(base64Key);
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(decodedKey);
+        KeyFactory keyFactory = null;
+        try {
+            keyFactory = KeyFactory.getInstance("RSA");
+            return keyFactory.generatePublic(spec);
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public static SecretKey generateAESKey(int keySize) throws NoSuchAlgorithmException {
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        keyGenerator.init(keySize); // keySize can be 128, 192, or 256 bits
+        return keyGenerator.generateKey();
+    }
+    
+    public static String encodeKeyToBase64(SecretKey key) {
+        return Base64.getEncoder().encodeToString(key.getEncoded());
+    }
+    
+    public static String encryptObjectPublicKey(SecretKey obj, PublicKey publicKey) {
+        // Get the byte array of the serialized object
+        byte[] objectBytes = obj.getEncoded();
+        
+        // Encrypt the byte array using RSA
+        Cipher cipher = null;
+        try {
+            cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            byte[] encryptedBytes = cipher.doFinal(objectBytes);
+            // Encode the encrypted bytes to a Base64 string
+            return Base64.getEncoder().encodeToString(encryptedBytes);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException |
+                 InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public static byte[] generateIV() {
+        byte[] iv = new byte[16]; // AES block size is 16 bytes
+        SecureRandom random = new SecureRandom();
+        random.nextBytes(iv);
+        return iv;
+    }
+    
+    public static EncryptedString encryptString(String obj) {
+        byte[] iv = generateIV();
+        SecretKey aesKey = symmetricKey;
+        
+        // Get the byte array of the string object
+        byte[] objectBytes = obj.getBytes();
+        Cipher cipher = null;
+        try {
+            cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            IvParameterSpec ivSpec = new IvParameterSpec(iv);
+            cipher.init(Cipher.ENCRYPT_MODE, aesKey, ivSpec);
+            byte[] encryptedBytes = cipher.doFinal(objectBytes);
+            EncryptedString encryptedString = new EncryptedString();
+            encryptedString.string = Base64.getEncoder().encodeToString(encryptedBytes);
+            encryptedString.iv = iv;
+            return encryptedString;
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException |
+                 IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public static String decryptString(EncryptedString encryptedString) {
+        SecretKey aesKey = symmetricKey;
+        try {
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            IvParameterSpec ivSpec = new IvParameterSpec(encryptedString.iv);
+            cipher.init(Cipher.DECRYPT_MODE, aesKey, ivSpec);
+            String encryptedData = encryptedString.string;
+            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
+            return new String(decryptedBytes);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidAlgorithmParameterException |
+                 IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

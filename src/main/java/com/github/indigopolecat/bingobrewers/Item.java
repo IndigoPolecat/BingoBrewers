@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-// This class is unused. keeping incase we need to do it on our own server in the future.
+// This class is unused. keeping in case we need to do it on our own server in the future.
 // Required for auctionAPI.java
 public class Item {
     private final String name;

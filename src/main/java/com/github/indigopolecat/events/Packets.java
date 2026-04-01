@@ -1,32 +1,8 @@
 package com.github.indigopolecat.events;
 
-import com.github.indigopolecat.bingobrewers.*;
-import com.github.indigopolecat.bingobrewers.Hud.SplashHud;
-import com.github.indigopolecat.kryo.KryoNetwork;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
-import ibxm.Player;
-import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.play.client.C17PacketCustomPayload;
-import net.minecraft.network.play.server.*;
-import net.minecraft.util.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.common.eventhandler.Event;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import com.github.indigopolecat.events.PacketEvent;
-
-import java.lang.reflect.Type;
 import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 
 public class Packets {
-
     // Fires event when an inventory packet is sent with a slot number greater than the slot count of the window.
     int slotCount = -1;
     boolean alreadyFired = false;
@@ -34,7 +10,8 @@ public class Packets {
     // The key is the time in milliseconds the value was added plus a random 8 digit unique identifier
     public static HashMap<String, Long> hardstone = new HashMap<>();
 
-    @SubscribeEvent
+    //TODO (matita): event system
+    /*
     public void onPacketReceived(PacketEvent.Received event) {
         if (event.getPacket() instanceof S38PacketPlayerListItem) {
             if (System.currentTimeMillis() - PlayerInfo.lastSplashHubUpdate > 120000) {
@@ -144,7 +121,6 @@ public class Packets {
     }
 
 
-    public static class InventoryLoadingDoneEvent extends Event {
-    }
-
+    public static class InventoryLoadingDoneEvent extends Event { }
+    */
 }

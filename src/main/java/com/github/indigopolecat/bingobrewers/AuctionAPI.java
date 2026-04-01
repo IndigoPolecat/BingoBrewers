@@ -1,11 +1,9 @@
 package com.github.indigopolecat.bingobrewers;
 
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-
 import java.util.ArrayList;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
@@ -13,17 +11,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
-
-import com.google.gson.reflect.TypeToken;
-import org.jetbrains.annotations.NotNull;
-
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
+import org.jetbrains.annotations.NotNull;
 
 public class AuctionAPI {
-
     public static final String SKYBLOCK_BAZAAR_API = "https://api.hypixel.net/v2/skyblock/bazaar";
     public static final String MOULBERRY_LOWEST_BIN_API = "https://moulberry.codes/lowestbin.json.gz";
 
@@ -48,7 +45,7 @@ public class AuctionAPI {
                 try {
                     byteArrayOutputStream = getByteArrayOutputStream();
                     ByteArrayOutputStream byteArrayOutputStreamBz = getArrayOutputStream();
-                    bazaarJson = byteArrayOutputStreamBz.toString("UTF-8");
+                    bazaarJson = byteArrayOutputStreamBz.toString(StandardCharsets.UTF_8);
                     auctionJson = byteArrayOutputStream.toString(String.valueOf(StandardCharsets.UTF_8));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -85,9 +82,14 @@ public class AuctionAPI {
 
     @NotNull
     private static ByteArrayOutputStream getArrayOutputStream() throws IOException {
-        URL bazaarUrl = new URL(SKYBLOCK_BAZAAR_API);
-
-        HttpURLConnection connectionBz = (HttpURLConnection) bazaarUrl.openConnection();
+       URL bazaarUrl;
+       try {
+          bazaarUrl = new URI(SKYBLOCK_BAZAAR_API).toURL();
+       } catch (URISyntaxException e) {
+          throw new AssertionError("SKYBLOCK_BAZAAR_API is invalid", e);
+       }
+       
+       HttpURLConnection connectionBz = (HttpURLConnection) bazaarUrl.openConnection();
         connectionBz.setRequestMethod("GET");
         connectionBz.connect();
 
@@ -105,9 +107,14 @@ public class AuctionAPI {
 
     @NotNull
     private static ByteArrayOutputStream getByteArrayOutputStream() throws IOException {
-        URL apiURL = new URL(MOULBERRY_LOWEST_BIN_API);
-
-        HttpURLConnection connection = (HttpURLConnection) apiURL.openConnection();
+       URL apiURL;
+       try {
+          apiURL = new URI(MOULBERRY_LOWEST_BIN_API).toURL();
+       } catch (URISyntaxException e) {
+          throw new AssertionError("MOULBERRY_LOWEST_BIN_API is invalid", e);
+       }
+       
+       HttpURLConnection connection = (HttpURLConnection) apiURL.openConnection();
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Accept-Encoding", "gzip");
         connection.connect();

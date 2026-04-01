@@ -1,9 +1,10 @@
 name: Run Gradle Build
-on: [ push, pull_request ]
+on: [ push, pull_request, workflow_dispatch ]
 
 jobs:
   gradle:
     runs-on: ubuntu-latest
+    if: ${{ (github.repository == 'IndigoPolecat/BingoBrewers') || (github.repository == 'Matita008/BingoBrewers') || (github.event == 'workflow_dispatch') }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -11,7 +12,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
       - name: Execute Gradle build

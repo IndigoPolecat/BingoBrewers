@@ -1,16 +1,10 @@
 {
   "splash_notification": {
-    "sounds": [{
-      "name":"SplashNotification",
-      "stream": true
-    }],
-    "category": "master"
+    "subtitle": "sound.bingobrewers.splash_notification",
+    "sounds": ["bingobrewers:splashnotification"]
   },
   "skill_xp": {
-    "sounds": [{
-      "name":"SkillXP",
-      "stream": true
-    }],
-    "category": "master"
+    "subtitle": "sound.bingobrewers.skillxp",
+    "sounds": ["bingobrewers:skillxp"]
   }
 }

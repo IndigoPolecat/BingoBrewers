@@ -1,90 +1,74 @@
 package com.github.indigopolecat.bingobrewers.gui;
 
 import com.github.indigopolecat.bingobrewers.BingoBrewers;
-import com.github.indigopolecat.bingobrewers.Hud.TitleHud;
-import moe.nea.libautoupdate.UpdateUtils;
+import com.github.indigopolecat.bingobrewers.hud.HudManager;
+import com.github.indigopolecat.bingobrewers.hud.TimedTextHud;
+import com.github.indigopolecat.bingobrewers.util.Log;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
-import org.lwjgl.input.Mouse;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
-import javax.net.ssl.HttpsURLConnection;
-
-import static com.github.indigopolecat.bingobrewers.util.AutoUpdater.ctx;
-
-public class UpdateScreen extends GuiScreen {
-    private GuiButton updateNowButton;
-    private GuiButton updateLaterButton;
-
+public class UpdateScreen extends Screen {
     public String changelog = BingoBrewers.autoUpdater.getChangelog();
-
-    @Override
-    public void initGui() {
-        buttonList.clear();
-        updateNowButton = new GuiButton(0, width / 2 - 100, height - 50, "Update and Close Game");
-        updateLaterButton = new GuiButton(0, width / 2 - 100, height - 25, "Update on Next Launch");
-        buttonList.add(updateNowButton);
-        buttonList.add(updateLaterButton);
-        Mouse.setGrabbed(false);
+    
+    public UpdateScreen() {
+        super(Component.literal("Bingo Brewers Update"));
     }
-
+    
     @Override
-    public void onGuiClosed() {
-        Mouse.setGrabbed(true);
+    public void render(GuiGraphics guiGraphics, int i, int j, float f) {//i, j *should* be the x,y of the mouse (see net.minecraft.client.renderer.GameRenderer#render)
+        // renderBackground(guiGraphics, i, j, f);
+        // The background should be already rendered
+        // Why? don't ask me
+        
+        String gb = ChatFormatting.GOLD + "" + ChatFormatting.BOLD;
+        String title = gb + ChatFormatting.OBFUSCATED + "KK" + ChatFormatting.RESET + gb + " A new version of Bingo Brewers is available! " + ChatFormatting.OBFUSCATED + "KK";
+        int textWidth = font.width(title);
+        
+        //Remove carriage returns
+        changelog = changelog.replaceAll("#+\\s+", "§l").replaceAll("\r", "");
+        changelog = changelog.replaceAll("-\\s+", "• ").replaceAll("\\s+-\\s+", "○ ");
+        
+        // Split by new lines
+        String[] lines = changelog.split("\n");
+        
+        guiGraphics.drawString(font, title, width / 2 - textWidth / 2, 10, 0xFFFFFFFF, false);
+        
+        // Draw each line separately
+        for (int n = 0; n < lines.length; n++) {
+            guiGraphics.drawString(font, ChatFormatting.RESET + lines[n], 10, 10 + (n + 1) * 10, 0xFFFFFFFF);
+        }
+        
+        //Render the button as the last thing
+        super.render(guiGraphics, i, j, f);
     }
-
+    
     @Override
-    protected void actionPerformed(GuiButton button) {
-        if (button == updateNowButton) {
-            UpdateUtils.patchConnection(connection -> {
-                if (connection instanceof HttpsURLConnection) {
-                    ((HttpsURLConnection) connection).setSSLSocketFactory(ctx.getSocketFactory());
-                }
-            });
-            // Do something when myButton is pressed
-            BingoBrewers.autoUpdater.update().thenRunAsync(() -> Minecraft.getMinecraft().shutdown());
-        } else if(button == updateLaterButton) {
-            UpdateUtils.patchConnection(connection -> {
-                if (connection instanceof HttpsURLConnection) {
-                    ((HttpsURLConnection) connection).setSSLSocketFactory(ctx.getSocketFactory());
-                }
-            });
+    public void init() {
+        Button updateNowButton = Button.builder(Component.literal("Update and Close Game"), b -> {
+            BingoBrewers.autoUpdater.update().thenRunAsync(() -> Minecraft.getInstance().stop());
+        }).pos(width / 2 - 100, height - 75).build();
+        
+        Button updateLaterButton = Button.builder(Component.literal("Update on Next Launch"), b -> {
             BingoBrewers.autoUpdater.checkUpdate().thenAccept(updateAvailable -> {
                 if(updateAvailable) {
                     BingoBrewers.autoUpdater.update();
-                    BingoBrewers.activeTitle = new TitleHud("Bingo Brewers will update on game close.", 0x47EB62, 4000, false);
+                    //BingoBrewers.activeTitle = new TitleHud("Bingo Brewers will update on game close.", 0x47EB62, 4000, false);//TODO: look at this
                 } else {
-                    Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Bingo Brewers is up to date!"));
+                    Minecraft.getInstance().player.displayClientMessage(Component.literal("Bingo Brewers is up to date!").withColor(0x00FF00), false);
                 }
             });
-            Minecraft.getMinecraft().displayGuiScreen(null);
-        }
-    }
-
-    @Override
-    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        if (this.mc != null) {
-            drawDefaultBackground();
-        }
-        super.drawScreen(mouseX, mouseY, partialTicks);
-        String text = EnumChatFormatting.GOLD + "" +  EnumChatFormatting.BOLD  + EnumChatFormatting.OBFUSCATED + "KK" + EnumChatFormatting.RESET + EnumChatFormatting.GOLD + "" +  EnumChatFormatting.BOLD + " A new version of Bingo Brewers is available! " + EnumChatFormatting.OBFUSCATED + "KK";
-        int textWidth = fontRendererObj.getStringWidth(text);
-
-            // Convert markdown to Minecraft formatting codes
-            changelog = changelog.replaceAll("#+\\s+", "§l"); // Bold
-            changelog = changelog.replaceAll("\r", ""); // Remove carriage returns
-            changelog = changelog.replaceAll("-\\s+", "• "); // Remove carriage returns
-        changelog = changelog.replaceAll("\\s+-\\s+", "○ "); // Remove carriage returns
-
-            // Split by new lines
-            String[] lines = changelog.split("\n");
-            fontRendererObj.drawString(text, width / 2 - textWidth / 2, 10, 0xFFFFFF);
-
-            // Draw each line separately
-            for (int i = 0; i < lines.length; i++) {
-                fontRendererObj.drawString(EnumChatFormatting.RESET + lines[i], 10, 10 + (i+1) * 10, 0xFFFFFF);
-            }
+            Minecraft.getInstance().setScreen(null);
+        }).pos(width / 2 - 100, height - 50).build();
+        
+        Button closeButton = Button.builder(Component.literal("Close Screen without updating"), b -> Minecraft.getInstance().setScreen(null))
+                                   .pos(width / 2 - 100, height - 25).build();
+        
+        addRenderableWidget(updateNowButton);
+        addRenderableWidget(updateLaterButton);
+        addRenderableWidget(closeButton);
     }
 }
