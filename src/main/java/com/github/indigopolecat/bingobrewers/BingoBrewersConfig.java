@@ -78,7 +78,7 @@ public class BingoBrewersConfig implements ConfigData {
         public int displayTime = 120;
         
         @Comment(value = "In seconds")
-        public int alertDisplayTime = 15;
+        public int alertDisplayTime = 4;
     }
 
     @Comment(value = "Set the volume of the splash notification") @ConfigEntry.BoundedDiscrete(max = 200)
