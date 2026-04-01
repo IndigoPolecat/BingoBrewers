@@ -30,6 +30,8 @@ public class BingoBrewersConfig implements ConfigData {
         filterPickonimbus();
         filterMisc();
         organizeWaypoints();
+        subscribeToServer();
+
         // idk what failure would do, just need this to work and there are no errors here
         return InteractionResult.SUCCESS;
     }
@@ -173,8 +175,8 @@ public class BingoBrewersConfig implements ConfigData {
     @ConfigEntry.Category(value = "misc")
     public boolean playEggTimerResetSound = false;
     
-    public void subscribeToServer() {
-        if (crystalHollowsWaypointsToggle && PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
+    public static void subscribeToServer() {
+        if (getConfig().crystalHollowsWaypointsToggle && PlayerInfo.playerLocation.equalsIgnoreCase("crystal_hollows")) {
             KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
             CHRequest.server = PlayerInfo.currentServer;
             CHRequest.day = PlayerInfo.day;
@@ -182,7 +184,7 @@ public class BingoBrewersConfig implements ConfigData {
         } else {
             waypoints.clear();
             CHWaypoints.itemCounts.clear();
-            //filteredItems.clear(); //TODO (matita): this was for some reason part of the CH HUD
+            filteredItems.clear();
             CHWaypoints.filteredWaypoints.clear();
             if (!PlayerInfo.playerLocation.isEmpty()) {
                 KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
