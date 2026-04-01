@@ -300,7 +300,7 @@ public class ServerConnection extends Listener implements Runnable {
             System.out.println("Connecting to test server");
             BingoBrewers.getClient().connect(8000, "bingobrewers.com", 9090, 9191);
         } else {
-            BingoBrewers.getClient().connect(8000, "bingobrewers.com", 8080, 7070);
+            BingoBrewers.getClient().connect(8000, "bingobrewers.com", 8282, 7070);
         }
         System.out.println("Connected to server.");
     }
