@@ -75,7 +75,7 @@ public class CHWaypoints {
 
         double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-        Vector3f toWaypoint = new Vec3(dx, dy, dz).normalize().toVector3f();
+        Vector3f toWaypoint = new Vec3(dx, dy + 1, dz).normalize().toVector3f();
         Vector3f look = camera.getLookVector();
 
         boolean nearCenter = toWaypoint.dot(look) > 0.99;
@@ -91,14 +91,14 @@ public class CHWaypoints {
 
         if (dist > 30) {
             double ratio = 30.0 / dist;
-            rx = dx * ratio + 0.5;
+            rx = dx * ratio;
             ry = dy * ratio + camera.getEntity().getEyeHeight();
-            rz = dz * ratio + 0.5;
+            rz = dz * ratio;
             dist = Math.sqrt(rx * rx + ry * ry + rz * rz);
         } else {
-            rx = dx + 0.5;
+            rx = dx;
             ry = dy + camera.getEntity().getEyeHeight();
-            rz = dz + 0.5;
+            rz = dz;
         }
 
         double scale = (dist * 0.0266666688f) / 10.0;
