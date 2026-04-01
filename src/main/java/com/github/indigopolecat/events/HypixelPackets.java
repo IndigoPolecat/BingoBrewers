@@ -38,23 +38,6 @@ public class HypixelPackets {
                 BingoBrewers.packetHold.removeIf(hypixelPacket -> packet.getClass() == hypixelPacket.getClass());
             }
         });
-        ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register(((minecraftServer, serverLevel) -> {
-            if (BingoBrewersConfig.getConfig().crystalHollowsWaypointsToggle) {
-                int day = (int) (serverLevel.getGameTime() / 24000);
-
-                KryoNetwork.SubscribeToCHServer CHRequest = new KryoNetwork.SubscribeToCHServer();
-                CHRequest.server = PlayerInfo.currentServer;
-                CHRequest.day = day;
-                ServerConnection.SubscribeToCHServer(CHRequest);
-
-                System.out.println("Registering to warp for " + PlayerInfo.currentServer);
-                KryoNetwork.RegisterToWarpServer register = new KryoNetwork.RegisterToWarpServer();
-                register.unregister = false;
-                PlayerInfo.registeredToWarp = true;
-                register.server = PlayerInfo.currentServer;
-                ServerConnection.sendTCP(register);
-            }
-        }));
     }
 
     public static void onPingPacket(ClientboundPingPacket packet) {

@@ -247,7 +247,7 @@ public class ServerConnection extends Listener implements Runnable {
                 if (CHItems.day - 1 > PlayerInfo.day || System.currentTimeMillis() - (CHItems.lastReceivedDayInfo != null ? CHItems.lastReceivedDayInfo : Long.MAX_VALUE) > 25_200_000) return; // ignore if the server is younger than last known, or it's been more than 7 hours since info was received
                 for (ChestInfo chest : chests) {
                     CHWaypoints chWaypoints = new CHWaypoints(chest.x, chest.y, chest.z, chest.items);
-                    waypoints.add(chWaypoints);
+                     waypoints.add(chWaypoints);
                     
                     for (CHChestItem item : chest.items) {
                         CrystalHollowsItemTotal.sumItems(item);
@@ -256,7 +256,7 @@ public class ServerConnection extends Listener implements Runnable {
                     for (CHWaypoints waypoint : CHWaypoints.filteredWaypoints) {
                         waypoint.filteredExpandedItems.clear();
                     }
-                    /*
+
                     BingoBrewersConfig.filterPowder();
                     BingoBrewersConfig.filterGoblinEggs();
                     BingoBrewersConfig.filterRoughGemstones();
@@ -264,7 +264,7 @@ public class ServerConnection extends Listener implements Runnable {
                     BingoBrewersConfig.filterRobotParts();
                     BingoBrewersConfig.filterPrehistoricEggs();
                     BingoBrewersConfig.filterPickonimbus();
-                    BingoBrewersConfig.filterMisc();*/
+                    BingoBrewersConfig.filterMisc();
                     organizeWaypoints();
                 }
             }

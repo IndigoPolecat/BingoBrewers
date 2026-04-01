@@ -127,6 +127,7 @@ public class BingoBrewers implements ClientModInitializer {
             AutoConfig.register(BingoBrewersConfig.class, ConfigSerializer::new);
             GuiRegistry registry = AutoConfig.getGuiRegistry(BingoBrewersConfig.class);
             registry.registerTypeProvider(new ColorGuiProvider(), Color.class);
+            AutoConfig.getConfigHolder(BingoBrewersConfig.class).registerSaveListener(BingoBrewersConfig::onSave);
         } catch (Exception e) {
             Log.error("An error occurred while loading the configuration file", e);
         }
