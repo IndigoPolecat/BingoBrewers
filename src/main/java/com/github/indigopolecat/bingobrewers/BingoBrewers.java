@@ -35,7 +35,7 @@ public class BingoBrewers implements ClientModInitializer {
 
     @Getter(onMethod_ = @Synchronized) @Setter(onMethod_ = @Synchronized)
     private static volatile Client client;
-    public static final String version = "v0.3.9-beta";
+    public static final String version = "v0.4-beta";
     //TODO(matita): overridden detection for now, also it may better to be moved as ServerUtils.isHypixel()
     public static boolean onHypixel = true; // TODO(polecat): this doesn't work if someone is using a proxy to connect to hypixel, need better detection
     public static boolean TEST_INSTANCE = false;
