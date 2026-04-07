@@ -7,7 +7,7 @@ jobs:
     if: ${{ (github.repository == 'IndigoPolecat/BingoBrewers') || (github.repository == 'Matita008/BingoBrewers') || (github.event == 'workflow_dispatch') }}
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
