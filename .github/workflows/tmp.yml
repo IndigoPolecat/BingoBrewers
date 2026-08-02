@@ -1,0 +1,22 @@
+name: Inspect Gradle Cache
+
+on:
+  workflow_dispatch: # Allows manual trigger from the Actions tab
+
+jobs:
+  export-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Restore Specific Gradle Cache
+        uses: actions/cache/restore@v4
+        with:
+          # Path where setup-gradle stores dependencies on Linux
+          path: ~/.gradle/caches/
+          # Exact cache key from your list
+          key: gradle-dependencies-v1-dd859f9c05174f2d9e45b18abba167aa
+
+      - name: Compress and Upload Cache as Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: gradle-dependencies-debug
+          path: ~/.gradle/caches/
