@@ -33,7 +33,7 @@ public class AutoUpdater {
 
     // The Minecraft version this jar was built for - each GitHub release carries one jar per
     // supported version, so the updater needs this to pick the right one. See MultiVersionGithubSource.
-    private static final String MINECRAFT = /*$ minecraft*/ "26.2";
+    private static final String MINECRAFT = /*$ minecraft*/ "26.3";
 
     private static UpdateContext getUpdateContext() {
         String source = BingoBrewersConfig.getConfig().updaterRepository;
