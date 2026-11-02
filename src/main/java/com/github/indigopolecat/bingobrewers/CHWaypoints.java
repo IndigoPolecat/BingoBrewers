@@ -132,7 +132,7 @@ public class CHWaypoints {
         poseStack.pushPose();
         poseStack.translate(rx, ry, rz);
 
-        poseStack.mulPose(new Quaternionf().rotateY((float) Math.toRadians(-camera.yRot())).rotateX((float) Math.toRadians(camera.xRot())));
+        poseStack.rotate(new Quaternionf().rotateY((float) Math.toRadians(-camera.yRot())).rotateX((float) Math.toRadians(camera.xRot())));
 
         float s = (float) scale;
         poseStack.scale(-s, -s, s);

@@ -3,7 +3,7 @@ plugins {
 }
 
 // Version used when the workspace is imported / when running a single-target IDE sync.
-stonecutter active "26.2"
+stonecutter active "26.3"
 
 // See https://stonecutter.kikugie.dev/wiki/config/params
 stonecutter parameters {
@@ -53,6 +53,11 @@ stonecutter parameters {
 
         // 26.2 removed the old immediate-mode MultiBufferSource renderer alongside the OpenGL backend;
         // these are further 1:1 renames on top of the 26.1 set above.
+        // 26.3 split quaternion rotation off mulPose(Matrix4fc) into rotate(Quaternionfc).
+        string(current.parsed < "26.3") {
+            replace("poseStack.rotate(new Quaternionf()", "poseStack.mulPose(new Quaternionf()")
+        }
+
         string(current.parsed >= "26.2") {
             replace(".setScreen(", ".setScreenAndShow(")
             replace("mc.gameRenderer.getMainCamera();", "mc.gameRenderer.mainCamera();")
